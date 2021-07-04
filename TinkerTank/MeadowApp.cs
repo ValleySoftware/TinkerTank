@@ -1,10 +1,13 @@
-﻿using Meadow;
+﻿using Base;
+using Enumerations;
+using Meadow;
 using Meadow.Devices;
 using Meadow.Foundation;
 using Meadow.Foundation.Leds;
 using Meadow.Hardware;
 using Peripherals;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Utilities.Power;
 
@@ -18,10 +21,10 @@ namespace TinkerTank
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
         IDigitalOutputPort redLED;
+        ComponentStatus _status;
 
-        public enum MainStatus { Error, Ready, Action };
-
-        public enum StatusMessageTypes { Debug, Important, Error };
+        private List<TinkerBase> TBObjects;
+        private System.Timers.Timer _statusPoller;
 
         public MeadowApp()
         {
@@ -30,39 +33,75 @@ namespace TinkerTank
 
         void Init()
         {
+            TBObjects = new List<TinkerBase>();
+
+            _statusPoller = new System.Timers.Timer(2000);
+            _statusPoller.Elapsed += _statusPoller_Elapsed;
+            _statusPoller.AutoReset = true;
+            _statusPoller.Enabled = true;
+
             //Indicators to see what's going on
             blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
             greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
             redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
             movementController = new TrackControl(this);
+            TBObjects.Add((TinkerBase)movementController);
             movementController.Init(
                 Device.Pins.D02, Device.Pins.D03, Device.Pins.D04,
                 Device.Pins.D09, Device.Pins.D10, Device.Pins.D11);
 
             powerController = new PowerControl(this);
+            TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D00);
         }
 
-        public void SetStatus(MainStatus status)
+        private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            blueLED.State = false;
-            greenLED.State = false;
-            redLED.State = false;
+            RefreshStatus();
+        }
 
-            switch (status)
+        public void RefreshStatus()
+        {
+            DebugDisplayText("Checking Component Status");
+            foreach (var element in TBObjects)
             {
-                case MainStatus.Error: 
-                    redLED.State = true;
+                SetStatus(element.Status);
+
+                if (element.Status != ComponentStatus.Ready)
+                {
                     break;
-                case MainStatus.Action:
-                    blueLED.State = true;
-                    break;
-                case MainStatus.Ready:
-                    greenLED.State = true;
-                    break;
-                default:
-                    break;
+                }
+            }
+        }
+
+        private void SetStatus(ComponentStatus newStatus)
+        {
+            if (newStatus != _status)
+            {
+                _status = newStatus;
+
+                blueLED.State = false;
+                greenLED.State = false;
+                redLED.State = false;
+
+                switch (newStatus)
+                {
+                    case ComponentStatus.Error:
+                        redLED.State = true;
+                        powerController.Disconnect();
+                        break;
+                    case ComponentStatus.Action:
+                        blueLED.State = true;
+                        break;
+                    case ComponentStatus.Ready:
+                        greenLED.State = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                DebugDisplayText("Status set to: " + newStatus.ToString());
             }
         }
 

@@ -14,11 +14,11 @@ namespace Base
 {
     public class TinkerBase : ObservableRecipient
     {
-        protected ComponentSatus _status = ComponentSatus.UnInitialised;
+        protected ComponentStatus _status = ComponentStatus.UnInitialised;
         protected MeadowApp _appRoot;
         private string _statusText = string.Empty;
 
-        public ComponentSatus Status
+        public ComponentStatus Status
         {
             get => _status;
             set => _status = value;

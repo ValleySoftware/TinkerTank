@@ -9,14 +9,13 @@ using Meadow.Foundation.Motors;
 using System.Threading;
 using TinkerTank;
 using Base;
+using Enumerations;
 
 namespace Peripherals
 {
     public class TrackControl : TinkerBase, IMovementInterface
     {
         private DriveMethod _driveMethod;
-        private bool _isMoving;
-        private bool _isReady;
         private HBridgeMotor motorLeft;
         private HBridgeMotor motorRight;
         private bool _reverseMotorOrientation = false;
@@ -27,11 +26,11 @@ namespace Peripherals
             _appRoot = appRoot;
         }
 
-        public bool Init(
+        public ComponentStatus Init(
             Meadow.Hardware.IPin HBridge1PinA, Meadow.Hardware.IPin HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
             Meadow.Hardware.IPin HBridge2PinA, Meadow.Hardware.IPin HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable)
         {
-            IsReady = false;
+            Status = ComponentStatus.UnInitialised;
 
             try
             {
@@ -54,29 +53,19 @@ namespace Peripherals
                 motorRight.IsNeutral = true;
 
                 _appRoot.DebugDisplayText("Setting Motor Controller Ready");
-                IsReady = true;
+                Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
             {
-
+                Status = ComponentStatus.Error;
             }
 
-            return IsReady;
+            return Status;
         }
 
         public DriveMethod driveMethod { get => _driveMethod; }
 
-        public bool IsMoving
-        {
-            get => _isMoving;
-            private set => _isMoving = value;
-        }
 
-        public bool IsReady
-        {
-            get => _isReady;
-            private set => _isReady = value;
-        }
 
         public bool ReverseMotorOrientation
         {
@@ -100,7 +89,7 @@ namespace Peripherals
 
             //if (_appRoot.HasDrivePower)
             {
-                IsMoving = true;
+                Status = ComponentStatus.Action;
 
                 switch (direction)
                 {
@@ -133,6 +122,7 @@ namespace Peripherals
                     {
                         Thread.Sleep((int)movementDuration.Value.TotalMilliseconds);
                         Stop();
+                        Status = ComponentStatus.Ready;
 
                     });
 
@@ -149,7 +139,7 @@ namespace Peripherals
                 motorRight.IsNeutral = true;
                 motorLeft.Power = leftPower * reverseMotorOrientationMultiplier;
                 motorRight.Power = rightPower * reverseMotorOrientationMultiplier;
-                IsMoving = true;
+                Status = ComponentStatus.Action;
             }
 
             return true;
@@ -163,7 +153,7 @@ namespace Peripherals
                 motorRight.IsNeutral = true;
                 motorLeft.Power = leftFrontPower * reverseMotorOrientationMultiplier;
                 motorRight.Power = rightFrontPower * reverseMotorOrientationMultiplier;
-                IsMoving = true;
+                Status = ComponentStatus.Action;
             }
 
             return true;
@@ -175,7 +165,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = 0;
             motorRight.Power = 0;
-            IsMoving = false;
+            Status = ComponentStatus.Ready;
         }
 
         public void BreakAndHold()
@@ -184,7 +174,7 @@ namespace Peripherals
             motorRight.IsNeutral = false;
             motorLeft.Power = 0;
             motorRight.Power = 0;
-            IsMoving = false;
+            Status = ComponentStatus.Ready;
         }
 
         private void Forward(float power)
@@ -193,6 +183,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier;
             motorRight.Power = power * reverseMotorOrientationMultiplier;
+            Status = ComponentStatus.Action;
         }
 
         private void Backwards(float power)
@@ -201,6 +192,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
             motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;
+            Status = ComponentStatus.Action;
         }
 
         private void TurnLeft(float power)
@@ -209,6 +201,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = 0;
             motorRight.Power = power * reverseMotorOrientationMultiplier * 2;
+            Status = ComponentStatus.Action;
         }
 
         private void TurnRight(float power)
@@ -217,6 +210,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier * 2;
             motorRight.Power = 0;
+            Status = ComponentStatus.Action;
         }
 
         private void RotateLeft(float power)
@@ -225,6 +219,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
             motorRight.Power = power * reverseMotorOrientationMultiplier;
+            Status = ComponentStatus.Action;
         }
 
         private void RotateRight(float power)
@@ -233,6 +228,7 @@ namespace Peripherals
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier;
             motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;
+            Status = ComponentStatus.Action;
         }
 
         public void RefreshStatus()

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Enumerations
 {
-    public enum ComponentSatus { Error, Ready, Action, UnInitialised };
+    public enum ComponentStatus { Error, Ready, Action, UnInitialised };
+    public enum StatusMessageTypes { Debug, Important, Error };
 
 }

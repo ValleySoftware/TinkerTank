@@ -22,21 +22,21 @@ namespace Utilities.Power
             _appRoot = appRoot;
         }
 
-        public ComponentSatus Init(IPin motorPowerRelayPin)
+        public ComponentStatus Init(IPin motorPowerRelayPin)
         {
             _appRoot.DebugDisplayText("Init Power Controller");
 
-            Status = ComponentSatus.UnInitialised;
+            Status = ComponentStatus.UnInitialised;
 
             try
             {
                 motorPowerRelayPort = MeadowApp.Device.CreateDigitalOutputPort(motorPowerRelayPin);
-                Status = ComponentSatus.Ready;
                 _appRoot.DebugDisplayText("Power Controller Ready");
+                Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
             {
-                Status = ComponentSatus.Error;
+                Status = ComponentStatus.Error;
             }
 
             return Status;
@@ -47,14 +47,25 @@ namespace Utilities.Power
             throw new NotImplementedException();
         }
 
+        public void Connect()
+        {
+            motorPowerRelayPort.State = true;
+        }
+
+        public void Disconnect()
+        {
+            motorPowerRelayPort.State = false;
+        }
+
         public void Test()
         {
             while (true)
             {
-                motorPowerRelayPort.State = false;
+                Connect();
+                
                 Thread.Sleep(5000);
 
-                motorPowerRelayPort.State = true;
+                Disconnect();
                 Thread.Sleep(5000);
             }
         }
