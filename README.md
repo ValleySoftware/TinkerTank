@@ -25,33 +25,26 @@
 
 [Roadmap](#roadmap)
 
-[Authors](#authors)
+[Issues](#issues)
+
+[Author](#author)
 
 # Features
 
-*   
+Open source development.
+Using the C# language on .NET.
+Real-time, ongoing development as I learn.
+<a href="https://www.wildernesslabs.co/developers">See the Wilderness Labs Meadow hardware here</a>.
     
-## Clone Repository
-
-####   Using Git
-
-```bash
-git clone # Your Repository Url With The .git Ending
-```
-
-#### Github Cli
-
-```bash
-gh repo clone # Your Username/Your Repo Name
-```
-
 # Roadmap
 
-* Include Your Rodmap Here
+Coming soon...
 
-* All Issues On Github
+# Issues
+Please report any/all issues here, on Github.
+Beware; this code not in any way guaranteed safe or even functional.  This is a learning project.  All use is at your own risk.
 
-# Authors
+# Author
 
 | ![RobbyRobbyRobby](https://avatars.githubusercontent.com/u/25928318?s=100) |
 | :----------------------------------------------------------: |
