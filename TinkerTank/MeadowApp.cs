@@ -1,4 +1,6 @@
 ﻿using Base;
+using Communications;
+using Display;
 using Enumerations;
 using Meadow;
 using Meadow.Devices;
@@ -17,6 +19,8 @@ namespace TinkerTank
     {
         public IMovementInterface movementController;
         public PowerControl powerController;
+        public LCDDisplay_ST7789 lcd;
+        public BlueTooth communications;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -54,6 +58,10 @@ namespace TinkerTank
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D00);
+
+            communications = new BlueTooth(this);
+            TBObjects.Add(communications);
+            //communications.Init();
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -89,7 +97,7 @@ namespace TinkerTank
                 {
                     case ComponentStatus.Error:
                         redLED.State = true;
-                        powerController.Disconnect();
+                        //powerController.Disconnect();
                         break;
                     case ComponentStatus.Action:
                         blueLED.State = true;
@@ -105,7 +113,7 @@ namespace TinkerTank
             }
         }
 
-        public void DebugDisplayText(string textToShow, StatusMessageTypes statusType = StatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
+        public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
         {
             Console.WriteLine(textToShow);
 

@@ -7,9 +7,7 @@
     <UserSecretsId>07faa377-8eec-4124-b472-a804a73f25af</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Communications\" />
     <Folder Include="Properties\" />
-    <Folder Include="Servos\" />
     <Folder Include="Sensors\" />
   </ItemGroup>
   <ItemGroup>
@@ -21,5 +19,18 @@
     <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.1.0" />
     <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.2" />
     <PackageReference Include="SimpleJpegDecoder" Version="0.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Secrets.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Secrets.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Secrets.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Secrets.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

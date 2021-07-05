@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 
 namespace Peripherals
 {
-    public enum DriveMethod { TwoWheelDrive, FourWheelDrive, DualTracks }
-    public enum Direction { Forward, Backwards, TurnLeft, TurnRight, RotateLeft, RotateRight }
 
     public interface IMovementInterface: ITinkerBase
     {
