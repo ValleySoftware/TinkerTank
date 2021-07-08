@@ -56,6 +56,13 @@ namespace Communications
                             uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300dd",
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            ),
+                        new CharacteristicString(
+                            "Power",
+                            maxLength: 10,
+                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300ee",
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             )
                         )
                     );
@@ -78,6 +85,8 @@ namespace Communications
 
                         try
                         {
+                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + receivedData);
+
                             if (c.Name.Equals("Stop"))
                             {
                                 _appRoot.movementController.Stop();
@@ -85,7 +94,6 @@ namespace Communications
 
                             if (c.Name.Equals("Move"))
                             {
-                                _appRoot.DebugDisplayText("Received MOVE with " + receivedData);
 
                                 switch (receivedData)
                                 {
@@ -116,15 +124,26 @@ namespace Communications
                                 }
                             }
 
-
                             if (c.Name.Equals("Pan"))
                             {
-                                _appRoot.DebugDisplayText("Received PAN with " + receivedData);
+                                
                             }
 
                             if (c.Name.Equals("Tilt"))
                             {
-                                _appRoot.DebugDisplayText("Received TILT with " + receivedData);
+                                
+                            }
+
+                            if (c.Name.Equals("Power"))
+                            {
+                                if (receivedData == 1)
+                                {
+                                    _appRoot.powerController.Connect();
+                                }
+                                else
+                                {
+                                    _appRoot.powerController.Disconnect();
+                                }
                             }
 
                             Status = ComponentStatus.Ready;

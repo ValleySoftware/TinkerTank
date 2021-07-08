@@ -56,12 +56,17 @@ namespace TinkerTank
             DebugDisplayText("start power controller");
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
-            powerController.Init(Device.Pins.D00);
+            powerController.Init(Device.Pins.D04);
 
             DebugDisplayText("start communications controller");
             communications = new BlueTooth(this);
             TBObjects.Add(communications);
             communications.Init();
+
+            DebugDisplayText("start lcd");
+            lcd = new LCDDisplay_ST7789(this);
+            TBObjects.Add(lcd);
+            lcd.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);
@@ -85,6 +90,7 @@ namespace TinkerTank
                 if (element.Status != ComponentStatus.Ready)
                 {
                     DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.");
+                    powerController.Disconnect();
                     break;
                 }
             }
@@ -124,10 +130,10 @@ namespace TinkerTank
         {
             Console.WriteLine(textToShow);
 
-            //if (!ConsoleOnly && lcd != null)
-            //{
-            //    lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
-            //}            
+            if (!ConsoleOnly && lcd != null)
+            {
+                lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+            }            
         }
     }
 }
