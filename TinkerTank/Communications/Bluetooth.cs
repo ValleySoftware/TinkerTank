@@ -21,7 +21,6 @@ namespace Communications
 
         public ComponentStatus Init()
         {
-
             Status = ComponentStatus.UnInitialised; 
 
             try
@@ -61,7 +60,7 @@ namespace Communications
                         )
                     );
 
-                _appRoot.DebugDisplayText("BT1 Service characteristics registered", DisplayStatusMessageTypes.Important);
+                _appRoot.DebugDisplayText("BT Service registered", DisplayStatusMessageTypes.Important);
 
                 MeadowApp.Device.InitCoprocessor();
                 MeadowApp.Device.BluetoothAdapter.StartBluetoothServer(definition);
@@ -137,6 +136,10 @@ namespace Communications
                         }
                     };
                 }
+
+                _appRoot.DebugDisplayText("BT receivers registered", DisplayStatusMessageTypes.Important);
+
+                Status = ComponentStatus.Ready;
             }
             catch (Exception bex)
             {

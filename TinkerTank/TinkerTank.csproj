@@ -1,22 +1,25 @@
 ﻿<Project Sdk="Meadow.Sdk/1.1.0">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>App</AssemblyName>
     <UserSecretsId>07faa377-8eec-4124-b472-a804a73f25af</UserSecretsId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Communications\WiFi.cs" />
+  </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="Sensors\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Meadow.Foundation" Version="0.25.0" />
-    <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.44" />
-    <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Pca9685" Version="0.1.36" />
-    <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.32" />
-    <PackageReference Include="Meadow.Foundation.Servo" Version="0.8.42" />
-    <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.1.0" />
+    <PackageReference Include="Meadow.F7" Version="0.24.6" />
+    <PackageReference Include="Meadow.Foundation" Version="0.27.0" />
+    <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.45" />
+    <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Pca9685" Version="0.1.37" />
+    <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.33" />
     <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.2" />
     <PackageReference Include="SimpleJpegDecoder" Version="0.3.0" />
   </ItemGroup>

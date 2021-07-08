@@ -8,6 +8,7 @@ using Meadow.Foundation;
 using Meadow.Foundation.Leds;
 using Meadow.Hardware;
 using Peripherals;
+using Servos;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace TinkerTank
         public PowerControl powerController;
         public LCDDisplay_ST7789 lcd;
         public BlueTooth communications;
+        public PCA9685 i2CPWMController;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -39,29 +41,33 @@ namespace TinkerTank
         {
             TBObjects = new List<TinkerBase>();
 
-            _statusPoller = new System.Timers.Timer(2000);
-            _statusPoller.Elapsed += _statusPoller_Elapsed;
-            _statusPoller.AutoReset = true;
-            _statusPoller.Enabled = true;
-
             //Indicators to see what's going on
             blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
             greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
             redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
+            DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
             TBObjects.Add((TinkerBase)movementController);
             movementController.Init(
                 Device.Pins.D02, Device.Pins.D03, Device.Pins.D04,
                 Device.Pins.D09, Device.Pins.D10, Device.Pins.D11);
 
+            DebugDisplayText("start power controller");
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D00);
 
+            DebugDisplayText("start communications controller");
             communications = new BlueTooth(this);
             TBObjects.Add(communications);
-            //communications.Init();
+            communications.Init();
+
+            DebugDisplayText("Begining regular polling");
+            _statusPoller = new System.Timers.Timer(2000);
+            _statusPoller.Elapsed += _statusPoller_Elapsed;
+            _statusPoller.AutoReset = true;
+            _statusPoller.Enabled = true;
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -71,13 +77,14 @@ namespace TinkerTank
 
         public void RefreshStatus()
         {
-            DebugDisplayText("Checking Component Status");
+            //DebugDisplayText("Checking Component Status");
             foreach (var element in TBObjects)
             {
                 SetStatus(element.Status);
 
                 if (element.Status != ComponentStatus.Ready)
                 {
+                    DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.");
                     break;
                 }
             }

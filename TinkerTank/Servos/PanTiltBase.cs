@@ -1,22 +1,17 @@
 ﻿using Base;
-using Meadow.Foundation.Servos;
-using Meadow.Hardware;
+//using Meadow.Foundation.Servos;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TinkerTank;
 
 namespace Servos
 {
     public class PanTiltBase: TinkerBase, ITinkerBase
     {
-        IPwmPort Pca9685Servo0;
-        IPwmPort Pca9685Servo1;
+        Meadow.Hardware.IPwmPort Pca9685Servo0;
+        Meadow.Hardware.IPwmPort Pca9685Servo1;
 
-        public Servo servo0;
-        public Servo servo1;
+        //public Servo servo0;
+        //public Servo servo1;
 
 
         public PanTiltBase(MeadowApp appRoot)
@@ -26,11 +21,11 @@ namespace Servos
 
         public void Init()
         {
-            //Pca9685Servo0 = _appRoot.pCa9685.pca9685.CreatePwmPort(0, 0.05f);
+            /*Pca9685Servo0 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(0, 0.05f);
             var servoConfig = NamedServoConfigs.SG90;
             servo0 = new Servo(Pca9685Servo0, servoConfig);
-            //Pca9685Servo1 = _appRoot.pCa9685.pca9685.CreatePwmPort(1, 0.05f);
-            servo1 = new Servo(Pca9685Servo1, servoConfig);
+            Pca9685Servo1 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(1, 0.05f);
+            servo1 = new Servo(Pca9685Servo1, servoConfig);*/
         }
 
         public void PanLeft(int newAngle = 90)
