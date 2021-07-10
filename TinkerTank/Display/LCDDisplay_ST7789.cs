@@ -34,28 +34,47 @@ namespace Display
             }
 
         public void AddNewLineOfText(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false)
+        {
+            if (Log == null)
             {
-                if (Log == null)
-                {
-                    Log = new List<StatusMessage>();
-                }
-
-                if (clearFirst)
-                {
-                    Log.Clear();
-                }
-
-                Log.Insert(0, new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
-                UpdateDisplay();
-
+                Log = new List<StatusMessage>();
             }
 
-        private void UpdateDisplay()
+            if (clearFirst)
             {
-                graphics.Clear();
+                Log.Clear();
+            }
 
-                int i = 0;
+            Log.Insert(0, new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
+            UpdateDisplay(clearFirst);
 
+        }
+
+        private void UpdateDisplay(bool singleMessage)
+        {
+            graphics.Clear();
+
+            int i = 0;
+
+
+            if (singleMessage)
+            {
+                if (Log.Count > 0)
+                {
+                    var msg = SplitInParts(Log[Log.Count - 1].Text, 19);
+                    var noOfLinesAvailable = Math.Min(NoOfLinesToShow, msg.Count);
+                    --noOfLinesAvailable;
+
+                    while (i <= noOfLinesAvailable)
+                    {
+                        //Console.WriteLine(msg[i]);  
+                        graphics.DrawText(0, 24 * i, msg[i], StatusMessage.statusColours[(int)Log[Log.Count - 1].StatusType], GraphicsLibrary.ScaleFactor.X1);                        
+                        i++;
+                    }
+                }
+            }
+            else
+            {
                 var noOfLinesAvailable = Math.Min(NoOfLinesToShow, Log.Count);
                 --noOfLinesAvailable;
 
@@ -64,13 +83,45 @@ namespace Display
                     graphics.DrawText(0, 24 * i, Log[i].Text, StatusMessage.statusColours[(int)Log[i].StatusType], GraphicsLibrary.ScaleFactor.X1);
                     i++;
                 }
-
-                graphics.Show();
             }
+
+            graphics.Show();
+        }
+
+        private static List<string> SplitInParts(string s, int partLength)
+        {
+            var l = new List<string>();
+
+            var currentCharIndex = 0;
+            try
+            {
+                while (s.Length - 1 > currentCharIndex)
+                {
+                    int lineLength = 0;
+                    if (currentCharIndex + partLength > s.Length)
+                    {
+                        lineLength = s.Length - currentCharIndex;
+                    }
+                    else
+                    {
+                        lineLength = partLength;
+                    }
+                    l.Add(s.Substring(currentCharIndex, lineLength));
+
+                    currentCharIndex = currentCharIndex + lineLength;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("exception hit splitting string.");
+            }
+                return l;
+        }
+
 
         public void RefreshDisplay()
             {
-                UpdateDisplay();
+                UpdateDisplay(false);
             }
 
         public void Init()

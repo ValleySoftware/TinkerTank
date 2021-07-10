@@ -89,7 +89,7 @@ namespace TinkerTank
 
                 if (element.Status != ComponentStatus.Ready)
                 {
-                    DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.");
+                    DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error, true);
                     powerController.Disconnect();
                     break;
                 }
@@ -122,7 +122,7 @@ namespace TinkerTank
                         break;
                 }
 
-                DebugDisplayText("Status set to: " + newStatus.ToString());
+                DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
             }
         }
 

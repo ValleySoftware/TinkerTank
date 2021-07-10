@@ -78,14 +78,14 @@ namespace Communications
                 {
                     characteristic.ValueSet += (c, d) =>
                     {
-                        _appRoot.DebugDisplayText($"HEY, I JUST GOT THIS BLE DATA for Characteristic '{c.Name}' of type {d.GetType().Name}: {d}");
+                        
                         int receivedData = -1;
 
                         receivedData = Convert.ToInt32(d);
 
                         try
                         {
-                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + receivedData);
+                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + receivedData, DisplayStatusMessageTypes.Debug, true);
 
                             if (c.Name.Equals("Stop"))
                             {
@@ -119,7 +119,6 @@ namespace Communications
                                         _appRoot.movementController.Move(Direction.RotateRight, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
                                         break;
                                     default:
-                                        _appRoot.DebugDisplayText("Received STOP with " + receivedData);
                                         break;
                                 }
                             }
@@ -151,7 +150,7 @@ namespace Communications
                         catch (Exception ex)
                         {
                             Status = ComponentStatus.Error;
-                            _appRoot.DebugDisplayText("BT Error " + ex.Message);
+                            _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error, true);
                         }
                     };
                 }
