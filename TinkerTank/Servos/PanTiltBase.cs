@@ -31,7 +31,7 @@ namespace Servos
 
         public void PanLeft(int newAngle = 90)
         {
-            servo0.RotateTo(newAngle);
+            servo0.RotateTo(new Meadow.Units.Angle(newAngle));
         }
 
         public void RefreshStatus()
