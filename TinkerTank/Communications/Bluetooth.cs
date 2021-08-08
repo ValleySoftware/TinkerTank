@@ -12,8 +12,6 @@ namespace Communications
 {
     public class BlueTooth : TinkerBase, ITinkerBase
     {
-        private float testMotorSpeed = 0.75f;
-
         public BlueTooth(MeadowApp appRoot)
         {
             _appRoot = appRoot;
@@ -92,6 +90,8 @@ namespace Communications
                                 _appRoot.movementController.Stop();
                             }
 
+                            var testMotorDuration = new TimeSpan(0, 0, 0, 0, 250);
+
                             if (c.Name.Equals("Move"))
                             {
 
@@ -101,22 +101,22 @@ namespace Communications
                                         _appRoot.movementController.Stop();
                                         break;
                                     case (int)Direction.Forward:
-                                        _appRoot.movementController.Move(Direction.Forward, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.Forward, 0, testMotorDuration);
                                         break;
                                     case (int)Direction.Backwards:
-                                        _appRoot.movementController.Move(Direction.Backwards, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.Backwards, 0, testMotorDuration);
                                         break;
                                     case (int)Direction.TurnLeft:
-                                        _appRoot.movementController.Move(Direction.TurnLeft, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.TurnLeft, 0, testMotorDuration);
                                         break;
                                     case (int)Direction.TurnRight:
-                                        _appRoot.movementController.Move(Direction.TurnRight, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.TurnRight, 0, testMotorDuration);
                                         break;
                                     case (int)Direction.RotateLeft:
-                                        _appRoot.movementController.Move(Direction.RotateLeft, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.RotateLeft, 0, testMotorDuration);
                                         break;
                                     case (int)Direction.RotateRight:
-                                        _appRoot.movementController.Move(Direction.RotateRight, testMotorSpeed, new TimeSpan(0, 0, 0, 0, 500));
+                                        _appRoot.movementController.Move(Direction.RotateRight, 0, testMotorDuration);
                                         break;
                                     default:
                                         break;
@@ -135,13 +135,37 @@ namespace Communications
 
                             if (c.Name.Equals("Power"))
                             {
+                                switch (receivedData)
+                                {
+                                    case 0: _appRoot.powerController.Disconnect(); break;
+                                    case 1: _appRoot.powerController.Connect(); break;
+                                    default:
+                                        {
+                                            if (receivedData >= 100)
+                                            {
+                                                _appRoot.movementController.SetDefaultPower(100);
+                                            }
+                                            else
+                                            {
+                                                if (receivedData <= 2)
+                                                {
+                                                    _appRoot.movementController.SetDefaultPower(0);
+                                                }
+                                                else
+                                                {
+                                                    _appRoot.movementController.SetDefaultPower(receivedData);
+                                                }
+                                            }
+                                        }
+                                        break;
+                                }
                                 if (receivedData == 1)
                                 {
-                                    _appRoot.powerController.Connect();
+                                    
                                 }
                                 else
                                 {
-                                    _appRoot.powerController.Disconnect();
+                                    
                                 }
                             }
 

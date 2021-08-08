@@ -20,6 +20,7 @@ namespace Peripherals
         private HBridgeMotor motorRight;
         private bool _reverseMotorOrientation = false;
         private int reverseMotorOrientationMultiplier = 1;
+        private int _defaultPower = 50;
 
         public TrackControl(MeadowApp appRoot)
         {
@@ -66,6 +67,25 @@ namespace Peripherals
         public DriveMethod driveMethod { get => _driveMethod; }
 
 
+        public void SetDefaultPower(int defaultPower)
+        {
+            if (defaultPower > 100)
+            {
+                _defaultPower = 100;
+            }
+            else
+            {
+                if (defaultPower <=0)
+                {
+                    _defaultPower = 0;
+                }
+                else
+                {
+                    _defaultPower = defaultPower;
+                }
+            }
+        }
+
 
         public bool ReverseMotorOrientation
         {
@@ -86,6 +106,10 @@ namespace Peripherals
 
         public void Move(Direction direction, float power, TimeSpan? movementDuration = null)
         {
+            if (power == 0)
+            {
+                power = (float)_defaultPower / (float)100;
+            }
 
             //if (_appRoot.HasDrivePower)
             {
@@ -135,7 +159,7 @@ namespace Peripherals
         {
             //if (_appRoot.HasDrivePower)
             {
-                motorRight.IsNeutral = true;
+                motorLeft.IsNeutral = true;
                 motorRight.IsNeutral = true;
                 motorLeft.Power = leftPower * reverseMotorOrientationMultiplier;
                 motorRight.Power = rightPower * reverseMotorOrientationMultiplier;
@@ -149,7 +173,7 @@ namespace Peripherals
         {
             //if (_appRoot.HasDrivePower)
             {
-                motorRight.IsNeutral = true;
+                motorLeft.IsNeutral = true;
                 motorRight.IsNeutral = true;
                 motorLeft.Power = leftFrontPower * reverseMotorOrientationMultiplier;
                 motorRight.Power = rightFrontPower * reverseMotorOrientationMultiplier;
@@ -161,7 +185,7 @@ namespace Peripherals
 
         public void Stop()
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = 0;
             motorRight.Power = 0;
@@ -170,7 +194,7 @@ namespace Peripherals
 
         public void BreakAndHold()
         {
-            motorRight.IsNeutral = false;
+            motorLeft.IsNeutral = false;
             motorRight.IsNeutral = false;
             motorLeft.Power = 0;
             motorRight.Power = 0;
@@ -179,7 +203,7 @@ namespace Peripherals
 
         private void Forward(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier;
             motorRight.Power = power * reverseMotorOrientationMultiplier;
@@ -188,7 +212,7 @@ namespace Peripherals
 
         private void Backwards(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
             motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;
@@ -197,7 +221,7 @@ namespace Peripherals
 
         private void TurnLeft(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = 0;
             motorRight.Power = power * reverseMotorOrientationMultiplier * 2;
@@ -206,7 +230,7 @@ namespace Peripherals
 
         private void TurnRight(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier * 2;
             motorRight.Power = 0;
@@ -215,7 +239,7 @@ namespace Peripherals
 
         private void RotateLeft(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
             motorRight.Power = power * reverseMotorOrientationMultiplier;
@@ -224,7 +248,7 @@ namespace Peripherals
 
         private void RotateRight(float power)
         {
-            motorRight.IsNeutral = true;
+            motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
             motorLeft.Power = power * reverseMotorOrientationMultiplier;
             motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;

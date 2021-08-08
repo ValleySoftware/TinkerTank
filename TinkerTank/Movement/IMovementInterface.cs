@@ -15,6 +15,7 @@ namespace Peripherals
         void Move(Direction direction, float power, TimeSpan? movementDuration = null);
         bool MoveManual(float leftPower, float rightPower, TimeSpan? movementDuration = null);
         bool MoveManual(float leftFrontPower, float rightFrontPower, float leftRearPower, float rightRearPower, TimeSpan? movementDuration = null);
+        void SetDefaultPower(int defaultPower);
         void Stop();
 
     }

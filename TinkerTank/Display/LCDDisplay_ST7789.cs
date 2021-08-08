@@ -25,7 +25,7 @@ namespace Display
     {
         GraphicsLibrary graphics;
         St7789 display;
-        static int NoOfLinesToShow = 11;
+        static int NoOfLinesOnDisplay = 11;
         private List<StatusMessage> Log;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
@@ -56,32 +56,31 @@ namespace Display
 
             int i = 0;
 
-
-            if (singleMessage)
+            foreach (var logElement in Log)
             {
-                if (Log.Count > 0)
-                {
-                    var msg = SplitInParts(Log[Log.Count - 1].Text, 19);
-                    var noOfLinesAvailable = Math.Min(NoOfLinesToShow, msg.Count);
-                    --noOfLinesAvailable;
+                var logSplitIntoLines = SplitInParts(logElement.Text, 19);
 
-                    while (i <= noOfLinesAvailable)
+                foreach (var lineOfLog in logSplitIntoLines)
+                {
+                    //Console.WriteLine(lineOfLog);
+                    graphics.DrawText(0, 24 * i, lineOfLog, StatusMessage.statusColours[(int)logElement.StatusType], GraphicsLibrary.ScaleFactor.X1);
+                    i++;
+
+                    if (i > NoOfLinesOnDisplay)
                     {
-                        //Console.WriteLine(msg[i]);  
-                        graphics.DrawText(0, 24 * i, msg[i], StatusMessage.statusColours[(int)Log[Log.Count - 1].StatusType], GraphicsLibrary.ScaleFactor.X1);                        
-                        i++;
+                        break;
                     }
                 }
-            }
-            else
-            {
-                var noOfLinesAvailable = Math.Min(NoOfLinesToShow, Log.Count);
-                --noOfLinesAvailable;
 
-                while (i < noOfLinesAvailable)
+                if (i > NoOfLinesOnDisplay)
                 {
-                    graphics.DrawText(0, 24 * i, Log[i].Text, StatusMessage.statusColours[(int)Log[i].StatusType], GraphicsLibrary.ScaleFactor.X1);
-                    i++;
+                    break;
+                }
+
+                if (singleMessage)
+                {
+                    Console.WriteLine("singleMessageRequested");
+                    break;
                 }
             }
 

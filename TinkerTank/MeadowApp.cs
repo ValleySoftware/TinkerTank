@@ -12,6 +12,8 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using TinkerTank.Sensors;
 using Utilities.Power;
 
 namespace TinkerTank
@@ -23,6 +25,7 @@ namespace TinkerTank
         public LCDDisplay_ST7789 lcd;
         public BlueTooth communications;
         public PCA9685 i2CPWMController;
+        public VL6180xDistance distance;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -56,7 +59,7 @@ namespace TinkerTank
             DebugDisplayText("start power controller");
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
-            powerController.Init(Device.Pins.D04);
+            powerController.Init(Device.Pins.D05);
 
             DebugDisplayText("start communications controller");
             communications = new BlueTooth(this);
@@ -67,6 +70,11 @@ namespace TinkerTank
             lcd = new LCDDisplay_ST7789(this);
             TBObjects.Add(lcd);
             lcd.Init();
+
+            DebugDisplayText("start distance sensor");
+            distance = new VL6180xDistance(this);
+            TBObjects.Add(distance);
+            distance.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);
@@ -110,19 +118,21 @@ namespace TinkerTank
                 {
                     case ComponentStatus.Error:
                         redLED.State = true;
-                        //powerController.Disconnect();
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error, false);
                         break;
                     case ComponentStatus.Action:
                         blueLED.State = true;
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
                         break;
                     case ComponentStatus.Ready:
                         greenLED.State = true;
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
                         break;
                     default:
                         break;
                 }
 
-                DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
+                
             }
         }
 
