@@ -146,7 +146,7 @@ namespace Communications
 
                                         int direction = Convert.ToInt32(sp[0]);
                                         int power = Convert.ToInt32(sp[1]);
-                                        int duration = Convert.ToInt32(sp[2]);
+                                        double duration = Convert.ToDouble(sp[2]);
                                         
                                         _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromSeconds(duration));
                                     }

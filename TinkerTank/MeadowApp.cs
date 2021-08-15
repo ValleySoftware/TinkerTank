@@ -101,7 +101,8 @@ namespace TinkerTank
             {
                 SetStatus(element.Status);
 
-                if (element.Status != ComponentStatus.Ready)
+                if (element.Status == ComponentStatus.Error ||
+                    element.Status == ComponentStatus.UnInitialised)
                 {
                     DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error, true);
                     powerController.Disconnect();

@@ -146,7 +146,6 @@ namespace Peripherals
                     {
                         Thread.Sleep((int)movementDuration.Value.TotalMilliseconds);
                         Stop();
-                        Status = ComponentStatus.Ready;
 
                     });
 
