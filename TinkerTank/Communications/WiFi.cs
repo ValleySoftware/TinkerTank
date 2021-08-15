@@ -17,7 +17,7 @@ namespace Communications
 {
     public class WiFiComms : RequestHandlerBase, ITinkerBase
     {
-        private float testMotorSpeed = 0.75f;
+        private int testMotorSpeed = 75;
 
         protected ComponentStatus _status = ComponentStatus.UnInitialised;
         protected MeadowApp _appRoot;

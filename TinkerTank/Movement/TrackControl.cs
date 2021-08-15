@@ -104,11 +104,11 @@ namespace Peripherals
             }
         }
 
-        public void Move(Direction direction, float power, TimeSpan? movementDuration = null)
+        public void Move(Direction direction, int power, TimeSpan? movementDuration = null)
         {
             if (power == 0)
             {
-                power = (float)_defaultPower / (float)100;
+                power = _defaultPower;
             }
 
             //if (_appRoot.HasDrivePower)

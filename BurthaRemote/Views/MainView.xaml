@@ -1,0 +1,28 @@
+﻿<Page
+    x:Class="BurthaRemote.Views.MainView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BurthaRemote"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:connectivity="using:Microsoft.Toolkit.Uwp.Connectivity"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Content="Scan" x:Name="scanForBluetoothButton" Click="scanForBluetoothButton_Click"/>
+        <ListView ItemsSource="{x:Bind bluetoothDevices,Mode=OneWay}" Grid.Row="1">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="connectivity:ObservableBluetoothLEDevice">
+                    <Grid>
+                        <TextBlock Text="{x:Bind Name , Mode=OneWay}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

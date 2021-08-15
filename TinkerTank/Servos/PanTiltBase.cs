@@ -22,10 +22,10 @@ namespace Servos
 
         public void Init()
         {
-            Pca9685Servo0 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(0, 0.05f);
+            //Pca9685Servo0 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(0, 0.05f);
             var servoConfig = NamedServoConfigs.SG90;
             servo0 = new Servo(Pca9685Servo0, servoConfig);
-            Pca9685Servo1 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(1, 0.05f);
+            //Pca9685Servo1 = _appRoot.i2CPWMController.pca9685.CreatePwmPort(1, 0.05f);
             servo1 = new Servo(Pca9685Servo1, servoConfig);
         }
 

@@ -27,7 +27,7 @@ namespace Communications
                     "MEADOWBOT",
                     new Service(
                         "ServiceA",
-                        203,
+                        42,
                         new CharacteristicInt32(
                             "Stop",
                             uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300aa",
@@ -42,16 +42,9 @@ namespace Communications
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
                         new CharacteristicString(
-                            "Pan",
+                            "PanTilt",
                             maxLength: 10,
                             uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300cc",
-                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
-                            ),
-                        new CharacteristicString(
-                            "Tilt",
-                            maxLength: 10,
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300dd",
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
@@ -59,6 +52,13 @@ namespace Communications
                             "Power",
                             maxLength: 10,
                             uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300ee",
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            ),
+                        new CharacteristicString(
+                            "AdvancedMove",
+                            maxLength: 10,
+                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300ff",
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             )
@@ -76,14 +76,23 @@ namespace Communications
                 {
                     characteristic.ValueSet += (c, d) =>
                     {
-                        
-                        int receivedData = -1;
 
-                        receivedData = Convert.ToInt32(d);
+                        int receivedData = -1;
+                        string advancedData = string.Empty;
 
                         try
                         {
-                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + receivedData, DisplayStatusMessageTypes.Debug, true);
+                            advancedData = d.ToString();
+                            receivedData = Convert.ToInt32(d);
+                        }
+                        catch (Exception dataEx)
+                        {
+
+                        }
+
+                        try
+                        {
+                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, true);
 
                             if (c.Name.Equals("Stop"))
                             {
@@ -100,22 +109,22 @@ namespace Communications
                                     case -1:
                                         _appRoot.movementController.Stop();
                                         break;
-                                    case (int)Direction.Forward:
+                                    case (int)Direction.Forward: //0
                                         _appRoot.movementController.Move(Direction.Forward, 0, testMotorDuration);
                                         break;
-                                    case (int)Direction.Backwards:
+                                    case (int)Direction.Backwards://1
                                         _appRoot.movementController.Move(Direction.Backwards, 0, testMotorDuration);
                                         break;
-                                    case (int)Direction.TurnLeft:
+                                    case (int)Direction.TurnLeft://2
                                         _appRoot.movementController.Move(Direction.TurnLeft, 0, testMotorDuration);
                                         break;
-                                    case (int)Direction.TurnRight:
+                                    case (int)Direction.TurnRight://3
                                         _appRoot.movementController.Move(Direction.TurnRight, 0, testMotorDuration);
                                         break;
-                                    case (int)Direction.RotateLeft:
+                                    case (int)Direction.RotateLeft://4
                                         _appRoot.movementController.Move(Direction.RotateLeft, 0, testMotorDuration);
                                         break;
-                                    case (int)Direction.RotateRight:
+                                    case (int)Direction.RotateRight://5
                                         _appRoot.movementController.Move(Direction.RotateRight, 0, testMotorDuration);
                                         break;
                                     default:
@@ -123,14 +132,60 @@ namespace Communications
                                 }
                             }
 
-                            if (c.Name.Equals("Pan"))
+                            if (c.Name.Equals("AdvancedMove"))
                             {
-                                
+                                //movementDirection-powerPercent-durationInseconds
+                                //00-000-000
+
+                                var sp = advancedData.Split("-");
+
+                                if (sp.Count() == 3)
+                                {
+                                    try
+                                    {
+
+                                        int direction = Convert.ToInt32(sp[0]);
+                                        int power = Convert.ToInt32(sp[1]);
+                                        int duration = Convert.ToInt32(sp[2]);
+                                        
+                                        _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromSeconds(duration));
+                                    }
+                                    catch (Exception decipherAdvancedMoveEx)
+                                    {
+
+                                    }
+                                }
                             }
 
-                            if (c.Name.Equals("Tilt"))
+                            if (c.Name.Equals("PanTilt"))
                             {
-                                
+                                //Device-PanTo-TiltTo
+                                //00-000-000
+
+                                try
+                                {
+                                    var sp = advancedData.Split("-");
+
+                                    if (sp.Count() == 3)
+                                    {
+
+                                        int device = Convert.ToInt32(sp[0]);
+                                        int pan = Convert.ToInt32(sp[1]);
+                                        int tilt = Convert.ToInt32(sp[2]);
+
+                                        _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString(), DisplayStatusMessageTypes.Important);
+
+                                        if (device == 0)
+                                        {
+                                            _appRoot.i2CPWMController.ServoRotateTo(0, pan);
+                                            _appRoot.i2CPWMController.ServoRotateTo(1, tilt);
+                                        }
+                                    }
+                                }
+                                catch (Exception decipherPanTiltEx)
+                                {
+
+                                }
                             }
 
                             if (c.Name.Equals("Power"))

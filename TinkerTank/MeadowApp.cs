@@ -49,6 +49,12 @@ namespace TinkerTank
             greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
             redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
+
+            DebugDisplayText("start lcd");
+            lcd = new LCDDisplay_ST7789(this);
+            TBObjects.Add(lcd);
+            lcd.Init();
+
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
             TBObjects.Add((TinkerBase)movementController);
@@ -66,15 +72,15 @@ namespace TinkerTank
             TBObjects.Add(communications);
             communications.Init();
 
-            DebugDisplayText("start lcd");
-            lcd = new LCDDisplay_ST7789(this);
-            TBObjects.Add(lcd);
-            lcd.Init();
+            //DebugDisplayText("start distance sensor");
+            //distance = new VL6180xDistance(this);
+            //TBObjects.Add(distance);
+            //distance.Init();
 
-            DebugDisplayText("start distance sensor");
-            distance = new VL6180xDistance(this);
-            TBObjects.Add(distance);
-            distance.Init();
+            DebugDisplayText("start pca9986");
+            i2CPWMController = new PCA9685(this);
+            TBObjects.Add(i2CPWMController);
+            i2CPWMController.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);
