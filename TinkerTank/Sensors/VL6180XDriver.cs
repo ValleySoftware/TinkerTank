@@ -18,65 +18,46 @@ namespace TinkerTank.Sensors
         //==== events
         public event EventHandler<IChangeResult<Length>> DistanceUpdated = delegate { };
 
-        //==== internals
-        protected const byte RangeStart = 0x00;
-        protected const byte SystemThreahHigh = 0x0C;
-        protected const byte SystemThreshLow = 0x0E;
-        protected const byte SystemSequenceConfig = 0x01;
-        protected const byte SystemRangeConfig = 0x09;
-        protected const byte SystemIntermeasurementPeriod = 0x04;
-        protected const byte SystemInterruptConfigGpio = 0x0A;
-        protected const byte GpioHvMuxActiveHigh = 0x84;
-        protected const byte SystemInterruptClear = 0x0B;
-        protected const byte ResultInterruptStatus = 0x13;
-        protected const byte ResultRangeStatus = 0x14;
-        protected const byte ResultCoreAmbientWindowEventsRtn = 0xBC;
-        protected const byte ResultCoreRangingTotalEventsRtn = 0xC0;
-        protected const byte ResultCoreAmbientWindowEventsRef = 0xD0;
-        protected const byte ResultCoreRangingTotalEventsRef = 0xD4;
-        protected const byte ResultPeakSignalRateRef = 0xB6;
-        protected const byte AlgoPartToPartRangeOffsetMm = 0x28;
-        protected const byte I2CSlaveDeviceAddress = 0x8A;
-        protected const byte MsrcConfigControl = 0x60;
-        protected const byte PreRangeConfigMinSnr = 0x27;
-        protected const byte PreRangeConfigValidPhaseLow = 0x56;
-        protected const byte PreRangeConfigValidPhaseHigh = 0x57;
-        protected const byte PreRangeMinCountRateRtnLimit = 0x64;
-        protected const byte FinalRangeConfigMinSnr = 0x67;
-        protected const byte FinalRangeConfigValidPhaseLow = 0x47;
-        protected const byte FinalRangeConfigValidPhaseHigh = 0x48;
-        protected const byte FinalRangeConfigMinCountRateRtnLimit = 0x44;
-        protected const byte PreRangeConfigSigmaThreshHi = 0x61;
-        protected const byte PreRangeConfigSigmaThreshLo = 0x62;
-        protected const byte PreRangeConfigVcselPeriod = 0x50;
-        protected const byte PreRangeConfigTimeoutMacropHi = 0x51;
-        protected const byte PreRangeConfigTimeoutMacropLo = 0x52;
-        protected const byte SystemHistogramBin = 0x81;
-        protected const byte HistogramConfigInitialPhaseSelect = 0x33;
-        protected const byte HistogramConfigReadoutCtrl = 0x55;
-        protected const byte FinalRangeConfigVcselPeriod = 0x70;
-        protected const byte FinalRangeConfigTimeoutMacropHi = 0x71;
-        protected const byte FinalRangeConfigTimeoutMacropLo = 0x72;
-        protected const byte CrosstalkCompensationPeakRateMcps = 0x20;
-        protected const byte MsrcConfigTimeoutMacrop = 0x46;
-        protected const byte SoftResetGo2SoftResetN = 0xBF;
-        protected const byte IdentificationModelId = 0xC0;
-        protected const byte IdentificationRevisionId = 0xC2;
-        protected const byte OscCalibrateVal = 0xF8;
-        protected const byte GlobalConfigVcselWidth = 0x32;
-        protected const byte GlobalConfigSpadEnablesRef0 = 0xB0;
-        protected const byte GlobalConfigSpadEnablesRef1 = 0xB1;
-        protected const byte GlobalConfigSpadEnablesRef2 = 0xB2;
-        protected const byte GlobalConfigSpadEnablesRef3 = 0xB3;
-        protected const byte GlobalConfigSpadEnablesRef4 = 0xB4;
-        protected const byte GlobalConfigSpadEnablesRef5 = 0xB5;
-        protected const byte GlobalConfigRefEnStartSelect = 0xB6;
-        protected const byte DynamicSpadNumRequestedRefSpad = 0x4E;
-        protected const byte DynamicSpadRefEnStartOffset = 0x4F;
-        protected const byte PowerManagementGo1PowerForce = 0x80;
-        protected const byte VhvConfigPadSclSdaExtsupHv = 0x89;
-        protected const byte AlgoPhasecalLim = 0x30;
-        protected const byte AlgoPhasecalConfigTimeout = 0x30;
+        //==== Internal constants:
+        protected const byte _VL6180X_DEFAULT_I2C_ADDR = 0x29;
+        protected const byte _VL6180X_REG_IDENTIFICATION_MODEL_ID = 0x000;
+        protected const byte _VL6180X_REG_SYSTEM_INTERRUPT_CONFIG = 0x014;
+        protected const byte _VL6180X_REG_SYSTEM_INTERRUPT_CLEAR = 0x015;
+        protected const byte _VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET = 0x016;
+        protected const byte _VL6180X_REG_SYSRANGE_START = 0x018;
+        protected const byte _VL6180X_REG_SYSALS_START = 0x038;
+        protected const byte _VL6180X_REG_SYSALS_ANALOGUE_GAIN = 0x03F;
+        protected const byte _VL6180X_REG_SYSALS_INTEGRATION_PERIOD_HI = 0x040;
+        protected const byte _VL6180X_REG_SYSALS_INTEGRATION_PERIOD_LO = 0x041;
+        protected const byte _VL6180X_REG_RESULT_ALS_VAL = 0x050;
+        protected const byte _VL6180X_REG_RESULT_RANGE_VAL = 0x062;
+        protected const byte _VL6180X_REG_RESULT_RANGE_STATUS = 0x04D;
+        protected const byte _VL6180X_REG_RESULT_INTERRUPT_STATUS_GPIO = 0x04F;
+
+        //==== User-facing constants:
+        protected const byte ALS_GAIN_1 = 0x06;
+        protected const byte ALS_GAIN_1_25 = 0x05;
+        protected const byte ALS_GAIN_1_67 = 0x04;
+        protected const byte ALS_GAIN_2_5 = 0x03;
+        protected const byte ALS_GAIN_5 = 0x02;
+        protected const byte ALS_GAIN_10 = 0x01;
+        protected const byte ALS_GAIN_20 = 0x00;
+        protected const byte ALS_GAIN_40 = 0x07;
+
+        protected const byte ERROR_NONE = 0;
+        protected const byte ERROR_SYSERR_1 = 1;
+        protected const byte ERROR_SYSERR_5 = 5;
+        protected const byte ERROR_ECEFAIL = 6;
+        protected const byte ERROR_NOCONVERGE = 7;
+        protected const byte ERROR_RANGEIGNORE = 8;
+        protected const byte ERROR_SNR = 11;
+        protected const byte ERROR_RAWUFLOW = 12;
+        protected const byte ERROR_RAWOFLOW = 13;
+        protected const byte ERROR_RANGEUFLOW = 14;
+        protected const byte ERROR_RANGEOFLOW = 15;
+
+        public const byte DefaultI2cAddress = 0x29;
+
         protected const int VcselPeriodPreRange = 0;
         protected const int VcselPeriodFinalRange = 1;
 
@@ -87,8 +68,6 @@ namespace TinkerTank.Sensors
             cm,
             inches
         }
-
-        public const byte DefaultI2cAddress = 0x29;
 
         public bool IsShutdown
         {
@@ -125,7 +104,8 @@ namespace TinkerTank.Sensors
         byte stopVariable;
 
         public VL6180XDriver(
-            IDigitalOutputController device, II2cBus i2cBus,
+            IDigitalOutputController device, 
+            II2cBus i2cBus,
             byte address = DefaultI2cAddress)
                 : this(device, i2cBus, null, address)
         {
@@ -135,7 +115,9 @@ namespace TinkerTank.Sensors
         /// <param name="address">VL53L0X address</param>
         /// <param name="units">Unit of measure</param>
         public VL6180XDriver(
-            IDigitalOutputController device, II2cBus i2cBus, IPin shutdownPin,
+            IDigitalOutputController device, 
+            II2cBus i2cBus, 
+            IPin shutdownPin,
             byte address = DefaultI2cAddress)
                 : base(i2cBus, address)
         {
@@ -162,148 +144,57 @@ namespace TinkerTank.Sensors
                 await ShutDown(false);
             }
 
-            if (Read(0xC0) != 0xEE || Read(0xC1) != 0xAA || Read(0xC2) != 0x10)
+            if (Read(_VL6180X_REG_IDENTIFICATION_MODEL_ID) != 0xB4)
             {
                 throw new Exception("Failed to find expected ID register values");
             }
 
-            Peripheral.WriteRegister(0x88, 0x00);
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
+            LoadSettings();
 
-            stopVariable = Read(0x91);
+            Peripheral.WriteRegister(_VL6180X_REG_SYSTEM_FRESH_OUT_OF_RESET, 0x00);
+        }
 
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-
-            var configControl = ((byte)(Read(MsrcConfigControl) | 0x12));
-            var signalRateLimit = 0.25f;
-
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xFF);
-            var spadInfo = GetSpadInfo();
-            int spadCount = spadInfo.Item1;
-            bool spad_is_aperture = spadInfo.Item2;
-
-            byte[] ref_spad_map = new byte[7];
-            ref_spad_map[0] = GlobalConfigSpadEnablesRef0;
-
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(DynamicSpadRefEnStartOffset, 0x00);
-            Peripheral.WriteRegister(DynamicSpadNumRequestedRefSpad, 0x2C);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(GlobalConfigRefEnStartSelect, 0xB4);
-
-            var first_spad_to_enable = (spad_is_aperture) ? 12 : 0;
-            var spads_enabled = 0;
-
-            for (int i = 0; i < 48; i++)
-            {
-                if (i < first_spad_to_enable || spads_enabled == spadCount)
-                {
-                    ref_spad_map[1 + (i / 8)] &= (byte)~(1 << (i % 8));
-                }
-                else if ((ref_spad_map[1 + (i / 8)] >> (byte)((i % 8)) & 0x1) > 0)
-                {
-                    spads_enabled += 1;
-                }
-            }
-
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x09, 0x00);
-            Peripheral.WriteRegister(0x10, 0x00);
-            Peripheral.WriteRegister(0x11, 0x00);
-            Peripheral.WriteRegister(0x24, 0x01);
-            Peripheral.WriteRegister(0x25, 0xFF);
-            Peripheral.WriteRegister(0x75, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x4E, 0x2C);
-            Peripheral.WriteRegister(0x48, 0x00);
-            Peripheral.WriteRegister(0x30, 0x20);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x30, 0x09);
-            Peripheral.WriteRegister(0x54, 0x00);
-            Peripheral.WriteRegister(0x31, 0x04);
-            Peripheral.WriteRegister(0x32, 0x03);
-            Peripheral.WriteRegister(0x40, 0x83);
-            Peripheral.WriteRegister(0x46, 0x25);
-            Peripheral.WriteRegister(0x60, 0x00);
-            Peripheral.WriteRegister(0x27, 0x00);
-            Peripheral.WriteRegister(0x50, 0x06);
-            Peripheral.WriteRegister(0x51, 0x00);
-            Peripheral.WriteRegister(0x52, 0x96);
-            Peripheral.WriteRegister(0x56, 0x08);
-            Peripheral.WriteRegister(0x57, 0x30);
-            Peripheral.WriteRegister(0x61, 0x00);
-            Peripheral.WriteRegister(0x62, 0x00);
-            Peripheral.WriteRegister(0x64, 0x00);
-            Peripheral.WriteRegister(0x65, 0x00);
-            Peripheral.WriteRegister(0x66, 0xA0);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x22, 0x32);
-            Peripheral.WriteRegister(0x47, 0x14);
-            Peripheral.WriteRegister(0x49, 0xFF);
-            Peripheral.WriteRegister(0x4A, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x7A, 0x0A);
-            Peripheral.WriteRegister(0x7B, 0x00);
-            Peripheral.WriteRegister(0x78, 0x21);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x23, 0x34);
-            Peripheral.WriteRegister(0x42, 0x00);
-            Peripheral.WriteRegister(0x44, 0xFF);
-            Peripheral.WriteRegister(0x45, 0x26);
-            Peripheral.WriteRegister(0x46, 0x05);
-            Peripheral.WriteRegister(0x40, 0x40);
-            Peripheral.WriteRegister(0x0E, 0x06);
-            Peripheral.WriteRegister(0x20, 0x1A);
-            Peripheral.WriteRegister(0x43, 0x40);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x34, 0x03);
-            Peripheral.WriteRegister(0x35, 0x44);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x31, 0x04);
-            Peripheral.WriteRegister(0x4B, 0x09);
-            Peripheral.WriteRegister(0x4C, 0x05);
-            Peripheral.WriteRegister(0x4D, 0x04);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x44, 0x00);
-            Peripheral.WriteRegister(0x45, 0x20);
-            Peripheral.WriteRegister(0x47, 0x08);
-            Peripheral.WriteRegister(0x48, 0x28);
-            Peripheral.WriteRegister(0x67, 0x00);
-            Peripheral.WriteRegister(0x70, 0x04);
-            Peripheral.WriteRegister(0x71, 0x01);
-            Peripheral.WriteRegister(0x72, 0xFE);
-            Peripheral.WriteRegister(0x76, 0x00);
-            Peripheral.WriteRegister(0x77, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x0D, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0x01, 0xF8);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x8E, 0x01);
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-
-            Peripheral.WriteRegister(SystemInterruptConfigGpio, 0x04);
-            var gpio_hv_mux_active_high = Read(GpioHvMuxActiveHigh);
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, (byte)(gpio_hv_mux_active_high & ~0x10));
-
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, 0x01);
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
-
-            Peripheral.WriteRegister(SystemSequenceConfig, 0x01);
-            PerformSingleRefCalibration(0x40);
-            Peripheral.WriteRegister(SystemSequenceConfig, 0x02);
-            PerformSingleRefCalibration(0x00);
-
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
+        private void LoadSettings()
+        {
+            Peripheral.WriteRegister(Convert.ToByte(0x0207), 0x01);
+            Peripheral.WriteRegister(Convert.ToByte(0x0208), 0x01);
+            Peripheral.WriteRegister(Convert.ToByte(0x0096), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x0097), 0xFD);
+            Peripheral.WriteRegister(Convert.ToByte(0x00E3), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x00E4), 0x04);
+            Peripheral.WriteRegister(Convert.ToByte(0x00E5), 0x02);
+            Peripheral.WriteRegister(Convert.ToByte(0x00E6), 0x01);
+            Peripheral.WriteRegister(Convert.ToByte(0x00E7), 0x03);
+            Peripheral.WriteRegister(Convert.ToByte(0x00F5), 0x02);
+            Peripheral.WriteRegister(Convert.ToByte(0x00D9), 0x05);
+            Peripheral.WriteRegister(Convert.ToByte(0x00DB), 0xCE);
+            Peripheral.WriteRegister(Convert.ToByte(0x00DC), 0x03);
+            Peripheral.WriteRegister(Convert.ToByte(0x00DD), 0xF8);
+            Peripheral.WriteRegister(Convert.ToByte(0x009F), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x00A3), 0x3C);
+            Peripheral.WriteRegister(Convert.ToByte(0x00B7), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x00BB), 0x3C);
+            Peripheral.WriteRegister(Convert.ToByte(0x00B2), 0x09);
+            Peripheral.WriteRegister(Convert.ToByte(0x00CA), 0x09);
+            Peripheral.WriteRegister(Convert.ToByte(0x0198), 0x01);
+            Peripheral.WriteRegister(Convert.ToByte(0x01B0), 0x17);
+            Peripheral.WriteRegister(Convert.ToByte(0x01AD), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x00FF), 0x05);
+            Peripheral.WriteRegister(Convert.ToByte(0x0100), 0x05);
+            Peripheral.WriteRegister(Convert.ToByte(0x0199), 0x05);
+            Peripheral.WriteRegister(Convert.ToByte(0x01A6), 0x1B);
+            Peripheral.WriteRegister(Convert.ToByte(0x01AC), 0x3E);
+            Peripheral.WriteRegister(Convert.ToByte(0x01A7), 0x1F);
+            Peripheral.WriteRegister(Convert.ToByte(0x0030), 0x00);
+            Peripheral.WriteRegister(Convert.ToByte(0x0011), 0x10);
+            Peripheral.WriteRegister(Convert.ToByte(0x010A), 0x30);
+            Peripheral.WriteRegister(Convert.ToByte(0x003F), 0x46);
+            Peripheral.WriteRegister(Convert.ToByte(0x0031), 0xFF);
+            Peripheral.WriteRegister(Convert.ToByte(0x0040), 0x63);
+            Peripheral.WriteRegister(Convert.ToByte(0x002E), 0x01);
+            Peripheral.WriteRegister(Convert.ToByte(0x001B), 0x09);
+            Peripheral.WriteRegister(Convert.ToByte(0x003E), 0x31);
+            Peripheral.WriteRegister(Convert.ToByte(0x0014), 0x24);
         }
 
         /// <summary>
@@ -332,19 +223,6 @@ namespace TinkerTank.Sensors
         }
 
         /// <summary>
-        /// Set a new I2C address
-        /// </summary>
-        /// <param name="newAddress"></param>
-        public void SetAddress(byte newAddress)
-        {
-            if (IsShutdown)
-                return;
-
-            byte address = (byte)(newAddress & 0x7F);
-            Peripheral.WriteRegister(I2CSlaveDeviceAddress, address);
-        }
-
-        /// <summary>
         /// Set the Shutdown state of the device
         /// </summary>
         /// <param name="state">true = off/shutdown. false = on</param>
@@ -366,72 +244,6 @@ namespace TinkerTank.Sensors
             }
         }
 
-        protected Tuple<int, bool> GetSpadInfo()
-        {
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x06);
-
-            var result = (byte)(Read(0x83) | 0x04);
-            Peripheral.WriteRegister(0x83, result);
-
-            Peripheral.WriteRegister(0xFF, 0x07);
-            Peripheral.WriteRegister(0x81, 0x01);
-            Peripheral.WriteRegister(0x94, 0x6B);
-
-            Peripheral.WriteRegister(0x83, 0x00);
-
-            int tCount = 0;
-            while (Read(0x83) == 0x00)
-            {
-                Thread.Sleep(5);
-                tCount++;
-                if (tCount > 100)
-                {
-                    throw new Exception("Timeout");
-                }
-            }
-
-            Peripheral.WriteRegister(0x83, 0x01);
-            var tmp = Read(0x92);
-            var count = tmp & 0x7F;
-            var is_aperture = ((tmp >> 7) & 0x01) == 1;
-
-            Peripheral.WriteRegister(0x81, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x06);
-
-            var t = (byte)(Read(0x83) & ~0x04);
-            Peripheral.WriteRegister(0xFF, t);
-
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-
-            return new Tuple<int, bool>(count, is_aperture);
-        }
-
-        protected void PerformSingleRefCalibration(byte vhvInitByte)
-        {
-            Peripheral.WriteRegister(RangeStart, (byte)(0x01 | vhvInitByte & 0xFF));
-
-            int tCount = 0;
-
-            while ((byte)(Read(ResultInterruptStatus) & 0x07) == 0)
-            {
-                Thread.Sleep(5);
-                tCount++;
-                if (tCount > 100)
-                {
-                    throw new Exception("Interrupt Status Timeout");
-                }
-            }
-
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, 0x01);
-            Peripheral.WriteRegister(RangeStart, 0x00);
-        }
-
         protected byte Read(byte address)
         {
             var result = Peripheral.ReadRegister(address);
@@ -447,41 +259,12 @@ namespace TinkerTank.Sensors
 
         protected async Task<int> GetRawRangeData()
         {
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
-            Peripheral.WriteRegister(0x91, stopVariable);
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-            Peripheral.WriteRegister(RangeStart, 0x01);
+            Peripheral.WriteRegister(_VL6180X_REG_SYSRANGE_START, 0x01);
 
-            int tCount = 0;
-            while ((byte)(Read(RangeStart) & 0x01) > 0)
-            {
-                await Task.Delay(5).ConfigureAwait(false);
+            var range = Peripheral.ReadRegister(_VL6180X_REG_RESULT_RANGE_VAL);
 
-                tCount++;
-                if (tCount > 100)
-                {
-                    throw new Exception("VL53L0X Range Start Timeout");
-                }
-            }
-
-            tCount = 0;
-            while ((byte)(Read(ResultInterruptStatus) & 0x07) == 0)
-            {
-                await Task.Delay(5).ConfigureAwait(false);
-
-                tCount++;
-                if (tCount > 100)
-                {
-                    throw new Exception("VL53L0X Interrupt Status Timeout");
-                }
-            }
-
-            var range_mm = Read16(ResultRangeStatus + 10);
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, 0x01);
+            var range_mm = range + 10;
+            Peripheral.WriteRegister(_VL6180X_REG_SYSTEM_INTERRUPT_CLEAR, 0x07);
 
             return range_mm;
         }
