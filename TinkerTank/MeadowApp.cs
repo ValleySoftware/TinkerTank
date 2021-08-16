@@ -27,6 +27,8 @@ namespace TinkerTank
         public PCA9685 i2CPWMController;
         public VL6180xDistance distance;
 
+        public II2cBus sharedi2cBus;
+
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
         IDigitalOutputPort redLED;
@@ -55,6 +57,9 @@ namespace TinkerTank
             TBObjects.Add(lcd);
             lcd.Init();
 
+            DebugDisplayText("Init i2c");
+            sharedi2cBus = Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
+
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
             TBObjects.Add((TinkerBase)movementController);
@@ -72,15 +77,15 @@ namespace TinkerTank
             TBObjects.Add(communications);
             communications.Init();
 
-            //DebugDisplayText("start distance sensor");
-            //distance = new VL6180xDistance(this);
-            //TBObjects.Add(distance);
-            //distance.Init();
-
             DebugDisplayText("start pca9986");
             i2CPWMController = new PCA9685(this);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
+
+            DebugDisplayText("start distance sensor");
+            distance = new VL6180xDistance(this);
+            TBObjects.Add(distance);
+            distance.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);

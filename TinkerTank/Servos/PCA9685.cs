@@ -29,9 +29,8 @@ namespace Servos
         public void Init()
         {
             _appRoot.DebugDisplayText("Init PCA9685 Device");
-            //Servo control using an intermediary IC
-            var i2CBus = MeadowApp.Device.CreateI2cBus(I2cBusSpeed.FastPlus); //i2c buss is D07 for data, d08 for clock
-            pca9685 = new Pca9685(i2CBus, 0x40, PWMFrequency);
+            
+            pca9685 = new Pca9685(_appRoot.sharedi2cBus, 0x40, PWMFrequency);
             pca9685.Initialize();
 
             CameraPan = AddNewServoSG90(0);

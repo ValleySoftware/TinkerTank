@@ -10,7 +10,7 @@ namespace TinkerTank.Sensors
 {
     public class VL6180xDistance : TinkerBase, ITinkerBase
     {
-        Vl53l0x sensor;
+        VL6180XDriver sensor;
 
         public VL6180xDistance(MeadowApp appRoot)
         {
@@ -24,8 +24,7 @@ namespace TinkerTank.Sensors
             try
             {
 
-                var i2cBus = MeadowApp.Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
-                sensor = new Vl53l0x(MeadowApp.Device, i2cBus);
+                sensor = new VL6180XDriver(MeadowApp.Device, _appRoot.sharedi2cBus, (byte)0x29);
 
                 sensor.Updated += Sensor_Updated; 
                 sensor.StartUpdating();
