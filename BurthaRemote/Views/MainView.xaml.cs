@@ -1,12 +1,16 @@
 ﻿using Microsoft.Toolkit.Uwp.Connectivity;
+using Microsoft.Toolkit.Uwp.Helpers;
+using Microsoft.Toolkit.Uwp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.ApplicationModel.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -26,28 +31,29 @@ namespace BurthaRemote.Views
     public sealed partial class MainView : Page
     {
         BluetoothLEHelper bluetoothLEHelper;
-        public ObservableCollection<ObservableBluetoothLEDevice> bluetoothDevices;
+        public ObservableCollection<ObservableBluetoothLEDevice> bluetoothDevices = new ObservableCollection<ObservableBluetoothLEDevice>();
+        private ObservableBluetoothLEDevice current;
+        private Windows.System.DispatcherQueue dispatcherQueue;
 
         public MainView()
         {
             this.InitializeComponent();// Get a local copy of the context for easier reading
 
             bluetoothLEHelper = BluetoothLEHelper.Context;
+            bluetoothLEHelper.EnumerationCompleted += BluetoothLEHelper_EnumerationCompleted;
             bluetoothDevices = new ObservableCollection<ObservableBluetoothLEDevice>();
+
+            // From a UI thread, capture the DispatcherQueue once:
+            dispatcherQueue = CoreApplication.MainView.DispatcherQueue;
+
         }
 
         public async void ListAvailableBluetoothDevices()
         {
-            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
                 // Start the Enumeration
                 bluetoothLEHelper.StartEnumeration();
 
-                foreach (var element in bluetoothLEHelper.BluetoothLeDevices)
-                {
-                    bluetoothDevices.Add(element);
-                }
-            });
+
 
             //bluetoothDevices = bluetoothLEHelper.BluetoothLeDevices;
 
@@ -63,11 +69,56 @@ namespace BurthaRemote.Views
 
                 // See all the services
                 //var services = device.Services;
+        }
+
+        private void ConnectToBTEDevice(ObservableBluetoothLEDevice deviceToConnectTo)
+        {
+            if (deviceToConnectTo != null)
+            {
+                deviceToConnectTo.ConnectAsync();
+
+                if (deviceToConnectTo.IsConnected)
+                {
+                    current = deviceToConnectTo;
+                    var d = new ContentDialog();
+                    d.Title = "Bluetooth Connected";
+                    d.Content = "Connection to " + current.Name + " was successful.";
+                    d.ShowAsync();
+
+                }
             }
+        }
+
+        private void BluetoothLEHelper_EnumerationCompleted(object sender, EventArgs e)
+        {
+            dispatcherQueue.EnqueueAsync(() =>            
+            {
+                bluetoothDevices.Clear();
+
+                foreach (var element in bluetoothLEHelper.BluetoothLeDevices)
+                {
+                    bluetoothDevices.Add(element);
+                }
+            });
+        }
 
         private void scanForBluetoothButton_Click(object sender, RoutedEventArgs e)
         {
             ListAvailableBluetoothDevices();
+        }
+
+        private void connectToDeviceButton_Click(object sender, RoutedEventArgs e)
+        {
+            var fe = e.OriginalSource as FrameworkElement; 
+            var vm = fe.DataContext as ObservableBluetoothLEDevice;
+
+            if (vm != null)
+            {
+                dispatcherQueue.EnqueueAsync(() =>
+                {
+                    ConnectToBTEDevice(vm);
+                });
+            }
         }
     }
 }
