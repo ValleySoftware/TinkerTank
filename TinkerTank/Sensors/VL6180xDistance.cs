@@ -10,7 +10,7 @@ namespace TinkerTank.Sensors
 {
     public class VL6180xDistance : TinkerBase, ITinkerBase
     {
-        VL6180XDriver sensor;
+        VL6180X sensor;
 
         public VL6180xDistance(MeadowApp appRoot)
         {
@@ -24,7 +24,7 @@ namespace TinkerTank.Sensors
             try
             {
 
-                sensor = new VL6180XDriver(MeadowApp.Device, _appRoot.sharedi2cBus, (byte)0x29);
+                sensor = new VL6180X(MeadowApp.Device, _appRoot.sharedi2cBus, 0x29);
 
                 sensor.Updated += Sensor_Updated; 
                 sensor.StartUpdating();
@@ -33,7 +33,7 @@ namespace TinkerTank.Sensors
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("Vl53l0x Error " + ex.Message, DisplayStatusMessageTypes.Error, true);
+                _appRoot.DebugDisplayText("Vl6180x Error " + ex.Message, DisplayStatusMessageTypes.Error, true);
             }
 
             return Status;

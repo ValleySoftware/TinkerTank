@@ -144,9 +144,11 @@ namespace TinkerTank.Sensors
                 await ShutDown(false);
             }
 
-            if (Read(_VL6180X_REG_IDENTIFICATION_MODEL_ID) != 0xB4)
+            var readData = Read(_VL6180X_REG_IDENTIFICATION_MODEL_ID);
+
+            if (readData != 0xB4)
             {
-                throw new Exception("Failed to find expected ID register values");
+                throw new Exception("Failed to find expected ID register values" + Convert.ToString(readData));
             }
 
             LoadSettings();
