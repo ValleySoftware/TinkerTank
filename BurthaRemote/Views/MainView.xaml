@@ -17,15 +17,18 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Button Padding="8"
+                Margin="8"
             x:Name="scanForBluetoothButton"
             Click="scanForBluetoothButton_Click"
             Content="Scan" />
         <ListView Padding="8"
             Grid.Row="1"
             Header="Bluetooth Devices"
-            ItemsSource="{x:Bind mainViewModel.bluetoothDevices, Mode=OneWay}">
+            ItemsSource="{x:Bind mainViewModel.bluetoothLEHelper.BluetoothLeDevices, Mode=OneWay}"
+                  SelectedItem="{x:Bind mainViewModel.CurrentDevice, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="connectivity:ObservableBluetoothLEDevice">
                     <Grid>
@@ -50,12 +53,33 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView Padding="8"
+        <ListView 
+            Padding="8"
             Grid.Row="2"
             Header="Available Services"
-            ItemsSource="{x:Bind mainViewModel.Current.Services, Mode=OneWay}">
+                  x:Name="servicesList"
+            x:Load="{x:Bind mainViewModel.CountGreaterThanZero(mainViewModel.bluetoothLEHelper.BluetoothLeDevices), Mode=OneWay}"
+            ItemsSource="{x:Bind mainViewModel.CurrentDevice.Services, Mode=OneWay}"
+            SelectedItem="{x:Bind mainViewModel.CurrentService, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="connectivity:ObservableGattDeviceService">
+                    <Grid>
+                        <TextBlock >
+                            <Run Text="{x:Bind Name, Mode=OneWay}" />
+                            <Run Text=" - " />
+                            <Run Text="{x:Bind UUID, Mode=OneWay}" />
+                        </TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ListView Padding="8"
+            Grid.Row="3"
+            Header="Available Characteristics"
+                  x:Name="characteristicsList"
+            ItemsSource="{x:Bind mainViewModel.CurrentService.Characteristics, Mode=OneWay}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="connectivity:ObservableGattCharacteristics">
                     <Grid>
                         <TextBlock >
                             <Run Text="{x:Bind Name, Mode=OneWay}" />

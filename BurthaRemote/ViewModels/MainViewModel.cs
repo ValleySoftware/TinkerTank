@@ -14,15 +14,50 @@ namespace BurthaRemote.ViewModels
 {
     public class MainViewModel : ValleyBaseViewModel
     {
-        BluetoothLEHelper bluetoothLEHelper;
-        public ObservableCollection<ObservableBluetoothLEDevice> bluetoothDevices = new ObservableCollection<ObservableBluetoothLEDevice>();
-        public ObservableBluetoothLEDevice Current;
+        private ObservableBluetoothLEDevice _currentDevice;
+        private ObservableGattDeviceService _currentService;
+        public BluetoothLEHelper bluetoothLEHelper = BluetoothLEHelper.Context;
 
         public MainViewModel()
         {
-            bluetoothLEHelper = BluetoothLEHelper.Context;
             bluetoothLEHelper.EnumerationCompleted += BluetoothLEHelper_EnumerationCompleted;
-            bluetoothDevices = new ObservableCollection<ObservableBluetoothLEDevice>();
+        }
+
+        public async void BluetoothLEHelper_EnumerationCompleted(object sender, EventArgs e)
+        {
+            await App.dispatcherQueue.EnqueueAsync(() =>
+            {
+                bluetoothLEHelper.StopEnumeration();
+
+                Thinking = false;
+            });
+        }
+
+        public bool IsNotNull(object toCheck)
+        {
+            return (toCheck != null);
+        }
+
+        public bool CountGreaterThanZero(ObservableCollection<ObservableBluetoothLEDevice> toCheck)
+        {
+            return (toCheck != null && toCheck.Count() > 0);
+        }
+
+        public bool CountGreaterThanZero(ObservableCollection<ObservableGattDeviceService> toCheck)
+        {
+            return (toCheck != null && toCheck.Count() > 0);
+        }
+
+        public ObservableBluetoothLEDevice CurrentDevice
+        {
+            get => _currentDevice;
+            set => SetProperty(ref _currentDevice, value);
+        }
+
+        public ObservableGattDeviceService CurrentService
+        {
+            get => _currentService;
+            set => SetProperty(ref _currentService, value);
         }
 
         public void ListAvailableBluetoothDevices()
@@ -37,51 +72,30 @@ namespace BurthaRemote.ViewModels
 
         public async void ConnectToBTEDevice(ObservableBluetoothLEDevice deviceToConnectTo)
         {
-            if (!Thinking)
-            {
+            
                 try
                 {
-                    Thinking = true;
                     if (deviceToConnectTo != null)
-                    {
-                        await deviceToConnectTo.ConnectAsync();
+                {
+                    bluetoothLEHelper.StopEnumeration();
+                    Thinking = false;
+
+                    await deviceToConnectTo.ConnectAsync();
 
                         if (deviceToConnectTo.IsConnected)
                         {
-                            Current = deviceToConnectTo;
-                            var d = new ContentDialog();
-                            d.Title = "Bluetooth Connected";
-                            d.Content = "Connection to " + Current.Name + " was successful.";
-                            d.PrimaryButtonText = "ok";
-                            d.IsPrimaryButtonEnabled = true;
-                            await d.ShowAsync();
+                            CurrentDevice = deviceToConnectTo;
+                            if (!deviceToConnectTo.IsPaired)
+                            {
+                                await deviceToConnectTo.DoInAppPairingAsync();
+                            }
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
 
                 }
-                finally
-                {
-                    Thinking = false;
-                }
-            }
-        }
-
-        public void BluetoothLEHelper_EnumerationCompleted(object sender, EventArgs e)
-        {
-                App.dispatcherQueue.EnqueueAsync(() =>
-                {
-                    bluetoothDevices.Clear();
-
-                    foreach (var element in bluetoothLEHelper.BluetoothLeDevices)
-                    {
-                        bluetoothDevices.Add(element);
-                    }
-
-                    Thinking = false;
-                });
         }
     }
 }
