@@ -1,4 +1,5 @@
 ﻿using Base;
+using Enumerations;
 using Meadow.Foundation.ICs.IOExpanders;
 using Meadow.Foundation.Servos;
 using Meadow.Hardware;
@@ -15,11 +16,10 @@ namespace Servos
     {
         private Pca9685 pca9685;
         readonly int PWMFrequency = 50;
-        private Servo CameraPan;
-        private Servo CameraTilt;
-        private Servo DistancePan;
-        private Servo DistanceTilt;
-        private List<Servo> servos = new List<Servo>();
+        public PanTiltBase DriveCameraMovement;
+        public PanTiltBase PeriscopeCameraMovement;
+        public List<Servo> Miscservos = new List<Servo>();
+        public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
 
         public PCA9685(MeadowApp appRoot)
         {
@@ -33,15 +33,23 @@ namespace Servos
             pca9685 = new Pca9685(_appRoot.sharedi2cBus, 0x40, PWMFrequency);
             pca9685.Initialize();
 
-            CameraPan = AddNewServoSG90(0);
-            
-            CameraTilt = AddNewServoSG90(1);
+            DriveCameraMovement = new PanTiltBase(_appRoot, pca9685.CreatePwmPort((byte)0), pca9685.CreatePwmPort((byte)1), "DriveCamera", ServoType.SG90Standard);
+            DriveCameraMovement.Init();
+            DriveCameraMovement.DefaultPan = 110;
+            DriveCameraMovement.DefaultTilt = 100;
+            DriveCameraMovement.GoToDefault();
+            PanTilts.Add(DriveCameraMovement);
+            PeriscopeCameraMovement = new PanTiltBase(_appRoot, pca9685.CreatePwmPort((byte)2), pca9685.CreatePwmPort((byte)3), "PeriscopeCamera", ServoType.SG90Standard);
+            PeriscopeCameraMovement.Init();
+            PeriscopeCameraMovement.DefaultPan = 5;
+            PeriscopeCameraMovement.DefaultTilt = 100;
+            PeriscopeCameraMovement.GoToDefault();
+            PanTilts.Add(PeriscopeCameraMovement);
 
-            DistancePan = AddNewServoSG90(2);
+            //Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
+            //Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
-            DistanceTilt = AddNewServoSG90(3);
-
-            Status = Enumerations.ComponentStatus.Ready;
+            Status = ComponentStatus.Ready;
         }
 
         public void RefreshStatus()
@@ -49,34 +57,9 @@ namespace Servos
             //
         }
 
-        public Servo AddNewServoSG90(int portNo)
-        {
-            var newPort = pca9685.CreatePwmPort((byte)portNo);
-            var newServo = new Servo(newPort, NamedServoConfigs.SG90);
-            servos.Add(newServo);
-
-            return newServo;
-        }
-
         public void Test()
         {
             throw new NotImplementedException();
-        }
-
-        public bool ServoRotateTo(int deviceIndex, int newAngle)
-        {
-            var result = false;
-            if (deviceIndex < servos.Count() && 
-                deviceIndex >= 0 &&
-                newAngle >= servos[deviceIndex].Config.MinimumAngle.Degrees &&
-                newAngle <= servos[deviceIndex].Config.MaximumAngle.Degrees
-                )
-            {
-                servos[deviceIndex].RotateTo(new Meadow.Units.Angle(newAngle, Meadow.Units.Angle.UnitType.Degrees));
-                result = true;
-            }
-
-            return result;
         }
 
 

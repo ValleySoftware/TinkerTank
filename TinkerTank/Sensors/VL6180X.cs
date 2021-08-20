@@ -25,6 +25,70 @@ namespace TinkerTank.Sensors
 
         public const byte DefaultI2cAddress = 0x29;
 
+
+        //==== internals
+        protected const byte RangeStart = 0x00;
+        protected const byte SystemThreahHigh = 0x0C;
+        protected const byte SystemThreshLow = 0x0E;
+        protected const byte SystemSequenceConfig = 0x01;
+        protected const byte SystemRangeConfig = 0x09;
+        protected const byte SystemIntermeasurementPeriod = 0x04;
+        protected const byte SystemInterruptConfigGpio = 0x0A;
+        protected const byte GpioHvMuxActiveHigh = 0x84;
+        protected const byte SystemInterruptClear = 0x0B;
+        protected const byte ResultInterruptStatus = 0x13;
+        protected const byte ResultRangeStatus = 0x14;
+        protected const byte ResultCoreAmbientWindowEventsRtn = 0xBC;
+        protected const byte ResultCoreRangingTotalEventsRtn = 0xC0;
+        protected const byte ResultCoreAmbientWindowEventsRef = 0xD0;
+        protected const byte ResultCoreRangingTotalEventsRef = 0xD4;
+        protected const byte ResultPeakSignalRateRef = 0xB6;
+        protected const byte AlgoPartToPartRangeOffsetMm = 0x28;
+        protected const byte I2CSlaveDeviceAddress = 0x8A;
+        protected const byte MsrcConfigControl = 0x60;
+        protected const byte PreRangeConfigMinSnr = 0x27;
+        protected const byte PreRangeConfigValidPhaseLow = 0x56;
+        protected const byte PreRangeConfigValidPhaseHigh = 0x57;
+        protected const byte PreRangeMinCountRateRtnLimit = 0x64;
+        protected const byte FinalRangeConfigMinSnr = 0x67;
+        protected const byte FinalRangeConfigValidPhaseLow = 0x47;
+        protected const byte FinalRangeConfigValidPhaseHigh = 0x48;
+        protected const byte FinalRangeConfigMinCountRateRtnLimit = 0x44;
+        protected const byte PreRangeConfigSigmaThreshHi = 0x61;
+        protected const byte PreRangeConfigSigmaThreshLo = 0x62;
+        protected const byte PreRangeConfigVcselPeriod = 0x50;
+        protected const byte PreRangeConfigTimeoutMacropHi = 0x51;
+        protected const byte PreRangeConfigTimeoutMacropLo = 0x52;
+        protected const byte SystemHistogramBin = 0x81;
+        protected const byte HistogramConfigInitialPhaseSelect = 0x33;
+        protected const byte HistogramConfigReadoutCtrl = 0x55;
+        protected const byte FinalRangeConfigVcselPeriod = 0x70;
+        protected const byte FinalRangeConfigTimeoutMacropHi = 0x71;
+        protected const byte FinalRangeConfigTimeoutMacropLo = 0x72;
+        protected const byte CrosstalkCompensationPeakRateMcps = 0x20;
+        protected const byte MsrcConfigTimeoutMacrop = 0x46;
+        protected const byte SoftResetGo2SoftResetN = 0xBF;
+        protected const byte IdentificationModelId = 0xC0;
+        protected const byte IdentificationRevisionId = 0xC2;
+        protected const byte OscCalibrateVal = 0xF8;
+        protected const byte GlobalConfigVcselWidth = 0x32;
+        protected const byte GlobalConfigSpadEnablesRef0 = 0xB0;
+        protected const byte GlobalConfigSpadEnablesRef1 = 0xB1;
+        protected const byte GlobalConfigSpadEnablesRef2 = 0xB2;
+        protected const byte GlobalConfigSpadEnablesRef3 = 0xB3;
+        protected const byte GlobalConfigSpadEnablesRef4 = 0xB4;
+        protected const byte GlobalConfigSpadEnablesRef5 = 0xB5;
+        protected const byte GlobalConfigRefEnStartSelect = 0xB6;
+        protected const byte DynamicSpadNumRequestedRefSpad = 0x4E;
+        protected const byte DynamicSpadRefEnStartOffset = 0x4F;
+        protected const byte PowerManagementGo1PowerForce = 0x80;
+        protected const byte VhvConfigPadSclSdaExtsupHv = 0x89;
+        protected const byte AlgoPhasecalLim = 0x30;
+        protected const byte AlgoPhasecalConfigTimeout = 0x30;
+        protected const int VcselPeriodPreRange = 0;
+        protected const int VcselPeriodFinalRange = 1;
+
+
         public bool IsShutdown
         {
             get
@@ -127,7 +191,7 @@ namespace TinkerTank.Sensors
 
             var configControl = ((byte)(Read(MsrcConfigControl) | 0x12));
             var signalRateLimit = 0.25f;
-
+            /*
             Peripheral.WriteRegister(SystemSequenceConfig, 0xFF);
             var spadInfo = GetSpadInfo();
             int spadCount = spadInfo.Item1;
@@ -156,7 +220,7 @@ namespace TinkerTank.Sensors
                     spads_enabled += 1;
                 }
             }
-
+            */
             Peripheral.WriteRegister(0xFF, 0x01);
             Peripheral.WriteRegister(0x00, 0x00);
             Peripheral.WriteRegister(0xFF, 0x00);
@@ -246,9 +310,9 @@ namespace TinkerTank.Sensors
             Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
 
             Peripheral.WriteRegister(SystemSequenceConfig, 0x01);
-            PerformSingleRefCalibration(0x40);
+            //PerformSingleRefCalibration(0x40);
             Peripheral.WriteRegister(SystemSequenceConfig, 0x02);
-            PerformSingleRefCalibration(0x00);
+            //PerformSingleRefCalibration(0x00);
 
             Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
         }
@@ -286,6 +350,19 @@ namespace TinkerTank.Sensors
                 // TODO: is this still needed? the previous line wasn't awaited before.
                 await Task.Delay(2).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Set a new I2C address
+        /// </summary>
+        /// <param name="newAddress"></param>
+        public void SetAddress(byte newAddress)
+        {
+            if (IsShutdown)
+                return;
+
+            byte address = (byte)(newAddress & 0x7F);
+            Peripheral.WriteRegister(I2CSlaveDeviceAddress, address);
         }
     }
 }

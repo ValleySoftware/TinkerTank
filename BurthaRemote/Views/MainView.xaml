@@ -7,22 +7,25 @@
     xmlns:local="using:BurthaRemote"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    xmlns:mui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:wui="using:Windows.UI.Xaml.Controls" xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
+    mui:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Button
+        <Button Padding="8"
             x:Name="scanForBluetoothButton"
             Click="scanForBluetoothButton_Click"
             Content="Scan" />
-        <ListView
+        <ListView Padding="8"
             Grid.Row="1"
             Header="Bluetooth Devices"
-            ItemsSource="{x:Bind bluetoothDevices, Mode=OneWay}">
+            ItemsSource="{x:Bind mainViewModel.bluetoothDevices, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="connectivity:ObservableBluetoothLEDevice">
                     <Grid>
@@ -47,17 +50,34 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView
+        <ListView Padding="8"
             Grid.Row="2"
             Header="Available Services"
-            ItemsSource="{x:Bind current.Services, Mode=OneWay}">
+            ItemsSource="{x:Bind mainViewModel.Current.Services, Mode=OneWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="connectivity:ObservableGattDeviceService">
                     <Grid>
-                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                        <TextBlock >
+                            <Run Text="{x:Bind Name, Mode=OneWay}" />
+                            <Run Text=" - " />
+                            <Run Text="{x:Bind UUID, Mode=OneWay}" />
+                        </TextBlock>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <mui:AnimatedVisualPlayer
+            Grid.Row="1"
+            x:Load="{x:Bind mainViewModel.Thinking, Mode=OneWay}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+                                x:Name="mainThinkingLottieLoadingAnimation"
+                                Width="48"
+                                Height="48"
+                                Margin="8"
+                                AutoPlay="True"
+                                PlaybackRate="0.5">
+            <lottie:LottieVisualSource Options="Optimize" UriSource="ms-appx:///DeployedAssets/ArrowsChasing.json" />
+        </mui:AnimatedVisualPlayer>
     </Grid>
 </Page>

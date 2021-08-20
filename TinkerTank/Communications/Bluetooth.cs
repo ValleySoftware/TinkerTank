@@ -29,36 +29,36 @@ namespace Communications
                         "ServiceA",
                         42,
                         new CharacteristicInt32(
-                            "Stop",
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300aa",
+                            BluetoothCharacturistics.CharacteristicsNames.Stop.ToString(),
+                            uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Stop).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
                         new CharacteristicString(
-                            "Move",
+                            BluetoothCharacturistics.CharacteristicsNames.Move.ToString(),
                             maxLength: 10,
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300bb",
+                            uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Move).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
                         new CharacteristicString(
-                            "PanTilt",
+                            BluetoothCharacturistics.CharacteristicsNames.PanTilt.ToString(),
                             maxLength: 10,
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300cc",
+                            uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.PanTilt).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
                         new CharacteristicString(
-                            "Power",
+                            BluetoothCharacturistics.CharacteristicsNames.Power.ToString(),
                             maxLength: 10,
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300ee",
+                            uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Power).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             ),
                         new CharacteristicString(
-                            "AdvancedMove",
+                            BluetoothCharacturistics.CharacteristicsNames.AdvancedMove.ToString(),
                             maxLength: 10,
-                            uuid: "017e99d6-8a61-11eb-8dcd-0242ac1300ff",
+                            uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.AdvancedMove).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read
                             )
@@ -94,14 +94,14 @@ namespace Communications
                         {
                             _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, true);
 
-                            if (c.Name.Equals("Stop"))
+                            if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Stop.ToString()))
                             {
                                 _appRoot.movementController.Stop();
                             }
 
                             var testMotorDuration = new TimeSpan(0, 0, 0, 0, 250);
 
-                            if (c.Name.Equals("Move"))
+                            if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Move.ToString()))
                             {
 
                                 switch (receivedData)
@@ -132,7 +132,7 @@ namespace Communications
                                 }
                             }
 
-                            if (c.Name.Equals("AdvancedMove"))
+                            if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.AdvancedMove.ToString()))
                             {
                                 //movementDirection-powerPercent-durationInseconds
                                 //00-000-000
@@ -157,28 +157,33 @@ namespace Communications
                                 }
                             }
 
-                            if (c.Name.Equals("PanTilt"))
+                            if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.PanTilt.ToString()))
                             {
-                                //Device-PanTo-TiltTo
-                                //00-000-000
+                                //Device-PanTo-TiltTo-Speed
+                                //00-000-000-0
 
                                 try
                                 {
                                     var sp = advancedData.Split("-");
 
-                                    if (sp.Count() == 3)
+                                    if (sp.Count() >= 3)
                                     {
 
                                         int device = Convert.ToInt32(sp[0]);
                                         int pan = Convert.ToInt32(sp[1]);
                                         int tilt = Convert.ToInt32(sp[2]);
+                                        int speed = (int)ServoMovementSpeed.Fast;
+                                        if (sp.Count() == 4)
+                                        {
+                                            speed = Convert.ToInt32(sp[3]);
+                                        }
 
                                         _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString(), DisplayStatusMessageTypes.Important);
 
-                                        if (device == 0)
+                                        if (device < _appRoot.i2CPWMController.PanTilts.Count)
                                         {
-                                            _appRoot.i2CPWMController.ServoRotateTo(0, pan);
-                                            _appRoot.i2CPWMController.ServoRotateTo(1, tilt);
+                                            _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
+                                            _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
                                         }
                                     }
                                 }
@@ -188,7 +193,7 @@ namespace Communications
                                 }
                             }
 
-                            if (c.Name.Equals("Power"))
+                            if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Power.ToString()))
                             {
                                 switch (receivedData)
                                 {

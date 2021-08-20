@@ -25,7 +25,7 @@ namespace TinkerTank
         public LCDDisplay_ST7789 lcd;
         public BlueTooth communications;
         public PCA9685 i2CPWMController;
-        public VL6180xDistance distance;
+        public VL6180X distance;
 
         public II2cBus sharedi2cBus;
 
@@ -57,8 +57,18 @@ namespace TinkerTank
             TBObjects.Add(lcd);
             lcd.Init();
 
+            DebugDisplayText("start communications controller");
+            communications = new BlueTooth(this);
+            TBObjects.Add(communications);
+            communications.Init();
+
             DebugDisplayText("Init i2c");
             sharedi2cBus = Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
+
+            DebugDisplayText("start pca9986");
+            i2CPWMController = new PCA9685(this);
+            TBObjects.Add(i2CPWMController);
+            i2CPWMController.Init();
 
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
@@ -72,20 +82,10 @@ namespace TinkerTank
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
 
-            DebugDisplayText("start communications controller");
-            communications = new BlueTooth(this);
-            TBObjects.Add(communications);
-            communications.Init();
-
-            DebugDisplayText("start pca9986");
-            i2CPWMController = new PCA9685(this);
-            TBObjects.Add(i2CPWMController);
-            i2CPWMController.Init();
-
-            DebugDisplayText("start distance sensor");
-            distance = new VL6180xDistance(this);
-            TBObjects.Add(distance);
-            distance.Init();
+            //DebugDisplayText("start distance sensor");
+            //distance = new VL6180X(this, VL6180X.UnitType.cm, sharedi2cBus);
+            //TBObjects.Add(distance);
+            //distance.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);
@@ -150,12 +150,16 @@ namespace TinkerTank
 
         public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
         {
-            Console.WriteLine(textToShow);
-
-            if (!ConsoleOnly && lcd != null)
+            var t = new Task(() =>
             {
-                lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
-            }            
+                Console.WriteLine(textToShow);
+
+                if (!ConsoleOnly && lcd != null)
+                {
+                    lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+                }
+            });
+            t.Start();
         }
     }
 }
