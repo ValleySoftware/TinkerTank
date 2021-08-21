@@ -16,6 +16,7 @@ namespace BurthaRemote.ViewModels
     {
         private ObservableBluetoothLEDevice _currentDevice;
         private ObservableGattDeviceService _currentService;
+        private ObservableGattCharacteristics _currentCharacteristic;
         public BluetoothLEHelper bluetoothLEHelper = BluetoothLEHelper.Context;
 
         public MainViewModel()
@@ -48,6 +49,12 @@ namespace BurthaRemote.ViewModels
             return (toCheck != null && toCheck.Count() > 0);
         }
 
+        public ObservableGattCharacteristics CurrentCharacteristic
+        {
+            get => _currentCharacteristic;
+            set => SetProperty(ref _currentCharacteristic, value);
+        }
+
         public ObservableBluetoothLEDevice CurrentDevice
         {
             get => _currentDevice;
@@ -71,31 +78,35 @@ namespace BurthaRemote.ViewModels
         }
 
         public async void ConnectToBTEDevice(ObservableBluetoothLEDevice deviceToConnectTo)
-        {
-            
-                try
-                {
-                    if (deviceToConnectTo != null)
-                {
-                    bluetoothLEHelper.StopEnumeration();
-                    Thinking = false;
+        {            
+            try
+            {
+                if (deviceToConnectTo != null)
+            {
+                bluetoothLEHelper.StopEnumeration();
+                Thinking = false;
 
-                    await deviceToConnectTo.ConnectAsync();
+                await deviceToConnectTo.ConnectAsync();
 
-                        if (deviceToConnectTo.IsConnected)
+                    if (deviceToConnectTo.IsConnected)
+                    {
+                        CurrentDevice = deviceToConnectTo;
+                        if (!deviceToConnectTo.IsPaired)
                         {
-                            CurrentDevice = deviceToConnectTo;
-                            if (!deviceToConnectTo.IsPaired)
-                            {
-                                await deviceToConnectTo.DoInAppPairingAsync();
-                            }
+                            await deviceToConnectTo.DoInAppPairingAsync();
                         }
                     }
                 }
-                catch (Exception e)
-                {
+            }
+            catch (Exception e)
+            {
 
-                }
+            }
+        }
+
+        public void SendMessage()
+        {
+
         }
     }
 }

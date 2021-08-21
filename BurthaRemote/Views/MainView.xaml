@@ -18,6 +18,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <Button Padding="8"
                 Margin="8"
@@ -77,7 +78,8 @@
             Grid.Row="3"
             Header="Available Characteristics"
                   x:Name="characteristicsList"
-            ItemsSource="{x:Bind mainViewModel.CurrentService.Characteristics, Mode=OneWay}">
+            ItemsSource="{x:Bind mainViewModel.CurrentService.Characteristics, Mode=OneWay}"
+                  SelectedItem="{x:Bind mainViewModel.CurrentCharacteristic, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="connectivity:ObservableGattCharacteristics">
                     <Grid>
@@ -90,6 +92,11 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <wui:Button Style="{ThemeResource ButtonRevealStyle}"
+                    Grid.Row="4"
+                    Content="SendSomething"
+                    Click="Button_Click"
+                    />
         <mui:AnimatedVisualPlayer
             Grid.Row="1"
             x:Load="{x:Bind mainViewModel.Thinking, Mode=OneWay}"
