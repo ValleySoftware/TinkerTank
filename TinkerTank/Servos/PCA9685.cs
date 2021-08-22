@@ -41,13 +41,13 @@ namespace Servos
             PanTilts.Add(DriveCameraMovement);
             PeriscopeCameraMovement = new PanTiltBase(_appRoot, pca9685.CreatePwmPort((byte)2), pca9685.CreatePwmPort((byte)3), "PeriscopeCamera", ServoType.SG90Standard);
             PeriscopeCameraMovement.Init();
-            PeriscopeCameraMovement.DefaultPan = 5;
-            PeriscopeCameraMovement.DefaultTilt = 100;
+            PeriscopeCameraMovement.DefaultPan = 20;
+            PeriscopeCameraMovement.DefaultTilt = 80;
             PeriscopeCameraMovement.GoToDefault();
             PanTilts.Add(PeriscopeCameraMovement);
 
-            //Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
-            //Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
+            Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
+            Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
             Status = ComponentStatus.Ready;
         }

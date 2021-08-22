@@ -60,7 +60,7 @@ namespace BurthaRemote.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
+            mainViewModel.SendUtf8Message(mainViewModel.CurrentCharacteristic, messageTextBox.Text);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Servos
         private double _defaultPan = 90;
         private double _defaultTilt = 90;
 
-        private bool stopRequested = false;
+        //private bool stopRequested = false;
 
         public PanTiltBase(MeadowApp appRoot, IPwmPort panPwmPort, IPwmPort tiltPwmPort, string name, ServoType servoType = ServoType.SG90Standard)
         {
@@ -98,22 +98,16 @@ namespace Servos
         public void PanTo(double newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
             _appRoot.DebugDisplayText("Pan requested");
-            stopRequested = true; 
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
-                Status = ComponentStatus.Action;
                 var t = new Task(() =>
                 {
-                    stopRequested = false;
+                    Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Task Running");
                     if (movementSpeed == ServoMovementSpeed.Flank)
                     {
-                        if (stopRequested)
-                        {
-                            return;
-                        }
                         ServoRotateTo(servoPan, newAngle);
                     }
                     else
@@ -137,12 +131,8 @@ namespace Servos
 
                             while (newPos > newAngle)
                             {
-                                if (stopRequested)
-                                {
-                                    break;
-                                }
                                 newPos--;
-                                //_appRoot.DebugDisplayText("Pan Decrease Step to " + newPos);
+                                _appRoot.DebugDisplayText("Pan Decrease Step to " + newPos);
                                 ServoRotateTo(servoPan, newPos);
                                 Thread.Sleep(millisecondDelay);
                             }
@@ -151,12 +141,8 @@ namespace Servos
                         {
                             while (newPos < newAngle)
                             {
-                                if (stopRequested)
-                                {
-                                    break;
-                                }
                                 newPos++;
-                                //_appRoot.DebugDisplayText("Pan Increase Step to " + newPos);
+                                _appRoot.DebugDisplayText("Pan Increase Step to " + newPos);
                                 ServoRotateTo(servoPan, newPos);
                                 Thread.Sleep(millisecondDelay);
                             }
@@ -172,20 +158,14 @@ namespace Servos
         public void TiltTo(double newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
             _appRoot.DebugDisplayText("Tilt requested");
-            stopRequested = true;
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
-                Status = ComponentStatus.Action;
 
                 var t = new Task(() =>
                 {
-                    if (stopRequested)
-                    {
-                        return;
-                    }
-                    stopRequested = false;
+                    Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Tilt Task Running");
                     ServoRotateTo(servoTilt, newAngle);
                     Status = ComponentStatus.Ready;

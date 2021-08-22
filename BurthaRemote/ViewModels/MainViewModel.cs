@@ -9,6 +9,10 @@ using Microsoft.Toolkit.Uwp.Helpers;
 using System.Collections.ObjectModel;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Toolkit.Uwp;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Storage.Streams;
+using Windows.Security.Cryptography;
+using Buffer = Windows.Storage.Streams.Buffer;
 
 namespace BurthaRemote.ViewModels
 {
@@ -104,9 +108,18 @@ namespace BurthaRemote.ViewModels
             }
         }
 
-        public void SendMessage()
+        public async void SendUtf8Message(ObservableGattCharacteristics sendTo, string message)
         {
+            if (!string.IsNullOrEmpty(message) &&
+                sendTo != null)
+            {
+                IBuffer writeBuffer = null;
 
+                writeBuffer = CryptographicBuffer.ConvertStringToBinary(
+                    message,
+                    BinaryStringEncoding.Utf8);
+                GattCommunicationStatus result = await sendTo.Characteristic.WriteValueAsync(writeBuffer);
+            }
         }
     }
 }

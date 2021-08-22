@@ -76,18 +76,18 @@ namespace Communications
                 {
                     characteristic.ValueSet += (c, d) =>
                     {
-
-                        int receivedData = -1;
+                        
+                        //int receivedData = -1;
                         string advancedData = string.Empty;
 
                         try
                         {
                             advancedData = d.ToString();
-                            receivedData = Convert.ToInt32(d);
+                            //receivedData = Convert.ToInt32(d);
                         }
                         catch (Exception dataEx)
                         {
-
+                            _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug, false, false);
                         }
 
                         try
@@ -104,7 +104,7 @@ namespace Communications
                             if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Move.ToString()))
                             {
 
-                                switch (receivedData)
+                                switch (Convert.ToInt32(advancedData))
                                 {
                                     case -1:
                                         _appRoot.movementController.Stop();
@@ -172,13 +172,13 @@ namespace Communications
                                         int device = Convert.ToInt32(sp[0]);
                                         int pan = Convert.ToInt32(sp[1]);
                                         int tilt = Convert.ToInt32(sp[2]);
-                                        int speed = (int)ServoMovementSpeed.Fast;
+                                        int speed = (int)ServoMovementSpeed.Flank;
                                         if (sp.Count() == 4)
                                         {
                                             speed = Convert.ToInt32(sp[3]);
                                         }
 
-                                        _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString(), DisplayStatusMessageTypes.Important);
+                                        _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
                                         if (device < _appRoot.i2CPWMController.PanTilts.Count)
                                         {
@@ -195,37 +195,32 @@ namespace Communications
 
                             if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Power.ToString()))
                             {
-                                switch (receivedData)
+
+                                var valueAsInt = Convert.ToInt32(advancedData);
+
+                                switch (valueAsInt)
                                 {
                                     case 0: _appRoot.powerController.Disconnect(); break;
                                     case 1: _appRoot.powerController.Connect(); break;
                                     default:
                                         {
-                                            if (receivedData >= 100)
+                                            if (valueAsInt >= 100)
                                             {
                                                 _appRoot.movementController.SetDefaultPower(100);
                                             }
                                             else
                                             {
-                                                if (receivedData <= 2)
+                                                if (valueAsInt <= 2)
                                                 {
                                                     _appRoot.movementController.SetDefaultPower(0);
                                                 }
                                                 else
                                                 {
-                                                    _appRoot.movementController.SetDefaultPower(receivedData);
+                                                    _appRoot.movementController.SetDefaultPower(valueAsInt);
                                                 }
                                             }
                                         }
                                         break;
-                                }
-                                if (receivedData == 1)
-                                {
-                                    
-                                }
-                                else
-                                {
-                                    
                                 }
                             }
 
