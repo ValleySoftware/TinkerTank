@@ -150,16 +150,16 @@ namespace TinkerTank
 
         public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
         {
-            var t = new Task(() =>
-            {
+            //var t = new Task(() =>
+            //{
                 Console.WriteLine(textToShow);
 
                 if (!ConsoleOnly && lcd != null)
                 {
                     lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
                 }
-            });
-            t.Start();
+            //});
+            //t.Start();
         }
     }
 }

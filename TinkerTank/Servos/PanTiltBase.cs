@@ -19,8 +19,8 @@ namespace Servos
         private Servo servoTilt;
         private string _name;
 
-        private double _defaultPan = 90;
-        private double _defaultTilt = 90;
+        private int _defaultPan = 90;
+        private int _defaultTilt = 90;
 
         //private bool stopRequested = false;
 
@@ -83,33 +83,35 @@ namespace Servos
             set => SetProperty(ref _name, value);
         }
 
-        public double DefaultPan
+        public int DefaultPan
         {
             get => _defaultPan;
             set => SetProperty(ref _defaultPan, value);
         }
 
-        public double DefaultTilt
+        public int DefaultTilt
         {
             get => _defaultTilt;
             set => SetProperty(ref _defaultTilt, value);
         }
 
-        public void PanTo(double newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public void PanTo(int newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
             _appRoot.DebugDisplayText("Pan requested");
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
-                var t = new Task(() =>
-                {
+                //var t = Task.Run(() =>
+                //{
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Task Running");
                     if (movementSpeed == ServoMovementSpeed.Flank)
-                    {
-                        ServoRotateTo(servoPan, newAngle);
-                    }
+                {
+                    _appRoot.DebugDisplayText("Pan speed flank");
+                    ServoRotateTo(servoPan, newAngle);
+                    _appRoot.DebugDisplayText("Pan at flank finished");
+                }
                     else
                     {
                         int millisecondDelay = 0;
@@ -122,7 +124,7 @@ namespace Servos
                             default: millisecondDelay = 250; break;
                         }
 
-                        var newPos = CurrentPanPosition.Value.Degrees;
+                        int newPos = (int)Math.Round(CurrentPanPosition.Value.Degrees);
 
                         _appRoot.DebugDisplayText("Pan from " + newPos + " to " + newAngle + " with " + millisecondDelay);
 
@@ -149,14 +151,13 @@ namespace Servos
                         }
                     }
                     Status = ComponentStatus.Ready;
-                });
+                //});
 
-                t.Start();
-                t.Wait();
+               // t.Wait();
             }
         }
 
-        public void TiltTo(double newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public void TiltTo(int newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
             _appRoot.DebugDisplayText("Tilt requested");
 
@@ -164,16 +165,15 @@ namespace Servos
                 Status != ComponentStatus.UnInitialised)
             {
 
-                var t = new Task(() =>
-                {
+                //var t = Task.Run(() =>
+                //{
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Tilt Task Running");
                     ServoRotateTo(servoTilt, newAngle);
                     Status = ComponentStatus.Ready;
-                });
+                //});
 
-                t.Start();
-                t.Wait();
+                //t.Wait();
             }
         }
 
@@ -187,31 +187,34 @@ namespace Servos
             throw new NotImplementedException();
         }
 
-        private void ServoRotateTo(Servo servoToRotate, double newAngle)
+        private void ServoRotateTo(Servo servoToRotate, int newAngle)
         {
-            if (Status != ComponentStatus.Error &&
-                Status != ComponentStatus.UnInitialised)
+            //if (Status != ComponentStatus.Error &&
+            //    Status != ComponentStatus.UnInitialised)
+            //{
+            //if (servoToRotate != null &&
+            //newAngle >= servoToRotate.Config.MinimumAngle.Degrees &&
+            //newAngle <= servoToRotate.Config.MaximumAngle.Degrees
+            //)
+            //{
+            var t = Task.Run(() =>
             {
-                if (servoToRotate != null &&
-                newAngle >= servoToRotate.Config.MinimumAngle.Degrees &&
-                newAngle <= servoToRotate.Config.MaximumAngle.Degrees
-                )
-                {
-                    servoToRotate.RotateTo(new Meadow.Units.Angle(newAngle, Meadow.Units.Angle.UnitType.Degrees));
-                }
-            }
+                servoToRotate.RotateTo(new Meadow.Units.Angle(newAngle, Meadow.Units.Angle.UnitType.Degrees));
+                //servoToRotate.Stop();
+            });
+                //}
+            //}
         }
 
         public void GoToDefault()
         {
-            var t = new Task(() =>
-            {
+            //var t = Task.Run(() =>
+            //{
                 PanTo(DefaultPan);
                 TiltTo(DefaultTilt);
-            });
+            //});
 
-            t.Start();
-
-            }
+            //t.Start();
+        }
     }
 }

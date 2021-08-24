@@ -179,12 +179,12 @@ namespace Communications
                                         }
 
                                         _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
-
-                                        if (device < _appRoot.i2CPWMController.PanTilts.Count)
-                                        {
-                                            _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
-                                            _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
-                                        }
+                                        _appRoot.i2CPWMController.DriveCameraMovement.PanTo(pan);
+                                        //if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                                        //{
+                                        //    _appRoot.i2CPWMController.PanTilts[device].PanTo(pan);//, (ServoMovementSpeed)speed);
+                                        //    _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt);//, (ServoMovementSpeed)speed);
+                                        //}
                                     }
                                 }
                                 catch (Exception decipherPanTiltEx)
