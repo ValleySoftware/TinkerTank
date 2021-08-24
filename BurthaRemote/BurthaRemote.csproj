@@ -120,6 +120,24 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="MVVM\ValleyBaseViewModel.cs" />
+    <Compile Include="UserControls\ArmUserControl.xaml.cs">
+      <DependentUpon>ArmUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\BluetoothUserControl.xaml.cs">
+      <DependentUpon>BluetoothUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\CameraGlobalUserControl.xaml.cs">
+      <DependentUpon>CameraGlobalUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\PanTiltGlobalUserControl.xaml.cs">
+      <DependentUpon>PanTiltGlobalUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\MovementUserControl.xaml.cs">
+      <DependentUpon>MovementUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\PanTiltIndividualUserControl.xaml.cs">
+      <DependentUpon>PanTiltIndividualUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
@@ -146,6 +164,30 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="UserControls\ArmUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\BluetoothUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\CameraGlobalUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\PanTiltGlobalUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MovementUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\PanTiltIndividualUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -183,7 +225,6 @@
   <ItemGroup>
     <Folder Include="Helpers\" />
     <Folder Include="Models\" />
-    <Folder Include="UserControls\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DeployedAssets\AquaPulsingCheck.json">

@@ -38,29 +38,5 @@ namespace BurthaRemote.Views
         {
             this.InitializeComponent();// Get a local copy of the context for easier reading
         }
-
-        private void scanForBluetoothButton_Click(object sender, RoutedEventArgs e)
-        {
-            mainViewModel.ListAvailableBluetoothDevices();
-        }
-
-        private void connectToDeviceButton_Click(object sender, RoutedEventArgs e)
-        {
-            var fe = e.OriginalSource as FrameworkElement; 
-            var vm = fe.DataContext as ObservableBluetoothLEDevice;
-
-            if (vm != null)
-            {
-                App.dispatcherQueue.EnqueueAsync(() =>
-                {
-                    mainViewModel.ConnectToBTEDevice(vm);
-                });
-            }
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            mainViewModel.SendUtf8Message(mainViewModel.CurrentCharacteristic, messageTextBox.Text);
-        }
     }
 }
