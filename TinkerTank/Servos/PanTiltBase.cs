@@ -131,7 +131,7 @@ namespace Servos
 
                             while (newPos > newAngle)
                             {
-                                newPos--;
+                                newPos = newPos - 1;
                                 _appRoot.DebugDisplayText("Pan Decrease Step to " + newPos);
                                 ServoRotateTo(servoPan, newPos);
                                 Thread.Sleep(millisecondDelay);
@@ -141,7 +141,7 @@ namespace Servos
                         {
                             while (newPos < newAngle)
                             {
-                                newPos++;
+                                newPos = newPos + 1;
                                 _appRoot.DebugDisplayText("Pan Increase Step to " + newPos);
                                 ServoRotateTo(servoPan, newPos);
                                 Thread.Sleep(millisecondDelay);
@@ -152,6 +152,7 @@ namespace Servos
                 });
 
                 t.Start();
+                t.Wait();
             }
         }
 
@@ -172,6 +173,7 @@ namespace Servos
                 });
 
                 t.Start();
+                t.Wait();
             }
         }
 

@@ -92,7 +92,7 @@ namespace Communications
 
                         try
                         {
-                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, true);
+                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, false);
 
                             if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Stop.ToString()))
                             {

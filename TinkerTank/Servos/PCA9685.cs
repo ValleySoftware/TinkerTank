@@ -46,8 +46,8 @@ namespace Servos
             PeriscopeCameraMovement.GoToDefault();
             PanTilts.Add(PeriscopeCameraMovement);
 
-            Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
-            Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
+            //Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
+            //Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
             Status = ComponentStatus.Ready;
         }
