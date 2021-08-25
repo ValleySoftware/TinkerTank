@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TinkerTank.Sensors;
+//using TinkerTank.Sensors;
 using Utilities.Power;
 
 namespace TinkerTank
@@ -25,7 +25,7 @@ namespace TinkerTank
         public LCDDisplay_ST7789 lcd;
         public BlueTooth communications;
         public PCA9685 i2CPWMController;
-        public VL6180X distance;
+        //public VL6180X distance;
 
         public II2cBus sharedi2cBus;
 
@@ -101,7 +101,7 @@ namespace TinkerTank
 
         public void RefreshStatus()
         {
-            //DebugDisplayText("Checking Component Status");
+            //DebugDisplayText("Checking Component Status", DisplayStatusMessageTypes.Debug, false);
             foreach (var element in TBObjects)
             {
                 SetStatus(element.Status);
@@ -150,16 +150,16 @@ namespace TinkerTank
 
         public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
         {
-            //var t = new Task(() =>
-            //{
+            var t = new Task(() =>
+            {
                 Console.WriteLine(textToShow);
 
                 if (!ConsoleOnly && lcd != null)
                 {
                     lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
                 }
-            //});
-            //t.Start();
+            });
+            t.Start();
         }
     }
 }

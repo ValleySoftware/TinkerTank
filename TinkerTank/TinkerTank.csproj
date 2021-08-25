@@ -8,7 +8,19 @@
     <UserSecretsId>07faa377-8eec-4124-b472-a804a73f25af</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Communications\WiFi.cs" />
+    <Compile Remove="Sensors\VL5310xForReference.cs" />
+    <Compile Remove="Sensors\VL6180X.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Sensors\AttemptOne.txt" />
+    <None Remove="Sensors\VL5180xPythonDriverReference.py" />
+    <None Remove="Sensors\VL6180XArduinoDriver.cpp" />
+    <None Remove="Sensors\VL6180xPythonDriverReference.py" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="Sensors\" />
   </ItemGroup>
   <ItemGroup>
 	  <PackageReference Include="Meadow.F7" Version="0.26.0" />
@@ -18,8 +30,6 @@
 	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.34" />
 	  <PackageReference Include="Meadow.Foundation.ServoCore" Version="0.8.40" />
 	  <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.3.0" />
-    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.2" />
-    <PackageReference Include="SimpleJpegDecoder" Version="0.4.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Secrets.Designer.cs">
@@ -27,6 +37,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Secrets.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="C:\Users\rlmar\.nuget\packages\meadow.f7\0.26.0\contentFiles\any\netstandard2.1\netstandard.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Secrets.resx">

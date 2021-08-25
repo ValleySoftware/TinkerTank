@@ -24,43 +24,48 @@ namespace Communications
             try
             {
                 var definition = new Definition(
-                    "MEADOWBOT",
+                    "Bertha",
                     new Service(
-                        "ServiceA",
-                        42,
+                        "BerthaService",
+                        41,
                         new CharacteristicInt32(
                             BluetoothCharacturistics.CharacteristicsNames.Stop.ToString(),
                             uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Stop).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            descriptors: new Descriptor(BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Stop).Value, "Stop")
                             ),
                         new CharacteristicString(
                             BluetoothCharacturistics.CharacteristicsNames.Move.ToString(),
-                            maxLength: 10,
                             uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Move).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 20,
+                            descriptors: new Descriptor(BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Move).Value, "Move")
                             ),
                         new CharacteristicString(
                             BluetoothCharacturistics.CharacteristicsNames.PanTilt.ToString(),
-                            maxLength: 10,
                             uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.PanTilt).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 20,
+                            descriptors: new Descriptor(BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.PanTilt).Value, "PanTilt")
                             ),
                         new CharacteristicString(
                             BluetoothCharacturistics.CharacteristicsNames.Power.ToString(),
-                            maxLength: 10,
                             uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Power).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 20,
+                            descriptors: new Descriptor(BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.Power).Value, "Power")
                             ),
                         new CharacteristicString(
                             BluetoothCharacturistics.CharacteristicsNames.AdvancedMove.ToString(),
-                            maxLength: 10,
                             uuid: BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.AdvancedMove).Value,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 20,
+                            descriptors: new Descriptor(BluetoothCharacturistics.Characteristics.FirstOrDefault(k => k.Key == BluetoothCharacturistics.CharacteristicsNames.AdvancedMove).Value, "AdvancedMove")
                             )
                         )
                     );
@@ -76,7 +81,8 @@ namespace Communications
                 {
                     characteristic.ValueSet += (c, d) =>
                     {
-                        
+                        _appRoot.DebugDisplayText("Received ble msg" , DisplayStatusMessageTypes.Important, false);
+
                         //int receivedData = -1;
                         string advancedData = string.Empty;
 
@@ -90,9 +96,10 @@ namespace Communications
                             _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug, false, false);
                         }
 
+                        _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, false);
+
                         try
                         {
-                            _appRoot.DebugDisplayText("Received " + c.Name + " with " + advancedData, DisplayStatusMessageTypes.Debug, false);
 
                             if (c.Name.Equals(BluetoothCharacturistics.CharacteristicsNames.Stop.ToString()))
                             {
@@ -179,12 +186,12 @@ namespace Communications
                                         }
 
                                         _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
-                                        _appRoot.i2CPWMController.DriveCameraMovement.PanTo(pan);
-                                        //if (device < _appRoot.i2CPWMController.PanTilts.Count)
-                                        //{
-                                        //    _appRoot.i2CPWMController.PanTilts[device].PanTo(pan);//, (ServoMovementSpeed)speed);
-                                        //    _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt);//, (ServoMovementSpeed)speed);
-                                        //}
+
+                                        if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                                        {
+                                            _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
+                                            _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
+                                        }
                                     }
                                 }
                                 catch (Exception decipherPanTiltEx)
@@ -232,6 +239,8 @@ namespace Communications
                             _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error, true);
                         }
                     };
+
+                    _appRoot.DebugDisplayText(characteristic.Uuid + " registered", DisplayStatusMessageTypes.Important);
                 }
 
                 _appRoot.DebugDisplayText("BT receivers registered", DisplayStatusMessageTypes.Important);
