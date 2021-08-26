@@ -107,10 +107,12 @@ namespace Servos
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Task Running");
                     if (movementSpeed == ServoMovementSpeed.Flank)
+                    //if (true)
                 {
                     _appRoot.DebugDisplayText("Pan speed flank");
                     ServoRotateTo(servoPan, newAngle);
                     _appRoot.DebugDisplayText("Pan at flank finished");
+                    
                 }
                     else
                     {
@@ -190,23 +192,21 @@ namespace Servos
                     newAngle >= servoToRotate.Config.MinimumAngle.Degrees &&
                     newAngle <= servoToRotate.Config.MaximumAngle.Degrees)
                 {
-                    //var t = Task.Run(() =>
-                    //{
+                    var t = Task.Run(() =>
+                    {
                         servoToRotate.RotateTo(new Meadow.Units.Angle(newAngle, Meadow.Units.Angle.UnitType.Degrees));                
-                    //});
+                    });
                 }
             }
         }
 
         public void GoToDefault()
         {
-            //var t = Task.Run(() =>
-            //{
+            var t = Task.Run(() =>
+            
                 PanTo(DefaultPan);
                 TiltTo(DefaultTilt);
-            //});
-
-            //t.Start();
+            });
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Base;
 using Enumerations;
+using Meadow;
+using Meadow.Devices;
 using Meadow.Gateways.Bluetooth;
 using System;
 using System.Collections.Generic;
@@ -20,11 +22,11 @@ namespace Communications
         public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove };
         private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove };
 
-        private const string UUIDStop = "017e99d6-8a61-11eb-8dcd-0242ac1a5100";
-        private const string UUIDMove = "017e99d6-8a61-11eb-8dcd-0242ac1a5101";
-        private const string UUIDPanTilt = "017e99d6-8a61-11eb-8dcd-0242ac1a5102";
-        private const string UUIDPower = "017e99d6-8a61-11eb-8dcd-0242ac1a5103";
-        private const string UUIDAdvancedMove = "017e99d6-8a61-11eb-8dcd-0242ac1a5104";
+        private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
+        private const string UUIDMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5101";
+        private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
+        private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
+        private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -44,13 +46,11 @@ namespace Communications
         {
             Status = ComponentStatus.UnInitialised;
 
-
             try
             {
+                PrepareCharacteristics();
 
                 PrepareDefinition();
-
-                PrepareCharacteristics();
 
                 MeadowApp.Device.InitCoprocessor();
                 MeadowApp.Device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
@@ -116,24 +116,28 @@ namespace Communications
                     int device = Convert.ToInt32(sp[0]);
                     int pan = Convert.ToInt32(sp[1]);
                     int tilt = Convert.ToInt32(sp[2]);
-                    int speed = (int)ServoMovementSpeed.Flank;
+                    ServoMovementSpeed speed = ServoMovementSpeed.Flank;
                     if (sp.Count() == 4)
                     {
-                        speed = Convert.ToInt32(sp[3]);
+                        int s = Convert.ToInt32(sp[3]);
+                        speed = (ServoMovementSpeed)s;
                     }
+
+
 
                     _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
                     if (device < _appRoot.i2CPWMController.PanTilts.Count)
                     {
-                        _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
-                        _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
+                        _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, speed);
+                        _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, speed);
                     }
                 }
             }
             catch (Exception decipherPanTiltEx)
             {
-
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, DisplayStatusMessageTypes.Error);
             }
         }
 
@@ -202,6 +206,8 @@ namespace Communications
 
         private void PrepareDefinition()
         {
+            _appRoot.DebugDisplayText("PrepBLEDefinitions", DisplayStatusMessageTypes.Debug);
+
             primaryControlService =
                 new Service(
                     serviceName,
@@ -213,10 +219,17 @@ namespace Communications
                     charAdvancedMove
                     );
 
-            foreach(var element in primaryControlService.Characteristics)
+            foreach (var element in primaryControlService.Characteristics)
             {
                 //Loop through and set the 'read' property to the characteristics name.
-                element.SetValue(element.Name);
+                try
+                {
+                    element.SetValue(element.Name);
+                }
+                catch (Exception iDontKnowHowToCheckCharactiristicTypeSoThisWillCatchBoolOrInt)
+                {
+
+                }
             }
 
             PrimaryControlDefinition = new Definition(
@@ -228,51 +241,53 @@ namespace Communications
         private void PrepareCharacteristics()
         {
 
-            _appRoot.DebugDisplayText("BT Service setup", DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("PrepBLECharacturistics", DisplayStatusMessageTypes.Important);
 
             charStop = new CharacteristicInt32(
-                            Convert.ToString(CharacteristicsNames.Stop),
+                            name: CharacteristicsNames.Stop.ToString(),
                             uuid: UUIDStop,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             descriptors: new Descriptor(UUIDStop, CharacteristicsNames.Stop.ToString())
                             );
             charMove = new CharacteristicString(
-                            Convert.ToString(CharacteristicsNames.Move),
+                            name: CharacteristicsNames.Move.ToString(),
                             uuid: UUIDMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 20,
+                            maxLength: 12,
                             descriptors: new Descriptor(UUIDMove, CharacteristicsNames.Move.ToString())
                             );
             charPanTilt = new CharacteristicString(
-                            Convert.ToString(CharacteristicsNames.PanTilt),
+                            name: CharacteristicsNames.PanTilt.ToString(),
                             uuid: UUIDPanTilt,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 20,
+                            maxLength: 12,
                             descriptors: new Descriptor(UUIDPanTilt, CharacteristicsNames.PanTilt.ToString())
                             );
             charPower = new CharacteristicString(
-                            Convert.ToString(CharacteristicsNames.Power),
+                            name: CharacteristicsNames.Power.ToString(),
                             uuid: UUIDPower,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 20,
+                            maxLength: 12,
                             descriptors: new Descriptor(UUIDPower, CharacteristicsNames.Power.ToString())
                             );
             charAdvancedMove = new CharacteristicString(
-                            Convert.ToString(CharacteristicsNames.AdvancedMove),
+                            name: CharacteristicsNames.AdvancedMove.ToString(),
                             uuid: UUIDAdvancedMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 20,
+                            maxLength: 12,
                             descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
         }
 
         private void PrepareCharacteristicEventHandlers()
         {
+            _appRoot.DebugDisplayText("PrepBLEHandlers", DisplayStatusMessageTypes.Debug);
+
             foreach (var characteristic in primaryControlService.Characteristics)
             {
                 characteristic.ValueSet += (c, d) =>
@@ -294,32 +309,14 @@ namespace Communications
                     _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Debug, false);
 
                     try
-                    {
-                        int ci = -1; 
-
-                        try
+                    {      
+                        switch (c.Name)
                         {
-                            ci = Convert.ToInt32(c.Name);
-                        }
-                        catch (Exception e)
-                        {
-
-                        }
-
-                        if (ci == -1)
-                        {
-                            return;
-                        }
-
-                        CharacteristicsNames requestedCharacteristic = (CharacteristicsNames)ci;
-
-                        switch (requestedCharacteristic)
-                        {
-                            case CharacteristicsNames.Stop: RequestStop(); break;
-                            case CharacteristicsNames.Move: RequestMove(payload); break;
-                            case CharacteristicsNames.PanTilt: RequestPanTilt(payload); break;
-                            case CharacteristicsNames.Power: RequestPower(payload); break;
-                            case CharacteristicsNames.AdvancedMove: RequestAdvancedMove(payload); break;
+                            case "Stop": RequestStop(); break;
+                            case "Move": RequestMove(payload); break;
+                            case "PanTilt": RequestPanTilt(payload); break;
+                            case "Power": RequestPower(payload); break;
+                            case "AdvancedMove": RequestAdvancedMove(payload); break;
                             default: RequestStop(); break;
                         }
 

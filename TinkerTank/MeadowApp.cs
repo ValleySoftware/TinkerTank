@@ -27,7 +27,7 @@ namespace TinkerTank
         public PCA9685 i2CPWMController;
         //public VL6180X distance;
 
-        public II2cBus sharedi2cBus;
+        public II2cBus Sharedi2cBus;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -63,10 +63,10 @@ namespace TinkerTank
             communications.Init();
 
             DebugDisplayText("Init i2c");
-            sharedi2cBus = Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
+            Sharedi2cBus = Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
 
             DebugDisplayText("start pca9986");
-            i2CPWMController = new PCA9685(this);
+            i2CPWMController = new PCA9685(this, ref Sharedi2cBus);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
 
