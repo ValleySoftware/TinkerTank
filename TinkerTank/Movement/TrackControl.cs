@@ -256,12 +256,10 @@ namespace Peripherals
 
         public void RefreshStatus()
         {
-            throw new NotImplementedException();
         }
 
         public void Test()
         {
-            throw new NotImplementedException();
         }
     }
 }

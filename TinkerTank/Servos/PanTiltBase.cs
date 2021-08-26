@@ -175,12 +175,10 @@ namespace Servos
 
         public void RefreshStatus()
         {
-            throw new NotImplementedException();
         }
 
         public void Test()
         {
-            throw new NotImplementedException();
         }
 
         private void ServoRotateTo(Servo servoToRotate, int newAngle)

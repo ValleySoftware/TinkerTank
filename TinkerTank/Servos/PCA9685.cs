@@ -66,7 +66,6 @@ namespace Servos
 
         public void Test()
         {
-            throw new NotImplementedException();
         }
 
 

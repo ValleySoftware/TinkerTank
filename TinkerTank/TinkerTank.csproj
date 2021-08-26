@@ -8,7 +8,6 @@
     <UserSecretsId>07faa377-8eec-4124-b472-a804a73f25af</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Communications\WiFi.cs" />
     <Compile Remove="Sensors\VL5310xForReference.cs" />
     <Compile Remove="Sensors\VL6180X.cs" />
   </ItemGroup>

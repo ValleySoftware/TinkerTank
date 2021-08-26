@@ -44,7 +44,6 @@ namespace Utilities.Power
 
         public void RefreshStatus()
         {
-            throw new NotImplementedException();
         }
 
         public void Connect()
