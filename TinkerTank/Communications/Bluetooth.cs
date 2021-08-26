@@ -26,19 +26,6 @@ namespace Communications
         private const string UUIDPower = "017e99d6-8a61-11eb-8dcd-0242ac1a5103";
         private const string UUIDAdvancedMove = "017e99d6-8a61-11eb-8dcd-0242ac1a5104";
 
-        /*
-        public static readonly List<KeyValuePair<CharacteristicsNames, string>> Characteristics =
-            new List<KeyValuePair<CharacteristicsNames, string>>()
-            {
-                new KeyValuePair<CharacteristicsNames,string>(CharacteristicsNames.Stop,UUIDStop),
-                new KeyValuePair<CharacteristicsNames,string>(CharacteristicsNames.Move,UUIDMove),
-                new KeyValuePair<CharacteristicsNames,string>(CharacteristicsNames.PanTilt,UUIDPanTilt),
-                new KeyValuePair<CharacteristicsNames,string>(CharacteristicsNames.Power,UUIDPower),
-                new KeyValuePair<CharacteristicsNames,string>(CharacteristicsNames.AdvancedMove,UUIDAdvancedMove)
-            };
-        */
-
-
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
         private CharacteristicInt32  charStop;
@@ -86,132 +73,130 @@ namespace Communications
         private void RequestPower(string payload)
         {
 
-                var valueAsInt = Convert.ToInt32(payload);
+            var valueAsInt = Convert.ToInt32(payload);
 
-                switch (valueAsInt)
-                {
-                    case 0: _appRoot.powerController.Disconnect(); break;
-                    case 1: _appRoot.powerController.Connect(); break;
-                    default:
+            switch (valueAsInt)
+            {
+                case 0: _appRoot.powerController.Disconnect(); break;
+                case 1: _appRoot.powerController.Connect(); break;
+                default:
+                    {
+                        if (valueAsInt >= 100)
                         {
-                            if (valueAsInt >= 100)
+                            _appRoot.movementController.SetDefaultPower(100);
+                        }
+                        else
+                        {
+                            if (valueAsInt <= 2)
                             {
-                                _appRoot.movementController.SetDefaultPower(100);
+                                _appRoot.movementController.SetDefaultPower(0);
                             }
                             else
                             {
-                                if (valueAsInt <= 2)
-                                {
-                                    _appRoot.movementController.SetDefaultPower(0);
-                                }
-                                else
-                                {
-                                    _appRoot.movementController.SetDefaultPower(valueAsInt);
-                                }
+                                _appRoot.movementController.SetDefaultPower(valueAsInt);
                             }
                         }
-                        break;
-                }
+                    }
+                    break;
+            }
         }
 
         private void RequestPanTilt(string payload)
         {
-                //Device-PanTo-TiltTo-Speed
-                //00-000-000-0
+            //Device-PanTo-TiltTo-Speed
+            //00-000-000-0
 
-                try
+            try
+            {
+                var sp = payload.Split("-");
+
+                if (sp.Count() >= 3)
                 {
-                    var sp = payload.Split("-");
 
-                    if (sp.Count() >= 3)
+                    int device = Convert.ToInt32(sp[0]);
+                    int pan = Convert.ToInt32(sp[1]);
+                    int tilt = Convert.ToInt32(sp[2]);
+                    int speed = (int)ServoMovementSpeed.Flank;
+                    if (sp.Count() == 4)
                     {
+                        speed = Convert.ToInt32(sp[3]);
+                    }
 
-                        int device = Convert.ToInt32(sp[0]);
-                        int pan = Convert.ToInt32(sp[1]);
-                        int tilt = Convert.ToInt32(sp[2]);
-                        int speed = (int)ServoMovementSpeed.Flank;
-                        if (sp.Count() == 4)
-                        {
-                            speed = Convert.ToInt32(sp[3]);
-                        }
+                    _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                        _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
-
-                        if (device < _appRoot.i2CPWMController.PanTilts.Count)
-                        {
-                            _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
-                            _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
-                        }
+                    if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                    {
+                        _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, (ServoMovementSpeed)speed);
+                        _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, (ServoMovementSpeed)speed);
                     }
                 }
-                catch (Exception decipherPanTiltEx)
-                {
+            }
+            catch (Exception decipherPanTiltEx)
+            {
 
-                }
+            }
         }
 
         private void RequestStop()
         {
-
-                _appRoot.movementController.Stop();
-
+            _appRoot.movementController.Stop();
         }
 
         private void RequestMove(string payload)
         {
             var testMotorDuration = new TimeSpan(0, 0, 0, 0, 250);
 
-                switch (Convert.ToInt32(payload))
-                {
-                    case -1:
-                        _appRoot.movementController.Stop();
-                        break;
-                    case (int)Direction.Forward: //0
-                        _appRoot.movementController.Move(Direction.Forward, 0, testMotorDuration);
-                        break;
-                    case (int)Direction.Backwards://1
-                        _appRoot.movementController.Move(Direction.Backwards, 0, testMotorDuration);
-                        break;
-                    case (int)Direction.TurnLeft://2
-                        _appRoot.movementController.Move(Direction.TurnLeft, 0, testMotorDuration);
-                        break;
-                    case (int)Direction.TurnRight://3
-                        _appRoot.movementController.Move(Direction.TurnRight, 0, testMotorDuration);
-                        break;
-                    case (int)Direction.RotateLeft://4
-                        _appRoot.movementController.Move(Direction.RotateLeft, 0, testMotorDuration);
-                        break;
-                    case (int)Direction.RotateRight://5
-                        _appRoot.movementController.Move(Direction.RotateRight, 0, testMotorDuration);
-                        break;
-                    default:
-                        break;
+            switch (Convert.ToInt32(payload))
+            {
+                case -1:
+                    _appRoot.movementController.Stop();
+                    break;
+                case (int)Direction.Forward: //0
+                    _appRoot.movementController.Move(Direction.Forward, 0, testMotorDuration);
+                    break;
+                case (int)Direction.Backwards://1
+                    _appRoot.movementController.Move(Direction.Backwards, 0, testMotorDuration);
+                    break;
+                case (int)Direction.TurnLeft://2
+                    _appRoot.movementController.Move(Direction.TurnLeft, 0, testMotorDuration);
+                    break;
+                case (int)Direction.TurnRight://3
+                    _appRoot.movementController.Move(Direction.TurnRight, 0, testMotorDuration);
+                    break;
+                case (int)Direction.RotateLeft://4
+                    _appRoot.movementController.Move(Direction.RotateLeft, 0, testMotorDuration);
+                    break;
+                case (int)Direction.RotateRight://5
+                    _appRoot.movementController.Move(Direction.RotateRight, 0, testMotorDuration);
+                    break;
+                default:
+                    break;
             }
         }
 
         private void RequestAdvancedMove(string payload)
         {
-                //movementDirection-powerPercent-durationInseconds
-                //00-000-000
+            //movementDirection-powerPercent-durationInseconds
+            //00-000-000
 
-                var sp = payload.Split("-");
+            var sp = payload.Split("-");
 
-                if (sp.Count() == 3)
+            if (sp.Count() == 3)
+            {
+                try
                 {
-                    try
-                    {
 
-                        int direction = Convert.ToInt32(sp[0]);
-                        int power = Convert.ToInt32(sp[1]);
-                        double duration = Convert.ToDouble(sp[2]);
+                    int direction = Convert.ToInt32(sp[0]);
+                    int power = Convert.ToInt32(sp[1]);
+                    double duration = Convert.ToDouble(sp[2]);
 
-                        _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromSeconds(duration));
-                    }
-                    catch (Exception decipherAdvancedMoveEx)
-                    {
-
-                    }
+                    _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromSeconds(duration));
                 }
+                catch (Exception decipherAdvancedMoveEx)
+                {
+
+                }
+            }
         }
 
 
