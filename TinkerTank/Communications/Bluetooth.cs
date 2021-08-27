@@ -180,7 +180,7 @@ namespace Communications
 
         private void RequestAdvancedMove(string payload)
         {
-            //movementDirection-powerPercent-durationInseconds
+            //movementDirection-powerPercent-durationInMilliseconds
             //00-000-000
 
             var sp = payload.Split("-");
@@ -189,12 +189,11 @@ namespace Communications
             {
                 try
                 {
-
                     int direction = Convert.ToInt32(sp[0]);
                     int power = Convert.ToInt32(sp[1]);
                     double duration = Convert.ToDouble(sp[2]);
 
-                    _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromSeconds(duration));
+                    _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
                 }
                 catch (Exception decipherAdvancedMoveEx)
                 {
