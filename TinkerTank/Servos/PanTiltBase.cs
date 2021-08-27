@@ -203,7 +203,7 @@ namespace Servos
         public void GoToDefault()
         {
             var t = Task.Run(() =>
-            
+            { 
                 PanTo(DefaultPan);
                 TiltTo(DefaultTilt);
             });
