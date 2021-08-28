@@ -27,6 +27,8 @@ namespace TinkerTank
         public PCA9685 i2CPWMController;
         //public VL6180X distance;
 
+        public static bool ShowDebugLogs = false;
+
         public II2cBus Sharedi2cBus;
 
         IDigitalOutputPort blueLED;
@@ -138,7 +140,7 @@ namespace TinkerTank
                         break;
                     case ComponentStatus.Ready:
                         greenLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
                         break;
                     default:
                         break;
@@ -150,16 +152,20 @@ namespace TinkerTank
 
         public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
         {
-            var t = new Task(() =>
+            if (ShowDebugLogs ||
+                statusType != DisplayStatusMessageTypes.Debug)
             {
-                Console.WriteLine(textToShow);
-
-                if (!ConsoleOnly && lcd != null)
+                var t = new Task(() =>
                 {
-                    lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
-                }
-            });
-            t.Start();
+                    Console.WriteLine(textToShow);
+
+                    if (!ConsoleOnly && lcd != null)
+                    {
+                        lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+                    }
+                });
+                t.Start();
+            }
         }
     }
 }

@@ -19,8 +19,9 @@ namespace Peripherals
         private HBridgeMotor motorLeft;
         private HBridgeMotor motorRight;
         private bool _reverseMotorOrientation = false;
-        private int reverseMotorOrientationMultiplier = 1;
-        private int _defaultPower = 50;
+        private int reverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
+        private static double opposingActionMultiplier = 1.5; //If the motors are going opposite ways, apply more power as they face more resistance.
+        private double _defaultPower = 50;
 
         public TrackControl(MeadowApp appRoot)
         {
@@ -104,11 +105,11 @@ namespace Peripherals
             }
         }
 
-        public void Move(Direction direction, int power, TimeSpan? movementDuration = null)
+        public void Move(Direction direction, int power, TimeSpan movementDuration)
         {
             if (power == 0)
             {
-                power = _defaultPower;
+                power = (int)Math.Round(_defaultPower);
             }
 
             //if (_appRoot.HasDrivePower)
@@ -140,21 +141,19 @@ namespace Peripherals
                         break;
                 }
 
-                if (movementDuration != null)
+                if (!movementDuration.Equals(TimeSpan.Zero))
                 {
-                    var stopTimerThread = new Thread(() =>
+                    var stopTimerThread = Task.Run(async () =>
                     {
-                        Thread.Sleep((int)movementDuration.Value.TotalMilliseconds);
-                        Stop();
+                        await Task.Delay(movementDuration);
+                        BreakAndHold();
 
                     });
-
-                    stopTimerThread.Start();
                 }
             }
         }
 
-        public bool MoveManual(float leftPower, float rightPower, TimeSpan? movementDuration = null)
+        public bool MoveManual(float leftPower, float rightPower, TimeSpan movementDuration)
         {
             //if (_appRoot.HasDrivePower)
             {
@@ -168,8 +167,13 @@ namespace Peripherals
             return true;
         }
 
-        public bool MoveManual(float leftFrontPower, float rightFrontPower, float leftRearPower, float rightRearPower, TimeSpan? movementDuration = null)
+        public bool MoveManual(float leftFrontPower, float rightFrontPower, float leftRearPower, float rightRearPower, TimeSpan movementDuration)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = leftFrontPower * reverseMotorOrientationMultiplier;
+            rightPower = rightFrontPower * reverseMotorOrientationMultiplier;
             //if (_appRoot.HasDrivePower)
             {
                 motorLeft.IsNeutral = true;
@@ -202,55 +206,123 @@ namespace Peripherals
 
         private void Forward(float power)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = power * reverseMotorOrientationMultiplier;
+            rightPower = power * reverseMotorOrientationMultiplier;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = power * reverseMotorOrientationMultiplier;
-            motorRight.Power = power * reverseMotorOrientationMultiplier;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
         }
 
         private void Backwards(float power)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = power * -1 * reverseMotorOrientationMultiplier;
+            rightPower = power * -1 * reverseMotorOrientationMultiplier;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
-            motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
         }
 
         private void TurnLeft(float power)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = 0;
+            rightPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = 0;
-            motorRight.Power = power * reverseMotorOrientationMultiplier * 2;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
+        }
+
+        private static void SanityCheckPower(ref double leftPower, ref double rightPower)
+        {
+            if (leftPower > 100)
+            {
+                leftPower = 100;
+            }
+            if (leftPower < -100)
+            {
+                leftPower = -100;
+            }
+            if (rightPower > 100)
+            {
+                rightPower = 100;
+            }
+            if (rightPower < -100)
+            {
+                rightPower = -100;
+            }
         }
 
         private void TurnRight(float power)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = 0;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = power * reverseMotorOrientationMultiplier * 2;
-            motorRight.Power = 0;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
         }
 
         private void RotateLeft(float power)
         {
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = power * -1 * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = power * -1 * reverseMotorOrientationMultiplier;
-            motorRight.Power = power * reverseMotorOrientationMultiplier;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
         }
 
         private void RotateRight(float power)
-        {
+        { 
+            double leftPower = _defaultPower;
+            double rightPower = _defaultPower;
+
+            leftPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = power * -1 * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+
+            SanityCheckPower(ref leftPower, ref rightPower);
+
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = power * reverseMotorOrientationMultiplier;
-            motorRight.Power = power * -1 * reverseMotorOrientationMultiplier;
+            motorLeft.Power = (int)Math.Round(leftPower);
+            motorRight.Power = (int)Math.Round(rightPower);
             Status = ComponentStatus.Action;
         }
 

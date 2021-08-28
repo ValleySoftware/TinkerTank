@@ -74,7 +74,7 @@ namespace Communications
             var t = new Task(() =>
             {
                 _appRoot.DebugDisplayText("ForwardRequested");
-                _appRoot.movementController.Move(Direction.Forward, testMotorSpeed);
+                _appRoot.movementController.Move(Direction.Forward, testMotorSpeed, TimeSpan.Zero);
                 Thread.Sleep(250);
                 _appRoot.movementController.Stop();
             });
@@ -89,7 +89,7 @@ namespace Communications
         [HttpGet]
         public void Backward()
         {
-            _appRoot.movementController.Move(Direction.Backwards, testMotorSpeed);
+            _appRoot.movementController.Move(Direction.Backwards, testMotorSpeed, TimeSpan.Zero);
             Thread.Sleep(250);
             Stop();
         }
@@ -97,7 +97,7 @@ namespace Communications
         [HttpGet]
         public void RotateLeft()
         {
-            _appRoot.movementController.Move(Direction.RotateLeft, testMotorSpeed);
+            _appRoot.movementController.Move(Direction.RotateLeft, testMotorSpeed, TimeSpan.Zero);
             Thread.Sleep(250);
             Stop();
         }
@@ -105,7 +105,7 @@ namespace Communications
         [HttpGet]
         public void RotateRight()
         {
-            _appRoot.movementController.Move(Direction.RotateRight, testMotorSpeed);
+            _appRoot.movementController.Move(Direction.RotateRight, testMotorSpeed, TimeSpan.Zero);
             Thread.Sleep(250);
             Stop();
         }

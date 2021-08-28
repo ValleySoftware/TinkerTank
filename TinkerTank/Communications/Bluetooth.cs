@@ -292,7 +292,7 @@ namespace Communications
                 characteristic.ValueSet += (c, d) =>
                 {
 
-                    _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Important, false);
+                    _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Debug, false);
 
                     string payload = string.Empty;
 
@@ -305,7 +305,7 @@ namespace Communications
                         _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug, false, false);
                     }
 
-                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Debug, false);
+                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Important, false);
 
                     try
                     {      
@@ -328,7 +328,7 @@ namespace Communications
                     }
                 };
 
-                _appRoot.DebugDisplayText(characteristic.Uuid + " registered", DisplayStatusMessageTypes.Important);
+                _appRoot.DebugDisplayText(characteristic.Uuid + " registered", DisplayStatusMessageTypes.Debug);
             }
 
             _appRoot.DebugDisplayText("BT receivers registered", DisplayStatusMessageTypes.Important);

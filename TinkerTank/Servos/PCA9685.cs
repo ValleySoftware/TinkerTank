@@ -47,6 +47,7 @@ namespace Servos
             DriveCameraMovement.Init();
             DriveCameraMovement.DefaultPan = 110;
             DriveCameraMovement.DefaultTilt = 100;
+            DriveCameraMovement.GoToDefault();
 
             PeriscopeCameraMovement = new 
                 PanTiltBase(
