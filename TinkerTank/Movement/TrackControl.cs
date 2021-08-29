@@ -141,13 +141,22 @@ namespace Peripherals
                         break;
                 }
 
-                if (!movementDuration.Equals(TimeSpan.Zero))
+                if (movementDuration.Equals(TimeSpan.Zero))
                 {
-                    var stopTimerThread = Task.Run(async () =>
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(3));
+                        _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important,false, false);
+                        Stop();
+                    });
+                }
+                else
+                {
+                    Task.Run(async () =>
                     {
                         await Task.Delay(movementDuration);
-                        BreakAndHold();
-
+                        Stop();
+                        _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug, false, true);
                     });
                 }
             }
@@ -162,6 +171,16 @@ namespace Peripherals
                 motorLeft.Power = leftPower * reverseMotorOrientationMultiplier;
                 motorRight.Power = rightPower * reverseMotorOrientationMultiplier;
                 Status = ComponentStatus.Action;
+
+                if (!movementDuration.Equals(TimeSpan.Zero))
+                {
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(movementDuration);
+                        Stop();
+
+                    });
+                }
             }
 
             return true;
@@ -193,6 +212,7 @@ namespace Peripherals
             motorLeft.Power = 0;
             motorRight.Power = 0;
             Status = ComponentStatus.Ready;
+            _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important, false, false);
         }
 
         public void BreakAndHold()

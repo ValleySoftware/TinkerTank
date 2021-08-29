@@ -6,6 +6,7 @@ using Meadow;
 using Meadow.Devices;
 using Meadow.Foundation;
 using Meadow.Foundation.Leds;
+using Meadow.Foundation.Sensors.Buttons;
 using Meadow.Hardware;
 using Peripherals;
 using Servos;
@@ -25,6 +26,7 @@ namespace TinkerTank
         public LCDDisplay_ST7789 lcd;
         public BlueTooth communications;
         public PCA9685 i2CPWMController;
+        public PushButton button;
         //public VL6180X distance;
 
         public static bool ShowDebugLogs = false;
@@ -52,7 +54,6 @@ namespace TinkerTank
             blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
             greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
             redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
-
 
             DebugDisplayText("start lcd");
             lcd = new LCDDisplay_ST7789(this);
