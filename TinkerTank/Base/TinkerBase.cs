@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using TinkerTank;
 using Enumerations;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace Base
 {
-    public class TinkerBase
+    public class TinkerBase : ObservableObject
     {
         protected ComponentStatus _status = ComponentStatus.UnInitialised;
         protected MeadowApp _appRoot;

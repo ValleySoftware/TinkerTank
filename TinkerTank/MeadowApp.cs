@@ -14,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TinkerTank.Sensors;
 //using TinkerTank.Sensors;
 using Utilities.Power;
+using static Meadow.Foundation.Sensors.Distance.Vl53l0x;
 
 namespace TinkerTank
 {
@@ -27,11 +29,12 @@ namespace TinkerTank
         public BlueTooth communications;
         public PCA9685 i2CPWMController;
         public PushButton button;
-        //public VL6180X distance;
+        public Dist53l0 distance;
 
         public static bool ShowDebugLogs = false;
 
-        public II2cBus Sharedi2cBus;
+        public II2cBus pcaBus;
+        //public II2cBus vl53Bus;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -66,10 +69,15 @@ namespace TinkerTank
             communications.Init();
 
             DebugDisplayText("Init i2c");
-            Sharedi2cBus = Device.CreateI2cBus(I2cBusSpeed.Fast, (int)0x29);
+            pcaBus = Device.CreateI2cBus();
+
+            DebugDisplayText("start distance sensor"); 
+            distance = new Dist53l0( this, ref pcaBus);
+            //TBObjects.Add(distance);
+            distance.Init();
 
             DebugDisplayText("start pca9986");
-            i2CPWMController = new PCA9685(this, ref Sharedi2cBus);
+            i2CPWMController = new PCA9685(this, ref pcaBus);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
 
@@ -84,11 +92,6 @@ namespace TinkerTank
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
-
-            //DebugDisplayText("start distance sensor");
-            //distance = new VL6180X(this, VL6180X.UnitType.cm, sharedi2cBus);
-            //TBObjects.Add(distance);
-            //distance.Init();
 
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);

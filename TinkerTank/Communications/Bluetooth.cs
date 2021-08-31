@@ -12,7 +12,7 @@ using TinkerTank;
 
 namespace Communications
 {
-    public class BlueTooth : TinkerBase, ITinkerBase
+    public class BlueTooth : TinkerBase, ITinkerBase, ICommunication
     {
 
         public const string definitionName = "BerthaDefinition";

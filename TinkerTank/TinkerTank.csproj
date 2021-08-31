@@ -19,7 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="Sensors\" />
   </ItemGroup>
   <ItemGroup>
 	  <PackageReference Include="Meadow.F7" Version="0.24.7.1" />
@@ -29,6 +28,7 @@
 	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.33" />
 	  <PackageReference Include="Meadow.Foundation.ServoCore" Version="0.8.39" />
 	  <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.3.0" />
+	  <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Secrets.Designer.cs">
