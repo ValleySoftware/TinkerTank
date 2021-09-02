@@ -15,7 +15,7 @@ using Meadow.Gateway.WiFi;
 
 namespace Communications
 {
-    public class WiFiComms : RequestHandlerBase, ITinkerBase
+    public class WiFiComms : RequestHandlerBase, ITinkerBase, ICommunication
     {
         private int testMotorSpeed = 75;
 

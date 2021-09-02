@@ -35,10 +35,12 @@ namespace Communications
         private CharacteristicString charPanTilt;
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
+        F7Micro _device;
 
-        public BlueTooth(MeadowApp appRoot)
+        public BlueTooth(F7Micro device, MeadowApp appRoot)
         {
             _appRoot = appRoot;
+            _device = device;
             Status = ComponentStatus.UnInitialised;
         }
 
@@ -52,8 +54,8 @@ namespace Communications
 
                 PrepareDefinition();
 
-                MeadowApp.Device.InitCoprocessor();
-                MeadowApp.Device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
+                _device.InitCoprocessor();
+                _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
                 _appRoot.DebugDisplayText("BT Service started", DisplayStatusMessageTypes.Important);
 

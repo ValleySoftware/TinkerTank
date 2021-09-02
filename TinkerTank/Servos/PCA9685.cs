@@ -1,5 +1,6 @@
 ﻿using Base;
 using Enumerations;
+using Meadow;
 using Meadow.Foundation.ICs.IOExpanders;
 using Meadow.Foundation.Servos;
 using Meadow.Hardware;
@@ -21,11 +22,13 @@ namespace Servos
         public List<Servo> Miscservos = new List<Servo>();
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
         II2cBus Sharedi2cBus;
+        IF7MeadowDevice _device;
 
-        public PCA9685(MeadowApp appRoot, ref II2cBus sharedi2cBus)
+        public PCA9685(IF7MeadowDevice device, MeadowApp appRoot, ref II2cBus sharedi2cBus)
         {
             _appRoot = appRoot;
             Sharedi2cBus = sharedi2cBus;
+            _device = device;
         }
 
         public void Init()
@@ -38,8 +41,8 @@ namespace Servos
             DriveCameraMovement = new 
                 PanTiltBase(
                     _appRoot, 
-                    pca9685.CreatePwmPort((byte)0), 
-                    pca9685.CreatePwmPort((byte)1), 
+                    pca9685.CreatePwmPort(0), 
+                    pca9685.CreatePwmPort(1), 
                     "DriveCamera", 
                     ServoType.SG90Standard);
 
@@ -52,8 +55,8 @@ namespace Servos
             PeriscopeCameraMovement = new 
                 PanTiltBase(
                     _appRoot, 
-                    pca9685.CreatePwmPort((byte)2), 
-                    pca9685.CreatePwmPort((byte)3), 
+                    pca9685.CreatePwmPort(2), 
+                    pca9685.CreatePwmPort(3), 
                     "PeriscopeCamera", 
                     ServoType.SG90Standard);
 
@@ -63,7 +66,7 @@ namespace Servos
             PeriscopeCameraMovement.DefaultTilt = 80;
             PeriscopeCameraMovement.GoToDefault();
 
-            Miscservos.Add(new Servo(pca9685.CreatePwmPort((byte)15), PanTiltBase.Create996rConfig()));
+            Miscservos.Add(new Servo(pca9685.CreatePwmPort(15), PanTiltBase.Create996rConfig()));
             Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
             Status = ComponentStatus.Ready;

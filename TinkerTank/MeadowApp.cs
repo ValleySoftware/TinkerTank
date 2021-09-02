@@ -5,9 +5,12 @@ using Enumerations;
 using Meadow;
 using Meadow.Devices;
 using Meadow.Foundation;
+using Meadow.Foundation.ICs.IOExpanders;
 using Meadow.Foundation.Leds;
 using Meadow.Foundation.Sensors.Buttons;
+using Meadow.Foundation.Sensors.Distance;
 using Meadow.Hardware;
+using Meadow.Units;
 using Peripherals;
 using Servos;
 using System;
@@ -31,7 +34,7 @@ namespace TinkerTank
         public PushButton button;
         public Dist53l0 distance;
 
-        public static bool ShowDebugLogs = false;
+        public static bool ShowDebugLogs = true;
 
         public II2cBus pcaBus;
         //public II2cBus vl53Bus;
@@ -63,23 +66,25 @@ namespace TinkerTank
             TBObjects.Add(lcd);
             lcd.Init();
 
-            DebugDisplayText("start communications controller");
-            communications = new BlueTooth(this);
-            TBObjects.Add(communications);
-            communications.Init();
-
             DebugDisplayText("Init i2c");
             pcaBus = Device.CreateI2cBus();
 
-            DebugDisplayText("start distance sensor"); 
-            distance = new Dist53l0( this, ref pcaBus);
-            //TBObjects.Add(distance);
-            distance.Init();
-
             DebugDisplayText("start pca9986");
-            i2CPWMController = new PCA9685(this, ref pcaBus);
-            TBObjects.Add(i2CPWMController);
-            i2CPWMController.Init();
+            //i2CPWMController = new PCA9685(Device, this, ref pcaBus);
+            //TBObjects.Add(i2CPWMController);
+            //i2CPWMController.Init();
+
+            DebugDisplayText("start distance sensor");
+            //distance = new Dist53l0(Device, this, ref pcaBus);
+            //TBObjects.Add(distance);
+            //distance.Init();
+            var distanceSensor = new Vl53l0x(Device, pcaBus);
+            distanceSensor.DistanceUpdated += DistanceSensor_DistanceUpdated;
+            distanceSensor.StartUpdating();
+
+
+            //var pca9685 = new Pca9685(pcaBus, 0x40, 50);
+            //pca9685.Initialize();
 
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
@@ -93,11 +98,28 @@ namespace TinkerTank
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
 
+            DebugDisplayText("start communications controller");
+            communications = new BlueTooth(Device as F7Micro, this);
+            TBObjects.Add(communications);
+            communications.Init();
+
             DebugDisplayText("Begining regular polling");
             _statusPoller = new System.Timers.Timer(2000);
             _statusPoller.Elapsed += _statusPoller_Elapsed;
             _statusPoller.AutoReset = true;
             _statusPoller.Enabled = true;
+        }
+
+        private void DistanceSensor_DistanceUpdated(object sender, IChangeResult<Meadow.Units.Length> e)
+        {
+            DebugDisplayText("distanceupdated");
+            if (e.New == null)
+            {
+                return;
+                DebugDisplayText("Argh!");
+            }
+            //DistanceInMillimeters = e.New.Millimeters;
+            DebugDisplayText($"{e.New.Millimeters}mm");
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

@@ -16,11 +16,13 @@ namespace TinkerTank.Sensors
         private Vl53l0x distanceSensor;
         II2cBus sharedBus;
         double _distanceInMillimeters;
+        F7Micro _device;
 
-        public Dist53l0(MeadowApp appRoot, ref II2cBus i2cBus)
+        public Dist53l0(F7Micro device, MeadowApp appRoot, ref II2cBus i2cBus)
         {
             _appRoot = appRoot;
             sharedBus = i2cBus;
+            _device = device;
         }
 
         public double DistanceInMillimeters
@@ -35,9 +37,9 @@ namespace TinkerTank.Sensors
             
             try
             {
-                distanceSensor = new Vl53l0x(Device, sharedBus, 0x29);
-                //distanceSensor.Updated += DistanceSensor_Updated;
-                //distanceSensor.StartUpdating(new TimeSpan(0,0,0,0,500));
+                distanceSensor = new Vl53l0x(_device, sharedBus);
+                distanceSensor.Updated += DistanceSensor_Updated;
+                distanceSensor.StartUpdating(new TimeSpan(0,0,0,0,500));
 
                 Status = ComponentStatus.Ready;
             }
