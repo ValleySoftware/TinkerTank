@@ -51,20 +51,22 @@ namespace Communications
 
             try
             {
+                //This kills the bluetooth process.... to be investigated
+                //_appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+                //_device.SetAntenna(AntennaType.External);
+                //_appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
+
                 PrepareCharacteristics();
 
                 PrepareDefinition();
 
-                MeadowApp.Device.InitCoprocessor();
-                MeadowApp.Device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
+                _device.InitCoprocessor();
+                _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
                 _appRoot.DebugDisplayText("BT Service started", DisplayStatusMessageTypes.Important);
 
                 PrepareCharacteristicEventHandlers();
 
-                //_appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
-                //MeadowApp.Device.SetAntenna(AntennaType.External);
-                //_appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
 
                 Status = ComponentStatus.Ready;
             }

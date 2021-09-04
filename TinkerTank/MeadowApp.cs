@@ -34,7 +34,7 @@ namespace TinkerTank
         public PushButton button;
         public Dist53l0 distance;
 
-        public static bool ShowDebugLogs = true;
+        public static bool ShowDebugLogs = false;
 
         public II2cBus pcaBus;
         //public II2cBus vl53Bus;
@@ -56,28 +56,38 @@ namespace TinkerTank
         {
             TBObjects = new List<TinkerBase>();
 
+
+            //Display And Logging
+
             //Indicators to see what's going on
             blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
             greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
             redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
-            DebugDisplayText("start lcd");
+            DebugDisplayText("start lcd", DisplayStatusMessageTypes.Important);
             lcd = new LCDDisplay_ST7789(this);
             TBObjects.Add(lcd);
             lcd.Init();
 
+            //Shared
+
             DebugDisplayText("Init i2c");
             pcaBus = Device.CreateI2cBus();
 
-            //DebugDisplayText("start distance sensor");
-            //distance = new Dist53l0(Device, this, ref pcaBus);
-            //TBObjects.Add(distance);
-            //distance.Init();
+            //Communications and control
 
-            //DebugDisplayText("start pca9986");
-            //i2CPWMController = new PCA9685(Device, this, ref pcaBus);
-            //TBObjects.Add(i2CPWMController);
-            //i2CPWMController.Init();
+            DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
+            communications = new BlueTooth(Device as F7Micro, this);
+            TBObjects.Add(communications);
+            communications.Init();
+
+            //Movement and power
+
+            DebugDisplayText("start pca9986", DisplayStatusMessageTypes.Important);
+            i2CPWMController = new PCA9685(Device, this, ref pcaBus);
+            TBObjects.Add(i2CPWMController);
+            i2CPWMController.Init();
+
             /*
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
@@ -86,17 +96,21 @@ namespace TinkerTank
                 Device.Pins.D02, Device.Pins.D03, Device.Pins.D04,
                 Device.Pins.D09, Device.Pins.D10, Device.Pins.D11);
             */
-            DebugDisplayText("start power controller");
+            DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
-            
-            DebugDisplayText("start communications controller");
-            communications = new BlueTooth(Device as F7Micro, this);
-            TBObjects.Add(communications);
-            communications.Init();
 
-            DebugDisplayText("Begining regular polling");
+            //Sensors
+
+            DebugDisplayText("start distance sensor", DisplayStatusMessageTypes.Important);
+            distance = new Dist53l0(Device, this, ref pcaBus);
+            TBObjects.Add(distance);
+            distance.Init();
+
+            //Final
+
+            DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
             _statusPoller = new System.Timers.Timer(2000);
             _statusPoller.Elapsed += _statusPoller_Elapsed;
             _statusPoller.AutoReset = true;
