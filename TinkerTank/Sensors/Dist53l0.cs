@@ -39,7 +39,7 @@ namespace TinkerTank.Sensors
             {
                 distanceSensor = new Vl53l0x(_device, sharedBus);
                 distanceSensor.Updated += DistanceSensor_Updated;
-                distanceSensor.StartUpdating(new TimeSpan(0,0,0,0,500));
+                distanceSensor.StartUpdating(new TimeSpan(0,0,0,10));
 
                 Status = ComponentStatus.Ready;
             }
@@ -53,12 +53,13 @@ namespace TinkerTank.Sensors
 
         private void DistanceSensor_Updated(object sender, Meadow.IChangeResult<Meadow.Units.Length> e)
         {
-            if (e.New == null)
+            if (e == null || 
+                e.New == null)
             {
                 return;
             }
             DistanceInMillimeters = e.New.Millimeters;
-            Console.WriteLine($"{e.New.Millimeters}mm");
+            _appRoot.DebugDisplayText($"{DistanceInMillimeters}mm");
         }
 
         public void RefreshStatus()

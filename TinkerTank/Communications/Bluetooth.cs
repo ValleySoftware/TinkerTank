@@ -2,6 +2,7 @@
 using Enumerations;
 using Meadow;
 using Meadow.Devices;
+using Meadow.Gateways;
 using Meadow.Gateways.Bluetooth;
 using System;
 using System.Collections.Generic;
@@ -54,12 +55,16 @@ namespace Communications
 
                 PrepareDefinition();
 
-                _device.InitCoprocessor();
-                _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
+                MeadowApp.Device.InitCoprocessor();
+                MeadowApp.Device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
                 _appRoot.DebugDisplayText("BT Service started", DisplayStatusMessageTypes.Important);
 
-                PrepareCharacteristicEventHandlers();              
+                PrepareCharacteristicEventHandlers();
+
+                //_appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+                //MeadowApp.Device.SetAntenna(AntennaType.External);
+                //_appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
 
                 Status = ComponentStatus.Ready;
             }

@@ -12,6 +12,7 @@ using Meadow.Foundation.Web.Maple.Server;
 using Meadow.Foundation.Web.Maple.Server.Routing;
 using Enumerations;
 using Meadow.Gateway.WiFi;
+using Meadow.Gateways;
 
 namespace Communications
 {
@@ -23,8 +24,9 @@ namespace Communications
         protected MeadowApp _appRoot;
         private string _statusText = string.Empty;
         MapleServer server;
+        F7Micro _device;
 
-        public WiFiComms(MeadowApp appRoot)
+        public WiFiComms(F7Micro device, MeadowApp appRoot)
         {
             _appRoot = appRoot;
         }
@@ -47,6 +49,11 @@ namespace Communications
                 throw new Exception($"Cannot connect to network: {connectionResult.ConnectionStatus}");
             }
             _appRoot.DebugDisplayText($"Connected. IP: {MeadowApp.Device.WiFiAdapter.IpAddress}");
+
+
+            _appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+            _device.SetAntenna(AntennaType.External);
+            _appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
 
             // create our maple web server
             server = new MapleServer(

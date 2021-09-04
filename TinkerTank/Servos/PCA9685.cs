@@ -36,9 +36,9 @@ namespace Servos
             _appRoot.DebugDisplayText("Init PCA9685 Device");
             
             pca9685 = new Pca9685(Sharedi2cBus, 0x40, PWMFrequency);
-            pca9685.Initialize();
+            pca9685.Initialize(); 
 
-            DriveCameraMovement = new 
+             DriveCameraMovement = new 
                 PanTiltBase(
                     _appRoot, 
                     pca9685.CreatePwmPort(0), 

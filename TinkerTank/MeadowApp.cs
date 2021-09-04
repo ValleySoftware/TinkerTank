@@ -69,35 +69,28 @@ namespace TinkerTank
             DebugDisplayText("Init i2c");
             pcaBus = Device.CreateI2cBus();
 
-            DebugDisplayText("start pca9986");
-            //i2CPWMController = new PCA9685(Device, this, ref pcaBus);
-            //TBObjects.Add(i2CPWMController);
-            //i2CPWMController.Init();
-
-            DebugDisplayText("start distance sensor");
+            //DebugDisplayText("start distance sensor");
             //distance = new Dist53l0(Device, this, ref pcaBus);
             //TBObjects.Add(distance);
             //distance.Init();
-            var distanceSensor = new Vl53l0x(Device, pcaBus);
-            distanceSensor.DistanceUpdated += DistanceSensor_DistanceUpdated;
-            distanceSensor.StartUpdating();
 
-
-            //var pca9685 = new Pca9685(pcaBus, 0x40, 50);
-            //pca9685.Initialize();
-
+            //DebugDisplayText("start pca9986");
+            //i2CPWMController = new PCA9685(Device, this, ref pcaBus);
+            //TBObjects.Add(i2CPWMController);
+            //i2CPWMController.Init();
+            /*
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(this);
             TBObjects.Add((TinkerBase)movementController);
             movementController.Init(
                 Device.Pins.D02, Device.Pins.D03, Device.Pins.D04,
                 Device.Pins.D09, Device.Pins.D10, Device.Pins.D11);
-
+            */
             DebugDisplayText("start power controller");
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
-
+            
             DebugDisplayText("start communications controller");
             communications = new BlueTooth(Device as F7Micro, this);
             TBObjects.Add(communications);
@@ -108,18 +101,6 @@ namespace TinkerTank
             _statusPoller.Elapsed += _statusPoller_Elapsed;
             _statusPoller.AutoReset = true;
             _statusPoller.Enabled = true;
-        }
-
-        private void DistanceSensor_DistanceUpdated(object sender, IChangeResult<Meadow.Units.Length> e)
-        {
-            DebugDisplayText("distanceupdated");
-            if (e.New == null)
-            {
-                return;
-                DebugDisplayText("Argh!");
-            }
-            //DistanceInMillimeters = e.New.Millimeters;
-            DebugDisplayText($"{e.New.Millimeters}mm");
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
