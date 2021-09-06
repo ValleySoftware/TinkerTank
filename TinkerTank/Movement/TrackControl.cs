@@ -10,6 +10,7 @@ using System.Threading;
 using TinkerTank;
 using Base;
 using Enumerations;
+using Servos;
 
 namespace Peripherals
 {
@@ -22,15 +23,19 @@ namespace Peripherals
         private int reverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
         private static double opposingActionMultiplier = 1.5; //If the motors are going opposite ways, apply more power as they face more resistance.
         private double _defaultPower = 50;
+        PCA9685 _pcaDevice;
+        F7Micro _device;
 
-        public TrackControl(MeadowApp appRoot)
+        public TrackControl(F7Micro device, PCA9685 pcaDevice, MeadowApp appRoot)
         {
             _appRoot = appRoot;
+            _pcaDevice = pcaDevice;
+            _device = device;
         }
 
         public ComponentStatus Init(
-            Meadow.Hardware.IPin HBridge1PinA, Meadow.Hardware.IPin HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
-            Meadow.Hardware.IPin HBridge2PinA, Meadow.Hardware.IPin HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable)
+            int HBridge1PinA, int HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
+            int HBridge2PinA, int HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable)
         {
             Status = ComponentStatus.UnInitialised;
 
@@ -40,20 +45,21 @@ namespace Peripherals
 
                 _driveMethod = DriveMethod.TwoWheelDrive;
 
+                
                 motorLeft = new HBridgeMotor(
-                    a1Pin: MeadowApp.Device.CreatePwmPort(HBridge1PinA),
-                    a2Pin: MeadowApp.Device.CreatePwmPort(HBridge1Pinb),
-                    enablePin: MeadowApp.Device.CreateDigitalOutputPort(HBridge1PinEnable));
+                    a1Pin: _pcaDevice.CreatePwmPort(HBridge1PinA),
+                    a2Pin: _pcaDevice.CreatePwmPort(HBridge1Pinb),
+                    enablePin: _device.CreateDigitalOutputPort(HBridge1PinEnable));
 
                 motorLeft.IsNeutral = true;
 
                 motorRight = new HBridgeMotor(
-                    a1Pin: MeadowApp.Device.CreatePwmPort(HBridge2PinA),
-                    a2Pin: MeadowApp.Device.CreatePwmPort(HBridge2Pinb),
-                    enablePin: MeadowApp.Device.CreateDigitalOutputPort(HBridge2PinEnable));
+                    a1Pin: _pcaDevice.CreatePwmPort(HBridge2PinA),
+                    a2Pin: _pcaDevice.CreatePwmPort(HBridge2Pinb),
+                    enablePin: _device.CreateDigitalOutputPort(HBridge2PinEnable));
 
                 motorRight.IsNeutral = true;
-
+                
                 _appRoot.DebugDisplayText("Setting Motor Controller Ready");
                 Status = ComponentStatus.Ready;
             }

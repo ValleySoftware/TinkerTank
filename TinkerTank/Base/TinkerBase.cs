@@ -21,13 +21,13 @@ namespace Base
         public ComponentStatus Status
         {
             get => _status;
-            set => _status = value;
+            set => SetProperty(ref _status, value);
         }
 
         public string StatusText 
         {
             get => _statusText;
-            set => _statusText = value;
+            set => SetProperty(ref _statusText, value);
         }
     }
 }

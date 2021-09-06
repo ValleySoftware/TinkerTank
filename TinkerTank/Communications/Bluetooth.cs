@@ -20,14 +20,15 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove };
-        private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove };
+        public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove, PanSweep };
+        private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         private const string UUIDMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5101";
         private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
         private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
         private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
+        private const string UUIDPanSweep = @"017e99d6-8a61-11eb-8dcd-0242ac1a5105";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -36,6 +37,7 @@ namespace Communications
         private CharacteristicString charPanTilt;
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
+        private CharacteristicString charPanSweep;
         F7Micro _device;
 
         public BlueTooth(F7Micro device, MeadowApp appRoot)
@@ -132,14 +134,45 @@ namespace Communications
                         speed = (ServoMovementSpeed)s;
                     }
 
-
-
                     _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
                     if (device < _appRoot.i2CPWMController.PanTilts.Count)
                     {
                         _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, speed);
                         _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, speed);
+                    }
+                }
+            }
+            catch (Exception decipherPanTiltEx)
+            {
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, DisplayStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestPanSweep(string payload)
+        {
+            //Device-Speed
+            //00-0
+
+            try
+            {
+                var sp = payload.Split("-");
+
+                if (sp.Count() == 2)
+                {
+
+                    int device = Convert.ToInt32(sp[0]);
+                    ServoMovementSpeed speed = ServoMovementSpeed.Flank;
+
+                        int s = Convert.ToInt32(sp[1]);
+                        speed = (ServoMovementSpeed)s;
+
+                    _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), DisplayStatusMessageTypes.Important);
+
+                    if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                    {
+                        _appRoot.i2CPWMController.PanTilts[device].AutoPanSweep(speed);
                     }
                 }
             }
@@ -224,7 +257,8 @@ namespace Communications
                     charMove,
                     charPanTilt,
                     charPower,
-                    charAdvancedMove
+                    charAdvancedMove,
+                    charPanSweep
                     );
 
             foreach (var element in primaryControlService.Characteristics)
@@ -290,6 +324,14 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
+            charPanSweep = new CharacteristicString(
+                            name: CharacteristicsNames.PanSweep.ToString(),
+                            uuid: UUIDPanSweep,
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 12,
+                            descriptors: new Descriptor(UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
+                            );
         }
 
         private void PrepareCharacteristicEventHandlers()
@@ -325,6 +367,7 @@ namespace Communications
                             case "PanTilt": RequestPanTilt(payload); break;
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;
+                            case "PanSweep": RequestPanSweep(payload); break;
                             default: RequestStop(); break;
                         }
 

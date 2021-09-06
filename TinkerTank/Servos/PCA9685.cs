@@ -16,7 +16,6 @@ namespace Servos
     public class PCA9685 : TinkerBase, ITinkerBase
     {
         private Pca9685 pca9685;
-        readonly int PWMFrequency = 50;
         public PanTiltBase DriveCameraMovement;
         public PanTiltBase PeriscopeCameraMovement;
         public List<Servo> Miscservos = new List<Servo>();
@@ -35,7 +34,7 @@ namespace Servos
         {
             _appRoot.DebugDisplayText("Init PCA9685 Device");
             
-            pca9685 = new Pca9685(Sharedi2cBus, 0x40, PWMFrequency);
+            pca9685 = new Pca9685(Sharedi2cBus, 0x40, _appRoot.PWMFrequency);
             pca9685.Initialize(); 
 
              DriveCameraMovement = new 
@@ -70,6 +69,11 @@ namespace Servos
             Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
             Status = ComponentStatus.Ready;
+        }
+
+        public IPwmPort CreatePwmPort(int portNo)
+        {
+            return pca9685.CreatePwmPort(Convert.ToByte(portNo));
         }
 
         public void RefreshStatus()

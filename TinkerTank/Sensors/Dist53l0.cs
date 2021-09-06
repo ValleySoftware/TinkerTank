@@ -59,7 +59,7 @@ namespace TinkerTank.Sensors
                 return;
             }
             DistanceInMillimeters = e.New.Millimeters;
-            _appRoot.DebugDisplayText($"{DistanceInMillimeters}mm");
+            _appRoot.DebugDisplayText($"{DistanceInMillimeters}mm", DisplayStatusMessageTypes.Important);
         }
 
         public void RefreshStatus()

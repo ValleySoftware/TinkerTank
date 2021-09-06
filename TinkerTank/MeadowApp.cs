@@ -33,6 +33,7 @@ namespace TinkerTank
         public PCA9685 i2CPWMController;
         public PushButton button;
         public Dist53l0 distance;
+        public readonly int PWMFrequency = 50;
 
         public static bool ShowDebugLogs = false;
 
@@ -74,6 +75,11 @@ namespace TinkerTank
             DebugDisplayText("Init i2c");
             pcaBus = Device.CreateI2cBus();
 
+            DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
+            i2CPWMController = new PCA9685(Device, this, ref pcaBus);
+            TBObjects.Add(i2CPWMController);
+            i2CPWMController.Init();
+
             //Communications and control
 
             DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
@@ -81,25 +87,20 @@ namespace TinkerTank
             TBObjects.Add(communications);
             communications.Init();
 
-            //Movement and power
+            //Movement and power            
 
-            DebugDisplayText("start pca9986", DisplayStatusMessageTypes.Important);
-            i2CPWMController = new PCA9685(Device, this, ref pcaBus);
-            TBObjects.Add(i2CPWMController);
-            i2CPWMController.Init();
-
-            /*
-            DebugDisplayText("start motor controller");
-            movementController = new TrackControl(this);
-            TBObjects.Add((TinkerBase)movementController);
-            movementController.Init(
-                Device.Pins.D02, Device.Pins.D03, Device.Pins.D04,
-                Device.Pins.D09, Device.Pins.D10, Device.Pins.D11);
-            */
             DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D05);
+
+
+            DebugDisplayText("start motor controller");
+            movementController = new TrackControl(Device, i2CPWMController, this);
+            TBObjects.Add((TinkerBase)movementController);
+            movementController.Init(
+                12, 13, Device.Pins.D04,
+                14, 15, Device.Pins.D11);
 
             //Sensors
 
@@ -110,83 +111,84 @@ namespace TinkerTank
 
             //Final
 
-            DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
-            _statusPoller = new System.Timers.Timer(2000);
-            _statusPoller.Elapsed += _statusPoller_Elapsed;
-            _statusPoller.AutoReset = true;
-            _statusPoller.Enabled = true;
-        }
+/*DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
+_statusPoller = new System.Timers.Timer(2000);
+_statusPoller.Elapsed += _statusPoller_Elapsed;
+_statusPoller.AutoReset = true;
+_statusPoller.Enabled = true;*/
 
-        private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            RefreshStatus();
-        }
+DebugDisplayText("Startup Complete", DisplayStatusMessageTypes.Important);
+}
 
-        public void RefreshStatus()
-        {
-            //DebugDisplayText("Checking Component Status", DisplayStatusMessageTypes.Debug, false);
-            foreach (var element in TBObjects)
-            {
-                SetStatus(element.Status);
+private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+{
+RefreshStatus();
+}
 
-                if (element.Status == ComponentStatus.Error ||
-                    element.Status == ComponentStatus.UnInitialised)
-                {
-                    DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error, true);
-                    powerController.Disconnect();
-                    break;
-                }
-            }
-        }
+public void RefreshStatus()
+{
+//DebugDisplayText("Checking Component Status", DisplayStatusMessageTypes.Debug, false);
+foreach (var element in TBObjects)
+{
+    SetStatus(element.Status);
 
-        private void SetStatus(ComponentStatus newStatus)
-        {
-            if (newStatus != _status)
-            {
-                _status = newStatus;
-
-                blueLED.State = false;
-                greenLED.State = false;
-                redLED.State = false;
-
-                switch (newStatus)
-                {
-                    case ComponentStatus.Error:
-                        redLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error, false);
-                        break;
-                    case ComponentStatus.Action:
-                        blueLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
-                        break;
-                    case ComponentStatus.Ready:
-                        greenLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
-                        break;
-                    default:
-                        break;
-                }
-
-                
-            }
-        }
-
-        public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
-        {
-            if (ShowDebugLogs ||
-                statusType != DisplayStatusMessageTypes.Debug)
-            {
-                var t = new Task(() =>
-                {
-                    Console.WriteLine(textToShow);
-
-                    if (!ConsoleOnly && lcd != null)
-                    {
-                        lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
-                    }
-                });
-                t.Start();
-            }
-        }
+    if (element.Status == ComponentStatus.Error ||
+        element.Status == ComponentStatus.UnInitialised)
+    {
+        DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error, true);
+        powerController.Disconnect();
     }
+}
+}
+
+private void SetStatus(ComponentStatus newStatus)
+{
+if (newStatus != _status)
+{
+    _status = newStatus;
+
+    blueLED.State = false;
+    greenLED.State = false;
+    redLED.State = false;
+
+    switch (newStatus)
+    {
+        case ComponentStatus.Error:
+            redLED.State = true;
+            DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error, false);
+            break;
+        case ComponentStatus.Action:
+            blueLED.State = true;
+            DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
+            break;
+        case ComponentStatus.Ready:
+            greenLED.State = true;
+            DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
+            break;
+        default:
+            break;
+    }
+
+
+}
+}
+
+public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
+{
+if (ShowDebugLogs ||
+    statusType != DisplayStatusMessageTypes.Debug)
+{
+    var t = new Task(() =>
+    {
+        Console.WriteLine(textToShow);
+
+        if (!ConsoleOnly && lcd != null)
+        {
+            lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+        }
+    });
+    t.Start();
+}
+}
+}
 }

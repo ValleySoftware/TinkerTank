@@ -12,7 +12,7 @@ namespace Enumerations
     public enum Direction { Forward, Backwards, TurnLeft, TurnRight, RotateLeft, RotateRight }
     public enum DisplayStatusMessageTypes { Debug, Important, Error };
     public enum ServoType { SG90Standard, MG996RStandard };
-    public enum ServoMovementSpeed { Slow, Medium, Fast, Flank };
+    public enum ServoMovementSpeed { Slow, Medium, Fast, Flank, Stop };
 
 
 }

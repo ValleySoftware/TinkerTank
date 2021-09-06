@@ -22,6 +22,8 @@ namespace Servos
         private int _defaultPan = 90;
         private int _defaultTilt = 90;
 
+        bool _stopRequested = false;
+
         //private bool stopRequested = false;
 
         public PanTiltBase(MeadowApp appRoot, IPwmPort panPwmPort, IPwmPort tiltPwmPort, string name, ServoType servoType = ServoType.SG90Standard)
@@ -31,6 +33,12 @@ namespace Servos
             PwmTilt = tiltPwmPort;
             _servoType = servoType;
             _name = name;
+        }
+
+        public bool StopRequested
+        {
+            get => _stopRequested;
+            set => SetProperty(ref _stopRequested, value);
         }
 
         public static ServoConfig Create996rConfig()
@@ -53,8 +61,9 @@ namespace Servos
                 case ServoType.MG996RStandard: conf = Create996rConfig(); break;
                 default: conf = NamedServoConfigs.SG90; break;
             }
-
+            
             servoPan = new Servo(PwmPan, conf);
+            
             servoTilt = new Servo(PwmTilt, conf);
 
             _appRoot.DebugDisplayText("Pantilt " + Name + " registered and ready");
@@ -80,81 +89,103 @@ namespace Servos
         public string Name
         {
             get => _name;
-            set => _name = value;//SetProperty(ref _name, value);
+            set => SetProperty(ref _name, value);
         }
 
         public int DefaultPan
         {
             get => _defaultPan;
-            set => _defaultPan = value;//SetProperty(ref _defaultPan, value);
+            set => SetProperty(ref _defaultPan, value);
         }
 
         public int DefaultTilt
         {
             get => _defaultTilt;
-            set => _defaultTilt = value;//SetProperty(ref _defaultTilt, value);
+            set => SetProperty(ref _defaultTilt, value);
         }
 
-        public void PanTo(int newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public Task PanTo(int newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
             _appRoot.DebugDisplayText("Pan requested");
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
+                StopRequested = false;
+
                 var t = Task.Run(() =>
                 {
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Task Running");
-                    if (movementSpeed == ServoMovementSpeed.Flank)
-                    //if (true)
-                {
-                    _appRoot.DebugDisplayText("Pan speed flank");
-                    ServoRotateTo(servoPan, newAngle);
-                    _appRoot.DebugDisplayText("Pan at flank finished");
-                    
-                }
+
+                    if (movementSpeed == ServoMovementSpeed.Stop)
+                    {
+                        StopRequested = true;
+                    }
                     else
                     {
-                        int millisecondDelay = 0;
-
-                        switch (movementSpeed)
+                        if (movementSpeed == ServoMovementSpeed.Flank)
                         {
-                            case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
-                            case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
-                            case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
-                            default: millisecondDelay = 250; break;
-                        }
+                            _appRoot.DebugDisplayText("Pan speed flank");
+                            ServoRotateTo(servoPan, newAngle);
+                            _appRoot.DebugDisplayText("Pan at flank finished");
 
-                        int newPos = (int)Math.Round(CurrentPanPosition.Value.Degrees);
-
-                        _appRoot.DebugDisplayText("Pan from " + newPos + " to " + newAngle + " with " + millisecondDelay);
-
-                        if (newPos > newAngle)
-                        {
-
-                            while (newPos > newAngle)
-                            {
-                                newPos = newPos - 1;
-                                _appRoot.DebugDisplayText("Pan Decrease Step to " + newPos);
-                                ServoRotateTo(servoPan, newPos);
-                                Thread.Sleep(millisecondDelay);
-                            }
                         }
                         else
-                        {
-                            while (newPos < newAngle)
+                        {                            
+                            int millisecondDelay = 0;
+
+                            switch (movementSpeed)
                             {
-                                newPos = newPos + 1;
-                                _appRoot.DebugDisplayText("Pan Increase Step to " + newPos);
-                                ServoRotateTo(servoPan, newPos);
-                                Thread.Sleep(millisecondDelay);
+                                case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
+                                case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
+                                case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
+                                default: millisecondDelay = 250; break;
+                            }
+
+                            int newPos = (int)Math.Round(CurrentPanPosition.Value.Degrees);
+
+                            _appRoot.DebugDisplayText("Pan from " + newPos + " to " + newAngle + " with " + millisecondDelay);
+
+                            if (newPos > newAngle)
+                            {
+
+                                while (newPos > newAngle)
+                                {
+                                    newPos = newPos - 1;
+                                    _appRoot.DebugDisplayText("Pan Decrease Step to " + newPos);
+                                    ServoRotateTo(servoPan, newPos);
+                                    Thread.Sleep(millisecondDelay);
+
+                                    if (StopRequested)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                while (newPos < newAngle)
+                                {
+                                    newPos = newPos + 1;
+                                    _appRoot.DebugDisplayText("Pan Increase Step to " + newPos);
+                                    ServoRotateTo(servoPan, newPos);
+                                    Task.Delay(millisecondDelay);
+
+                                    if (StopRequested)
+                                    {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
                     Status = ComponentStatus.Ready;
                 });
+
+                return t;
             }
+            return null;
         }
 
         public void TiltTo(int newAngle = 90, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
@@ -192,12 +223,54 @@ namespace Servos
                     newAngle >= servoToRotate.Config.MinimumAngle.Degrees &&
                     newAngle <= servoToRotate.Config.MaximumAngle.Degrees)
                 {
-                    var t = Task.Run(() =>
-                    {
+                    //var t = Task.Run(() =>
+                    //{
                         servoToRotate.RotateTo(new Meadow.Units.Angle(newAngle, Meadow.Units.Angle.UnitType.Degrees));                
-                    });
+                    //});
+                    //return t;
                 }
+
             }
+            //return null;
+        }
+
+        public void AutoPanSweep(ServoMovementSpeed speed)
+        {
+            Task.Run(() =>
+            {
+                if (speed == ServoMovementSpeed.Stop)
+                {
+                    StopRequested = true;
+                    return;
+                }
+
+                StopRequested = false;
+
+                while (!StopRequested)
+                {
+
+                    _appRoot.DebugDisplayText("Pan to 25");
+
+                    var t = PanTo(25, speed);
+                    t.Wait();
+
+
+                    if (StopRequested)
+                    {
+                        break;
+                    }
+                    _appRoot.DebugDisplayText("Pan to 160");
+
+                    t = PanTo(160, speed);
+                    t.Wait();
+
+                    if (StopRequested)
+                    {
+                        break;
+                    }
+                }
+            });
+
         }
 
         public void GoToDefault()
