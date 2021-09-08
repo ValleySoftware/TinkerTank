@@ -76,6 +76,13 @@ namespace Servos
             return pca9685.CreatePwmPort(Convert.ToByte(portNo));
         }
 
+        public IPin GetPin(int pinNumber)
+        {
+            //pca9685.
+               var pwm = pca9685.CreatePwmPort((byte)pinNumber);
+            return pwm.Pin;
+        }
+
         public void RefreshStatus()
         {
             //

@@ -92,15 +92,20 @@ namespace TinkerTank
             DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
             powerController = new PowerControl(this);
             TBObjects.Add(powerController);
-            powerController.Init(Device.Pins.D05);
+            powerController.Init(Device.Pins.D10);
 
 
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(Device, i2CPWMController, this);
             TBObjects.Add((TinkerBase)movementController);
+
+            /*movementController.Init(
+                i2CPWMController.GetPin(12), i2CPWMController.GetPin(13), Device.Pins.D04,
+                i2CPWMController.GetPin(14), i2CPWMController.GetPin(15), Device.Pins.D11);*/
+
             movementController.Init(
-                12, 13, Device.Pins.D04,
-                14, 15, Device.Pins.D11);
+                Device.Pins.D05, Device.Pins.D06, Device.Pins.D02,
+                Device.Pins.D13, Device.Pins.D12, Device.Pins.D11);
 
             //Sensors
 

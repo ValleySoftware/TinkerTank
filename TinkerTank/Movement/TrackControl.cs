@@ -34,8 +34,8 @@ namespace Peripherals
         }
 
         public ComponentStatus Init(
-            int HBridge1PinA, int HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
-            int HBridge2PinA, int HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable)
+            Meadow.Hardware.IPin HBridge1PinA, Meadow.Hardware.IPin HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
+            Meadow.Hardware.IPin HBridge2PinA, Meadow.Hardware.IPin HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable)
         {
             Status = ComponentStatus.UnInitialised;
 
@@ -46,17 +46,17 @@ namespace Peripherals
                 _driveMethod = DriveMethod.TwoWheelDrive;
 
                 
-                motorLeft = new HBridgeMotor(
-                    a1Pin: _pcaDevice.CreatePwmPort(HBridge1PinA),
-                    a2Pin: _pcaDevice.CreatePwmPort(HBridge1Pinb),
-                    enablePin: _device.CreateDigitalOutputPort(HBridge1PinEnable));
+                motorLeft = new HBridgeMotor(MeadowApp.Device,
+                    a1Pin: HBridge1PinA,
+                    a2Pin: HBridge1Pinb,
+                    enablePin: HBridge1PinEnable);
 
                 motorLeft.IsNeutral = true;
 
-                motorRight = new HBridgeMotor(
-                    a1Pin: _pcaDevice.CreatePwmPort(HBridge2PinA),
-                    a2Pin: _pcaDevice.CreatePwmPort(HBridge2Pinb),
-                    enablePin: _device.CreateDigitalOutputPort(HBridge2PinEnable));
+                motorRight = new HBridgeMotor(MeadowApp.Device,
+                    a1Pin: HBridge2PinA,
+                    a2Pin: HBridge2Pinb,
+                    enablePin: HBridge2PinEnable);
 
                 motorRight.IsNeutral = true;
                 
