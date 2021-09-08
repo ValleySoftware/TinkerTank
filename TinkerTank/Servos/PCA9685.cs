@@ -21,13 +21,11 @@ namespace Servos
         public List<Servo> Miscservos = new List<Servo>();
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
         II2cBus Sharedi2cBus;
-        IF7MeadowDevice _device;
 
-        public PCA9685(IF7MeadowDevice device, MeadowApp appRoot, ref II2cBus sharedi2cBus)
+        public PCA9685(MeadowApp appRoot, ref II2cBus sharedi2cBus)
         {
             _appRoot = appRoot;
             Sharedi2cBus = sharedi2cBus;
-            _device = device;
         }
 
         public void Init()
@@ -69,18 +67,6 @@ namespace Servos
             Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
 
             Status = ComponentStatus.Ready;
-        }
-
-        public IPwmPort CreatePwmPort(int portNo)
-        {
-            return pca9685.CreatePwmPort(Convert.ToByte(portNo));
-        }
-
-        public IPin GetPin(int pinNumber)
-        {
-            //pca9685.
-               var pwm = pca9685.CreatePwmPort((byte)pinNumber);
-            return pwm.Pin;
         }
 
         public void RefreshStatus()

@@ -43,11 +43,17 @@ namespace Servos
 
         public static ServoConfig Create996rConfig()
         {
-            return new ServoConfig(
+            /*return new ServoConfig(
                     new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
                     new Meadow.Units.Angle(270, Meadow.Units.Angle.UnitType.Degrees),
                     500,
                     2500,
+                    50);*/
+            return new ServoConfig(
+                    new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
+                    new Meadow.Units.Angle(120, Meadow.Units.Angle.UnitType.Degrees),
+                    1000,
+                    2000,
                     50);
         }
 

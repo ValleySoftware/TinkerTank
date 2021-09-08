@@ -76,7 +76,7 @@ namespace TinkerTank
             pcaBus = Device.CreateI2cBus();
 
             DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-            i2CPWMController = new PCA9685(Device, this, ref pcaBus);
+            i2CPWMController = new PCA9685(this, ref pcaBus);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
 
