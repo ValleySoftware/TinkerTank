@@ -104,8 +104,8 @@ namespace TinkerTank
                 i2CPWMController.GetPin(14), i2CPWMController.GetPin(15), Device.Pins.D11);*/
 
             movementController.Init(
-                Device.Pins.D05, Device.Pins.D06, Device.Pins.D02,
-                Device.Pins.D13, Device.Pins.D12, Device.Pins.D11);
+                Device.Pins.D13, Device.Pins.D12, Device.Pins.D11,
+                Device.Pins.D05, Device.Pins.D06, Device.Pins.D02);
 
             //Sensors
 
@@ -116,11 +116,11 @@ namespace TinkerTank
 
             //Final
 
-/*DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
+DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
 _statusPoller = new System.Timers.Timer(2000);
 _statusPoller.Elapsed += _statusPoller_Elapsed;
 _statusPoller.AutoReset = true;
-_statusPoller.Enabled = true;*/
+_statusPoller.Enabled = true;
 
 DebugDisplayText("Startup Complete", DisplayStatusMessageTypes.Important);
 }
@@ -140,8 +140,9 @@ foreach (var element in TBObjects)
     if (element.Status == ComponentStatus.Error ||
         element.Status == ComponentStatus.UnInitialised)
     {
-        DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error, true);
+        DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error);
         powerController.Disconnect();
+                    break;
     }
 }
 }

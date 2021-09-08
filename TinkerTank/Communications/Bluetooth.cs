@@ -223,7 +223,7 @@ namespace Communications
         private void RequestAdvancedMove(string payload)
         {
             //movementDirection-powerPercent-durationInMilliseconds
-            //00-000-000
+            //00-000-00000
 
             var sp = payload.Split("-");
 
@@ -321,7 +321,7 @@ namespace Communications
                             uuid: UUIDAdvancedMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 12,
+                            maxLength: 20,
                             descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
             charPanSweep = new CharacteristicString(
