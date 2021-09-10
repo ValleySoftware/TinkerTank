@@ -188,6 +188,7 @@ namespace Communications
             _appRoot.movementController.Stop();
         }
 
+        /*
         private void RequestMove(string payload)
         {
             var testMotorDuration = new TimeSpan(0, 0, 0, 0, 250);
@@ -219,6 +220,7 @@ namespace Communications
                     break;
             }
         }
+        */
 
         private void RequestAdvancedMove(string payload)
         {
@@ -233,7 +235,7 @@ namespace Communications
                 {
                     int direction = Convert.ToInt32(sp[0]);
                     int power = Convert.ToInt32(sp[1]);
-                    double duration = Convert.ToDouble(sp[2]);
+                    int duration = Convert.ToInt32(sp[2]);
 
                     _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
                 }
@@ -316,12 +318,12 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDPower, CharacteristicsNames.Power.ToString())
                             );
-            charAdvancedMove = new CharacteristicString(
+            charAdvancedMove = new CharacteristicString( //00-000-00000
                             name: CharacteristicsNames.AdvancedMove.ToString(),
                             uuid: UUIDAdvancedMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 20,
+                            maxLength: 12,
                             descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
             charPanSweep = new CharacteristicString(
@@ -363,7 +365,7 @@ namespace Communications
                         switch (c.Name)
                         {
                             case "Stop": RequestStop(); break;
-                            case "Move": RequestMove(payload); break;
+                            case "Move": break;
                             case "PanTilt": RequestPanTilt(payload); break;
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;
@@ -388,10 +390,12 @@ namespace Communications
 
         public void RefreshStatus()
         {
+
         }
 
         public void Test()
         {
+
         }
     }
 }
