@@ -9,7 +9,7 @@ using TinkerTank;
 
 namespace Servos
 {
-    public class PanTiltBase: TinkerBase, ITinkerBase
+    public partial class PanTiltBase: TinkerBase, ITinkerBase
     {
         private IPwmPort PwmPan;
         private IPwmPort PwmTilt;
@@ -23,8 +23,6 @@ namespace Servos
         private int _defaultTilt = 90;
 
         bool _stopRequested = false;
-
-        //private bool stopRequested = false;
 
         public PanTiltBase(MeadowApp appRoot, IPwmPort panPwmPort, IPwmPort tiltPwmPort, string name, ServoType servoType = ServoType.SG90Standard)
         {
@@ -43,21 +41,21 @@ namespace Servos
 
         public static ServoConfig Create996rConfig()
         {
-            /*return new ServoConfig(
+            return new ServoConfig(
                     new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
                     new Meadow.Units.Angle(270, Meadow.Units.Angle.UnitType.Degrees),
                     500,
                     2500,
-                    50);*/
-            return new ServoConfig(
+                    50);
+            /*return new ServoConfig(
                     new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
-                    new Meadow.Units.Angle(120, Meadow.Units.Angle.UnitType.Degrees),
+                    new Meadow.Units.Angle(180, Meadow.Units.Angle.UnitType.Degrees),
                     1000,
                     2000,
-                    50);
+                    50);*/
         }
 
-        public void Init()
+        public virtual void Init()
         {
             ServoConfig conf = null;
 

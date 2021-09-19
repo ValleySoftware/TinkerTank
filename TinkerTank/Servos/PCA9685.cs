@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinkerTank;
+using TinkerTank.Servos;
 
 namespace Servos
 {
@@ -17,7 +18,7 @@ namespace Servos
     {
         private Pca9685 pca9685;
         public PanTiltBase DriveCameraMovement;
-        public PanTiltBase PeriscopeCameraMovement;
+        public PanTiltDistance PeriscopeCameraMovement;
         public List<Servo> Miscservos = new List<Servo>();
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
         II2cBus Sharedi2cBus;
@@ -50,21 +51,22 @@ namespace Servos
             DriveCameraMovement.GoToDefault();
 
             PeriscopeCameraMovement = new 
-                PanTiltBase(
+                PanTiltDistance(
                     _appRoot, 
                     pca9685.CreatePwmPort(2), 
                     pca9685.CreatePwmPort(3), 
                     "PeriscopeCamera", 
-                    ServoType.SG90Standard);
+                    ServoType.SG90Standard,
+                    MeadowApp.Device.Pins.D09);
 
             PanTilts.Add(PeriscopeCameraMovement);
             PeriscopeCameraMovement.Init();
-            PeriscopeCameraMovement.DefaultPan = 20;
-            PeriscopeCameraMovement.DefaultTilt = 80;
+            PeriscopeCameraMovement.DefaultPan = 55;
+            PeriscopeCameraMovement.DefaultTilt = 40;
             PeriscopeCameraMovement.GoToDefault();
 
             Miscservos.Add(new Servo(pca9685.CreatePwmPort(15), PanTiltBase.Create996rConfig()));
-            Miscservos[0].RotateTo(new Meadow.Units.Angle(40));
+            Miscservos[0].RotateTo(new Meadow.Units.Angle(10));
 
             Status = ComponentStatus.Ready;
         }

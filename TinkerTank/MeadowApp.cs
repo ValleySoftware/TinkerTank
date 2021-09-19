@@ -70,6 +70,13 @@ namespace TinkerTank
             TBObjects.Add(lcd);
             lcd.Init();
 
+            //Communications and control
+
+            DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
+            communications = new BlueTooth(Device as F7Micro, this);
+            TBObjects.Add(communications);
+            communications.Init();
+
             //Shared
 
             DebugDisplayText("Init i2c");
@@ -79,13 +86,6 @@ namespace TinkerTank
             i2CPWMController = new PCA9685(this, ref pcaBus);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
-
-            //Communications and control
-
-            DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
-            communications = new BlueTooth(Device as F7Micro, this);
-            TBObjects.Add(communications);
-            communications.Init();
 
             //Movement and power            
 
@@ -99,20 +99,17 @@ namespace TinkerTank
             movementController = new TrackControl(Device, i2CPWMController, this);
             TBObjects.Add((TinkerBase)movementController);
 
-            /*movementController.Init(
-                i2CPWMController.GetPin(12), i2CPWMController.GetPin(13), Device.Pins.D04,
-                i2CPWMController.GetPin(14), i2CPWMController.GetPin(15), Device.Pins.D11);*/
-
             movementController.Init(
                 Device.Pins.D13, Device.Pins.D12, Device.Pins.D11,
                 Device.Pins.D05, Device.Pins.D06, Device.Pins.D02);
 
             //Sensors
-
+            /* now on the periscope pan tilt
             DebugDisplayText("start distance sensor", DisplayStatusMessageTypes.Important);
             distance = new Dist53l0(Device, this, ref pcaBus);
             TBObjects.Add(distance);
             distance.Init();
+            */
 
             //Final
 
@@ -190,7 +187,14 @@ if (ShowDebugLogs ||
 
         if (!ConsoleOnly && lcd != null)
         {
-            lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+            try
+            {
+                lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+            }
+            catch (Exception displayError)
+            {
+                //Display add process went through,but not talking.  Is it plugged in?
+            }
         }
     });
     t.Start();

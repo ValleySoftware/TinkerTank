@@ -20,8 +20,8 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove, PanSweep };
-        private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep };
+        public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove, PanSweep, Distance };
+        private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         private const string UUIDMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5101";
@@ -29,6 +29,7 @@ namespace Communications
         private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
         private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
         private const string UUIDPanSweep = @"017e99d6-8a61-11eb-8dcd-0242ac1a5105";
+        private const string UUIDDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -38,6 +39,7 @@ namespace Communications
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
         private CharacteristicString charPanSweep;
+        private CharacteristicString charDistance;
         F7Micro _device;
 
         public BlueTooth(F7Micro device, MeadowApp appRoot)
@@ -246,6 +248,17 @@ namespace Communications
             }
         }
 
+        private void RequestUpdateDistance()
+        {
+            try
+            {
+                charDistance.SetValue(_appRoot.i2CPWMController.PeriscopeCameraMovement.Sensor.DistanceInMillimeters);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
 
         private void PrepareDefinition()
         {
@@ -260,7 +273,8 @@ namespace Communications
                     charPanTilt,
                     charPower,
                     charAdvancedMove,
-                    charPanSweep
+                    charPanSweep,
+                    charDistance
                     );
 
             foreach (var element in primaryControlService.Characteristics)
@@ -334,6 +348,14 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
                             );
+            charDistance = new CharacteristicString(
+                            name: CharacteristicsNames.Distance.ToString(),
+                            uuid: UUIDDistance,
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 12,
+                            descriptors: new Descriptor(UUIDDistance, CharacteristicsNames.Distance.ToString())
+                            );
         }
 
         private void PrepareCharacteristicEventHandlers()
@@ -370,6 +392,7 @@ namespace Communications
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;
                             case "PanSweep": RequestPanSweep(payload); break;
+                            case "Distance": RequestUpdateDistance(); break;
                             default: RequestStop(); break;
                         }
 
