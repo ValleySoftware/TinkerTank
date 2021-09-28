@@ -138,10 +138,10 @@ namespace Communications
 
                     _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                    if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                    if (device < _appRoot.PanTilts.Count)
                     {
-                        _appRoot.i2CPWMController.PanTilts[device].PanTo(pan, speed);
-                        _appRoot.i2CPWMController.PanTilts[device].TiltTo(tilt, speed);
+                        _appRoot.PanTilts[device].PanTo(pan, speed);
+                        _appRoot.PanTilts[device].TiltTo(tilt, speed);
                     }
                 }
             }
@@ -172,9 +172,9 @@ namespace Communications
 
                     _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                    if (device < _appRoot.i2CPWMController.PanTilts.Count)
+                    if (device < _appRoot.PanTilts.Count)
                     {
-                        _appRoot.i2CPWMController.PanTilts[device].AutoPanSweep(speed);
+                        _appRoot.PanTilts[device].AutoPanSweep(speed);
                     }
                 }
             }
@@ -252,7 +252,7 @@ namespace Communications
         {
             try
             {
-                charDistance.SetValue(_appRoot.i2CPWMController.PeriscopeCameraMovement.Sensor.DistanceInMillimeters);
+                charDistance.SetValue(_appRoot.PeriscopeCameraMovement.Sensor.DistanceInMillimeters);
             }
             catch (Exception)
             {

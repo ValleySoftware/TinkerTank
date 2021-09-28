@@ -6,6 +6,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TinkerTank;
+using Meadow.Units;
+using TinkerTank.Servos;
 
 namespace Servos
 {
@@ -39,22 +41,6 @@ namespace Servos
             set => SetProperty(ref _stopRequested, value);
         }
 
-        public static ServoConfig Create996rConfig()
-        {
-            return new ServoConfig(
-                    new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
-                    new Meadow.Units.Angle(270, Meadow.Units.Angle.UnitType.Degrees),
-                    500,
-                    2500,
-                    50);
-            /*return new ServoConfig(
-                    new Meadow.Units.Angle(0, Meadow.Units.Angle.UnitType.Degrees),
-                    new Meadow.Units.Angle(180, Meadow.Units.Angle.UnitType.Degrees),
-                    1000,
-                    2000,
-                    50);*/
-        }
-
         public virtual void Init()
         {
             ServoConfig conf = null;
@@ -62,7 +48,7 @@ namespace Servos
             switch (_servoType)
             {
                 case ServoType.SG90Standard: conf = NamedServoConfigs.SG90; break;
-                case ServoType.MG996RStandard: conf = Create996rConfig(); break;
+                case ServoType.MG996RStandard: conf = TinkerServoBase.Create996rConfig(null, null); break;
                 default: conf = NamedServoConfigs.SG90; break;
             }
             

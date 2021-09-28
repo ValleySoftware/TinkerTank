@@ -29,6 +29,7 @@ namespace Communications
         public WiFiComms(F7Micro device, MeadowApp appRoot)
         {
             _appRoot = appRoot;
+            _device = device;
         }
 
         public async Task InitWiFi(string networkName, string networkPassword)

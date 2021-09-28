@@ -25,7 +25,7 @@ namespace TinkerTank.Servos
         {
             base.Init();
 
-            Sensor = new Dist53l0(MeadowApp.Device, _appRoot, ref _appRoot.pcaBus, LaserPin);
+            Sensor = new Dist53l0(MeadowApp.Device, _appRoot, ref _appRoot.i2CBus, LaserPin);
             Sensor.Init();
         }
 

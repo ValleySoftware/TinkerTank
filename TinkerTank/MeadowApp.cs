@@ -17,7 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using TinkerTank.Movement;
 using TinkerTank.Sensors;
+using TinkerTank.Servos;
 //using TinkerTank.Sensors;
 using Utilities.Power;
 using static Meadow.Foundation.Sensors.Distance.Vl53l0x;
@@ -28,17 +30,27 @@ namespace TinkerTank
     {
         public IMovementInterface movementController;
         public PowerControl powerController;
+
         public LCDDisplay_ST7789 lcd;
+
         public BlueTooth communications;
+
         public PCA9685 i2CPWMController;
+
         public PushButton button;
+
         public Dist53l0 distance;
         public readonly int PWMFrequency = 50;
 
+        public ArmControl Arm;
+
+        public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
+        public PanTiltBase DriveCameraMovement;
+        public PanTiltDistance PeriscopeCameraMovement;
+
         public static bool ShowDebugLogs = false;
 
-        public II2cBus pcaBus;
-        //public II2cBus vl53Bus;
+        public II2cBus i2CBus;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -80,10 +92,10 @@ namespace TinkerTank
             //Shared
 
             DebugDisplayText("Init i2c");
-            pcaBus = Device.CreateI2cBus();
+            i2CBus = Device.CreateI2cBus();
 
             DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-            i2CPWMController = new PCA9685(this, ref pcaBus);
+            i2CPWMController = new PCA9685(this, ref i2CBus);
             TBObjects.Add(i2CPWMController);
             i2CPWMController.Init();
 
@@ -94,7 +106,6 @@ namespace TinkerTank
             TBObjects.Add(powerController);
             powerController.Init(Device.Pins.D10);
 
-
             DebugDisplayText("start motor controller");
             movementController = new TrackControl(Device, i2CPWMController, this);
             TBObjects.Add((TinkerBase)movementController);
@@ -103,13 +114,41 @@ namespace TinkerTank
                 Device.Pins.D13, Device.Pins.D12, Device.Pins.D11,
                 Device.Pins.D05, Device.Pins.D06, Device.Pins.D02);
 
-            //Sensors
-            /* now on the periscope pan tilt
-            DebugDisplayText("start distance sensor", DisplayStatusMessageTypes.Important);
-            distance = new Dist53l0(Device, this, ref pcaBus);
-            TBObjects.Add(distance);
-            distance.Init();
-            */
+            DebugDisplayText("Start Arm");
+            Arm = new ArmControl(this, i2CPWMController);
+            TBObjects.Add((TinkerBase)Arm);
+
+            //Camera and Sensor
+
+
+            DriveCameraMovement = new
+               PanTiltBase(
+                   this,
+                   i2CPWMController.GetPwmPort(0),
+                   i2CPWMController.GetPwmPort(1),
+                   "DriveCamera",
+                   ServoType.SG90Standard);
+
+            PanTilts.Add(DriveCameraMovement);
+            DriveCameraMovement.Init();
+            DriveCameraMovement.DefaultPan = 110;
+            DriveCameraMovement.DefaultTilt = 100;
+            DriveCameraMovement.GoToDefault();
+
+            PeriscopeCameraMovement = new
+                PanTiltDistance(
+                    this,
+                    i2CPWMController.GetPwmPort(2),
+                    i2CPWMController.GetPwmPort(3),
+                    "PeriscopeCamera",
+                    ServoType.SG90Standard,
+                    MeadowApp.Device.Pins.D09);
+
+            PanTilts.Add(PeriscopeCameraMovement);
+            PeriscopeCameraMovement.Init();
+            PeriscopeCameraMovement.DefaultPan = 55;
+            PeriscopeCameraMovement.DefaultTilt = 40;
+            PeriscopeCameraMovement.GoToDefault();
 
             //Final
 
