@@ -10,6 +10,7 @@ namespace TinkerTank.Movement
 {
     public class ArmControl : TinkerBase, ITinkerBase
     {
+        private List<TinkerServoBase> servos;
         private PCA9685 _servoControllerDevice;
         private TinkerServoBase _clawServo;
         private TinkerServoBase _wristServo;
@@ -26,14 +27,58 @@ namespace TinkerTank.Movement
         }
 
         public void Init()
-        {            
-            BasePanServo = new TinkerServoBase(_servoControllerDevice, 10, TinkerServoBase.ServoType.MG996R, null, null);
-            BaseTiltServo = new TinkerServoBase(_servoControllerDevice, 11, TinkerServoBase.ServoType.MG996R, null, null);
-            ShoulderServo = new TinkerServoBase(_servoControllerDevice, 12, TinkerServoBase.ServoType.MG996R, null, null);
-            ElbowServo = new TinkerServoBase(_servoControllerDevice, 13, TinkerServoBase.ServoType.MG996R, null, null);
-            WristServo = new TinkerServoBase(_servoControllerDevice, 14, TinkerServoBase.ServoType.MG996R, null, null);
-            ClawServo = new TinkerServoBase(_servoControllerDevice, 15, TinkerServoBase.ServoType.MG996R, null, null);
-            Status = Enumerations.ComponentStatus.Ready;
+        {
+            try
+            {
+                _appRoot.DebugDisplayText("Init Arm");
+
+                if (servos == null)
+                {
+                    servos = new List<TinkerServoBase>();
+                }
+
+                servos.Clear();
+
+                _appRoot.DebugDisplayText("arm - base pan");
+                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, TinkerServoBase.ServoType.MG996R, null, null, "Base Pan");
+                servos.Add(BasePanServo);
+                BasePanServo.InitServo(false);
+
+                _appRoot.DebugDisplayText("arm - base tilt");
+                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 11, TinkerServoBase.ServoType.MG996R, null, null, "Base Tilt");
+                servos.Add(BaseTiltServo);
+                BaseTiltServo.InitServo();
+
+                _appRoot.DebugDisplayText("arm - Shoulder");
+                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 12, TinkerServoBase.ServoType.MG996R, null, null, "Shoulder");
+                servos.Add(ShoulderServo);
+                ShoulderServo.InitServo();
+
+                _appRoot.DebugDisplayText("arm - Elbow");
+                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 13, TinkerServoBase.ServoType.MG996R, null, null, "Elbow");
+                servos.Add(ElbowServo);
+                ElbowServo.InitServo();
+
+                _appRoot.DebugDisplayText("arm - Wrist");
+                WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 14, TinkerServoBase.ServoType.MG996R, null, null, "Wrist");
+                servos.Add(WristServo);
+                WristServo.InitServo();
+
+                _appRoot.DebugDisplayText("arm - Claw");
+                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, TinkerServoBase.ServoType.MG996R, null, null, "Claw");
+                servos.Add(ClawServo);
+                ClawServo.InitServo();
+                ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);
+
+                _appRoot.DebugDisplayText("arm - setting ready");
+                Status = Enumerations.ComponentStatus.Ready;
+                _appRoot.DebugDisplayText("arm - init complete");
+            }
+            catch (Exception e)
+            {
+                Status = Enumerations.ComponentStatus.Error;
+                _appRoot.DebugDisplayText("e - " + e.Message, Enumerations.DisplayStatusMessageTypes.Error);
+            }
         }
 
         private TinkerServoBase ClawServo
@@ -70,6 +115,14 @@ namespace TinkerTank.Movement
         {
             get => _baseTiltServo;
             set => SetProperty(ref _baseTiltServo, value);
+        }
+
+        public void GoToDefaultPosition()
+        {
+            foreach (var element in servos)
+            {
+                element.GoToDefaultPosition();
+            }
         }
 
         public void RefreshStatus()

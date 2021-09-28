@@ -4,25 +4,17 @@ using Display;
 using Enumerations;
 using Meadow;
 using Meadow.Devices;
-using Meadow.Foundation;
-using Meadow.Foundation.ICs.IOExpanders;
-using Meadow.Foundation.Leds;
 using Meadow.Foundation.Sensors.Buttons;
-using Meadow.Foundation.Sensors.Distance;
 using Meadow.Hardware;
-using Meadow.Units;
 using Peripherals;
 using Servos;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using TinkerTank.Movement;
 using TinkerTank.Sensors;
 using TinkerTank.Servos;
-//using TinkerTank.Sensors;
 using Utilities.Power;
-using static Meadow.Foundation.Sensors.Distance.Vl53l0x;
 
 namespace TinkerTank
 {
@@ -48,7 +40,7 @@ namespace TinkerTank
         public PanTiltBase DriveCameraMovement;
         public PanTiltDistance PeriscopeCameraMovement;
 
-        public static bool ShowDebugLogs = false;
+        public static bool ShowDebugLogs = true;
 
         public II2cBus i2CBus;
 
@@ -117,6 +109,7 @@ namespace TinkerTank
             DebugDisplayText("Start Arm");
             Arm = new ArmControl(this, i2CPWMController);
             TBObjects.Add((TinkerBase)Arm);
+            Arm.Init();
 
             //Camera and Sensor
 

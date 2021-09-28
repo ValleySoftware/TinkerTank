@@ -18,7 +18,8 @@ namespace TinkerTank.Servos
         private int _portIndex;
         private Angle? _minAngle;
         private Angle? _maxAngle;
-        private Angle _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
+        private string _name;
+        private Angle _defaultAngle;
 
         public static ServoConfig Create996rConfig(Angle? minAngle, Angle? maxAngle)
         {
@@ -41,17 +42,18 @@ namespace TinkerTank.Servos
                     50);
         }
 
-        public TinkerServoBase(PCA9685 servoControllerDevice, int portIndex, ServoType typeOfServo, Angle? minAngle, Angle? maxAngle)
+        public TinkerServoBase(MeadowApp appRoot, PCA9685 servoControllerDevice, int portIndex, ServoType typeOfServo, Angle? minAngle, Angle? maxAngle, string name)
         {
-            Status = Enumerations.ComponentStatus.UnInitialised;
+            _appRoot = appRoot;
 
+            Status = Enumerations.ComponentStatus.UnInitialised;
+            _name = name;
             _portIndex = portIndex;
             _servoType = typeOfServo;
             _servoControllerDevice = servoControllerDevice;
             _minAngle = minAngle;
             _maxAngle = maxAngle;
-
-            InitServo();
+            _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
         }
 
         public int SafeIshRotate(Angle desiredAngle)
@@ -88,25 +90,30 @@ namespace TinkerTank.Servos
             return result;
         }
 
-        private void InitServo()
+        public void InitServo(bool GoToDefaultOnStart = false)
         {
+            _appRoot.DebugDisplayText("arm - 0");
             if (_servo != null)
             {
                 _servo.Stop();
             }
 
+            _appRoot.DebugDisplayText("arm - 1");
             if (_minAngle == null)
             {
                 _minAngle = new Angle(0, Angle.UnitType.Degrees);
             }
 
+            _appRoot.DebugDisplayText("arm - 2");
             if (_maxAngle == null)
             {
                 _maxAngle = new Angle(180, Angle.UnitType.Degrees);
             }
 
+            _appRoot.DebugDisplayText("arm - 2a");
             ServoConfig config = null;
 
+            _appRoot.DebugDisplayText("arm - 3");
             switch (_servoType)
             {
                 case ServoType.SG90: config = NamedServoConfigs.SG90; break;
@@ -115,7 +122,15 @@ namespace TinkerTank.Servos
                 default: config = NamedServoConfigs.SG90; break;
             }
 
+            _appRoot.DebugDisplayText("arm - 4");
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
+
+            _appRoot.DebugDisplayText("arm - 5");
+            if (GoToDefaultOnStart)
+            {
+                GoToDefaultPosition();
+            }
+            _appRoot.DebugDisplayText("arm - 6");
 
             Status = Enumerations.ComponentStatus.Ready;
         }
@@ -134,16 +149,23 @@ namespace TinkerTank.Servos
             InitServo();
         }
 
-        private Angle DefaultAngle
+        public Angle DefaultAngle
         {
             get => _defaultAngle;
             set => SetProperty(ref _defaultAngle, value);
         }
 
-        public void GoToDefaultAngle()
+        private string Name 
+        {
+            get => _name;
+            set => SetProperty(ref _name, value);
+        }
+
+        public void GoToDefaultPosition()
         {
             if (SafeIshRotate(DefaultAngle) == -1)
             {
+                _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.");
                 DefaultAngle = _servo.Angle.Value;
             }
         }
