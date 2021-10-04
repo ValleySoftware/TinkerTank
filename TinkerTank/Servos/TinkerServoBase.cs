@@ -5,6 +5,7 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TinkerTank.Servos
 {
@@ -56,64 +57,95 @@ namespace TinkerTank.Servos
             _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
         }
 
-        public int SafeIshRotate(Angle desiredAngle)
+        public double SafeIshRotate(Angle desiredAngle)
         {
+            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Degrees);
             Status = Enumerations.ComponentStatus.Action;
 
-            int result = -1;
+            double result = -1;
+
+            bool Completed = false;
 
             var oldAngle = _servo.Angle;
 
-            _servo.RotateTo(desiredAngle);
-
-            if (desiredAngle.Equals(_servo.Angle))
+            var rotateTask = Task.Run(() =>
             {
-                _servo.Stop();
-                Status = Enumerations.ComponentStatus.Error;
-                result = -1;
+                _servo.RotateTo(desiredAngle);
+            });
 
-                if (desiredAngle.Degrees < _servo.Angle.Value.Degrees)
-                {
-                    SetNewMinimum(_servo.Angle);
-                }
-                else
-                {
-                    SetNewMaximum(_servo.Angle);
-                }
-            }
-            else
+            var monitorTask = Task.Run(async () =>
             {
-                result = ((int)_servo.Angle.Value.Degrees);
-            }
+                while (!Completed)
+                {
+                    await Task.Delay(250);
 
+                    if (desiredAngle.Equals(_servo.Angle))
+                    {
+                        Completed = true;
+                        _servo.Stop();
+                        //Status = Enumerations.ComponentStatus.Error;
+                        result = _servo.Angle.Value.Degrees;
+                        Status = Enumerations.ComponentStatus.Ready;
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate success");
+                    }
+
+                    if (oldAngle == _servo.Angle)
+                    {
+                        Completed = true;
+                        _servo.Stop();
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete");
+                        //Status = Enumerations.ComponentStatus.Error;
+                        result = -1;
+
+                        if (desiredAngle.Degrees < _servo.Angle.Value.Degrees)
+                        {
+                            SetNewMinimum(_servo.Angle);
+                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees);
+                        }
+                        else
+                        {
+                            SetNewMaximum(_servo.Angle);
+                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees);
+                        }
+
+                    }
+
+                    oldAngle = _servo.Angle;
+                }
+            });
+
+            
+
+            result = _servo.Angle.Value.Degrees;
             Status = Enumerations.ComponentStatus.Ready;
+
             return result;
         }
 
         public void InitServo(bool GoToDefaultOnStart = false)
         {
-            _appRoot.DebugDisplayText("arm - 0");
+            //_appRoot.DebugDisplayText(Name + " - 0");
             if (_servo != null)
             {
                 _servo.Stop();
             }
 
-            _appRoot.DebugDisplayText("arm - 1");
+            //_appRoot.DebugDisplayText(Name + " - 1");
             if (_minAngle == null)
             {
                 _minAngle = new Angle(0, Angle.UnitType.Degrees);
             }
 
-            _appRoot.DebugDisplayText("arm - 2");
+            //_appRoot.DebugDisplayText(Name + " - 2");
             if (_maxAngle == null)
             {
                 _maxAngle = new Angle(180, Angle.UnitType.Degrees);
             }
 
-            _appRoot.DebugDisplayText("arm - 2a");
+            //_appRoot.DebugDisplayText(Name + " - 2a");
             ServoConfig config = null;
 
-            _appRoot.DebugDisplayText("arm - 3");
+            //_appRoot.DebugDisplayText(Name + " - 3");
             switch (_servoType)
             {
                 case ServoType.SG90: config = NamedServoConfigs.SG90; break;
@@ -122,16 +154,17 @@ namespace TinkerTank.Servos
                 default: config = NamedServoConfigs.SG90; break;
             }
 
-            _appRoot.DebugDisplayText("arm - 4");
+            //_appRoot.DebugDisplayText(Name + " - 4");
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
 
-            _appRoot.DebugDisplayText("arm - 5");
+            //_appRoot.DebugDisplayText(Name + " - 5");
             if (GoToDefaultOnStart)
             {
                 GoToDefaultPosition();
             }
-            _appRoot.DebugDisplayText("arm - 6");
+            //_appRoot.DebugDisplayText(Name + " - 6");
 
+            _appRoot.DebugDisplayText(Name + " - ready");
             Status = Enumerations.ComponentStatus.Ready;
         }
 
@@ -161,9 +194,9 @@ namespace TinkerTank.Servos
             set => SetProperty(ref _name, value);
         }
 
-        public void GoToDefaultPosition()
+        public async void GoToDefaultPosition()
         {
-            if (SafeIshRotate(DefaultAngle) == -1)
+            if (await SafeIshRotate(DefaultAngle) == -1)
             {
                 _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.");
                 DefaultAngle = _servo.Angle.Value;

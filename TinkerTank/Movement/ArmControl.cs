@@ -39,28 +39,28 @@ namespace TinkerTank.Movement
 
                 servos.Clear();
 
-                _appRoot.DebugDisplayText("arm - base pan");
-                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, TinkerServoBase.ServoType.MG996R, null, null, "Base Pan");
+                //_appRoot.DebugDisplayText("arm - base pan");
+                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, TinkerServoBase.ServoType.MG996R, null, null, "Base Pan");
                 servos.Add(BasePanServo);
                 BasePanServo.InitServo(false);
 
-                _appRoot.DebugDisplayText("arm - base tilt");
-                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 11, TinkerServoBase.ServoType.MG996R, null, null, "Base Tilt");
+                //_appRoot.DebugDisplayText("arm - base tilt");
+                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, TinkerServoBase.ServoType.MG996R, null, null, "Base Tilt");
                 servos.Add(BaseTiltServo);
                 BaseTiltServo.InitServo();
 
-                _appRoot.DebugDisplayText("arm - Shoulder");
-                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 12, TinkerServoBase.ServoType.MG996R, null, null, "Shoulder");
+                //_appRoot.DebugDisplayText("arm - Shoulder");
+                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 8, TinkerServoBase.ServoType.MG996R, null, null, "Shoulder");
                 servos.Add(ShoulderServo);
                 ShoulderServo.InitServo();
 
-                _appRoot.DebugDisplayText("arm - Elbow");
-                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 13, TinkerServoBase.ServoType.MG996R, null, null, "Elbow");
+                //_appRoot.DebugDisplayText("arm - Elbow");
+                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 9, TinkerServoBase.ServoType.MG996R, null, null, "Elbow");
                 servos.Add(ElbowServo);
                 ElbowServo.InitServo();
 
-                _appRoot.DebugDisplayText("arm - Wrist");
-                WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 14, TinkerServoBase.ServoType.MG996R, null, null, "Wrist");
+                //_appRoot.DebugDisplayText("arm - Wrist");
+                WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, TinkerServoBase.ServoType.MG996R, null, null, "Wrist");
                 servos.Add(WristServo);
                 WristServo.InitServo();
 
@@ -68,16 +68,18 @@ namespace TinkerTank.Movement
                 ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, TinkerServoBase.ServoType.MG996R, null, null, "Claw");
                 servos.Add(ClawServo);
                 ClawServo.InitServo();
-                ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);
+                ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));
 
-                _appRoot.DebugDisplayText("arm - setting ready");
+                //ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);
+
+                //_appRoot.DebugDisplayText("arm - setting ready");
                 Status = Enumerations.ComponentStatus.Ready;
                 _appRoot.DebugDisplayText("arm - init complete");
             }
             catch (Exception e)
             {
-                Status = Enumerations.ComponentStatus.Error;
                 _appRoot.DebugDisplayText("e - " + e.Message, Enumerations.DisplayStatusMessageTypes.Error);
+                Status = Enumerations.ComponentStatus.Error;
             }
         }
 
