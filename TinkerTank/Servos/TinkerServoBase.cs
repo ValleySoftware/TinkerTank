@@ -5,6 +5,7 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TinkerTank.Servos
@@ -59,22 +60,31 @@ namespace TinkerTank.Servos
 
         public double SafeIshRotate(Angle desiredAngle)
         {
-            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Degrees);
+            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Degrees, Enumerations.DisplayStatusMessageTypes.Debug);
             Status = Enumerations.ComponentStatus.Action;
 
+            _appRoot.DebugDisplayText(Name + " - safeishrotate 0", Enumerations.DisplayStatusMessageTypes.Debug);
             double result = -1;
 
+            _appRoot.DebugDisplayText(Name + " - safeishrotate 1", Enumerations.DisplayStatusMessageTypes.Debug);
             bool Completed = false;
 
-            var oldAngle = _servo.Angle;
+            _appRoot.DebugDisplayText(Name + " - safeishrotate 2", Enumerations.DisplayStatusMessageTypes.Debug);
 
-            var rotateTask = Task.Run(() =>
+            var oldAngle = _servo.Angle;
+            _appRoot.DebugDisplayText(Name + " - safeishrotate old angle = " + oldAngle.Value.Degrees, Enumerations.DisplayStatusMessageTypes.Debug);
+
+            //Try changing this to Thread rather than Task???            
+            var rotateTask = Task.Run(async() =>
             {
+                _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", Enumerations.DisplayStatusMessageTypes.Debug);
                 _servo.RotateTo(desiredAngle);
             });
 
             var monitorTask = Task.Run(async () =>
             {
+                _appRoot.DebugDisplayText(Name + " - safeishrotate monitor thread started", Enumerations.DisplayStatusMessageTypes.Debug);
+
                 while (!Completed)
                 {
                     await Task.Delay(250);
@@ -86,26 +96,26 @@ namespace TinkerTank.Servos
                         //Status = Enumerations.ComponentStatus.Error;
                         result = _servo.Angle.Value.Degrees;
                         Status = Enumerations.ComponentStatus.Ready;
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate success");
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate success", Enumerations.DisplayStatusMessageTypes.Important);
                     }
 
                     if (oldAngle == _servo.Angle)
                     {
                         Completed = true;
                         _servo.Stop();
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete");
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete", Enumerations.DisplayStatusMessageTypes.Important);
                         //Status = Enumerations.ComponentStatus.Error;
                         result = -1;
 
                         if (desiredAngle.Degrees < _servo.Angle.Value.Degrees)
                         {
                             SetNewMinimum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees);
+                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, Enumerations.DisplayStatusMessageTypes.Important);
                         }
                         else
                         {
                             SetNewMaximum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees);
+                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees, Enumerations.DisplayStatusMessageTypes.Important);
                         }
 
                     }
@@ -156,11 +166,12 @@ namespace TinkerTank.Servos
 
             //_appRoot.DebugDisplayText(Name + " - 4");
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
+            _appRoot.DebugDisplayText(Name + " - instantiated on port " + _portIndex, Enumerations.DisplayStatusMessageTypes.Important);
 
             //_appRoot.DebugDisplayText(Name + " - 5");
             if (GoToDefaultOnStart)
             {
-                GoToDefaultPosition();
+                //GoToDefaultPosition();
             }
             //_appRoot.DebugDisplayText(Name + " - 6");
 
@@ -196,7 +207,7 @@ namespace TinkerTank.Servos
 
         public async void GoToDefaultPosition()
         {
-            if (await SafeIshRotate(DefaultAngle) == -1)
+            if (SafeIshRotate(DefaultAngle) == -1)
             {
                 _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.");
                 DefaultAngle = _servo.Angle.Value;

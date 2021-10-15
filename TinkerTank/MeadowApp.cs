@@ -40,7 +40,7 @@ namespace TinkerTank
         public PanTiltBase DriveCameraMovement;
         public PanTiltDistance PeriscopeCameraMovement;
 
-        public static bool ShowDebugLogs = true;
+        public static bool ShowDebugLogs = false;
 
         public II2cBus i2CBus;
 
@@ -113,6 +113,7 @@ namespace TinkerTank
                 TBObjects.Add((TinkerBase)Arm);
                 Arm.Init();
 
+                DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
                 DriveCameraMovement = new

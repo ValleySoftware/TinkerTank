@@ -64,15 +64,13 @@ namespace TinkerTank.Movement
                 servos.Add(WristServo);
                 WristServo.InitServo();
 
-                _appRoot.DebugDisplayText("arm - Claw");
                 ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, TinkerServoBase.ServoType.MG996R, null, null, "Claw");
                 servos.Add(ClawServo);
-                ClawServo.InitServo();
-                ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));
+                ClawServo.InitServo(true);
+                //ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));
 
                 //ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);
 
-                //_appRoot.DebugDisplayText("arm - setting ready");
                 Status = Enumerations.ComponentStatus.Ready;
                 _appRoot.DebugDisplayText("arm - init complete");
             }
