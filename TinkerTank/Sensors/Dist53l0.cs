@@ -104,5 +104,10 @@ namespace TinkerTank.Sensors
         {
 
         }
+
+        public void ErrorEncountered()
+        {
+
+        }
     }
 }

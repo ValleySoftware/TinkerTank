@@ -162,5 +162,10 @@ namespace Display
         {
             throw new NotImplementedException();
         }
+
+        public void ErrorEncountered()
+        {
+
+        }
     }
 }

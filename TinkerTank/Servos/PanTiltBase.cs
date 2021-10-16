@@ -204,6 +204,11 @@ namespace Servos
         {
         }
 
+        public void ErrorEncountered()
+        {
+
+        }
+
         private void ServoRotateTo(Servo servoToRotate, int newAngle)
         {
             if (Status != ComponentStatus.Error &&

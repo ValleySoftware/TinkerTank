@@ -31,6 +31,8 @@ namespace Peripherals
             _appRoot = appRoot;
             _pcaDevice = pcaDevice;
             _device = device;
+
+            ErrorResponse = AutomaticErrorResponse.DisableMotorPower;
         }
 
         public ComponentStatus Init(
@@ -358,6 +360,11 @@ namespace Peripherals
 
         public void Test()
         {
+        }
+
+        public void ErrorEncountered()
+        {
+
         }
     }
 }

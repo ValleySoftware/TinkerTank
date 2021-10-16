@@ -420,5 +420,10 @@ namespace Communications
         {
 
         }
+
+        public void ErrorEncountered()
+        {
+
+        }
     }
 }

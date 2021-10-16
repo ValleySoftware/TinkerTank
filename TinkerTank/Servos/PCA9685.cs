@@ -49,6 +49,11 @@ namespace Servos
         {
         }
 
+        public void ErrorEncountered()
+        {
+
+        }
+
 
     }
 }

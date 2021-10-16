@@ -134,5 +134,10 @@ namespace TinkerTank.Movement
         {
 
         }
+
+        public void ErrorEncountered()
+        {
+
+        }
     }
 }

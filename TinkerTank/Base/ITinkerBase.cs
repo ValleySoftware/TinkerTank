@@ -11,5 +11,6 @@ namespace Base
     {
         void RefreshStatus();
         void Test();
+        void ErrorEncountered();
     }
 }

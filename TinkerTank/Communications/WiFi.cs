@@ -126,6 +126,11 @@ namespace Communications
         {
         }
 
+        public void ErrorEncountered()
+        {
+
+        }
+
 
         public ComponentStatus Status
         {

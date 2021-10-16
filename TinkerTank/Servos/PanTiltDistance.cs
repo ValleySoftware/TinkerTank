@@ -30,5 +30,10 @@ namespace TinkerTank.Servos
         }
 
 
+        public void ErrorEncountered()
+        {
+
+        }
+
     }
 }

@@ -68,5 +68,10 @@ namespace Utilities.Power
                 Thread.Sleep(5000);
             }
         }
+
+        public void ErrorEncountered()
+        {
+
+        }
     }
 }

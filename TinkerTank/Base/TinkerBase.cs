@@ -14,9 +14,11 @@ namespace Base
 {
     public class TinkerBase : ObservableObject
     {
+
         protected ComponentStatus _status = ComponentStatus.UnInitialised;
         protected MeadowApp _appRoot;
         private string _statusText = string.Empty;
+        private AutomaticErrorResponse _errorResponse = AutomaticErrorResponse.DisableComponent;
 
         public ComponentStatus Status
         {
@@ -28,6 +30,12 @@ namespace Base
         {
             get => _statusText;
             set => SetProperty(ref _statusText, value);
+        }
+
+        public AutomaticErrorResponse ErrorResponse
+        {
+            get => _errorResponse;
+            set => SetProperty(ref _errorResponse, value);
         }
     }
 }

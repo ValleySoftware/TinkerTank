@@ -176,8 +176,17 @@ namespace TinkerTank
                 if (element.Status == ComponentStatus.Error ||
                     element.Status == ComponentStatus.UnInitialised)
                 {
-                    DebugDisplayText(element.GetType().ToString() + " not ready.  Exiting.", DisplayStatusMessageTypes.Error);
-                    powerController.Disconnect();
+                    switch (element.ErrorResponse)
+                    {
+                        case AutomaticErrorResponse.DoNothing: break;
+                        case AutomaticErrorResponse.TryReload: break;
+                        case AutomaticErrorResponse.Warn: break;
+                        case AutomaticErrorResponse.DisableComponent: break;
+                        case AutomaticErrorResponse.DisableMotorPower: try { powerController.Disconnect(); } catch (Exception) { }; break;
+                    }
+
+                    DebugDisplayText(element.GetType().ToString() + " inopperable.  : ", DisplayStatusMessageTypes.Error);
+                    
                     break;
                 }
             }
