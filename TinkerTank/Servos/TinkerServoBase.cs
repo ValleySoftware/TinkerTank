@@ -1,4 +1,5 @@
 ﻿using Base;
+using Enumerations;
 using Meadow.Foundation.Servos;
 using Meadow.Units;
 using Servos;
@@ -13,7 +14,6 @@ namespace TinkerTank.Servos
     public class TinkerServoBase : TinkerBase, ITinkerBase
     {
 
-        public enum ServoType { SG90, SG90Continuous, MG996R };
         private PCA9685 _servoControllerDevice;
         private Servo _servo;
         private ServoType _servoType;
@@ -21,7 +21,7 @@ namespace TinkerTank.Servos
         private Angle? _minAngle;
         private Angle? _maxAngle;
         private string _name;
-        private Angle _defaultAngle;
+        private Angle? _defaultAngle;
 
         public static ServoConfig Create996rConfig(Angle? minAngle, Angle? maxAngle)
         {
@@ -58,9 +58,9 @@ namespace TinkerTank.Servos
             _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
         }
 
-        public double SafeIshRotate(Angle desiredAngle)
+        public double SafeIshRotate(Angle? desiredAngle)
         {
-            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Degrees, Enumerations.DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, Enumerations.DisplayStatusMessageTypes.Debug);
             Status = Enumerations.ComponentStatus.Action;
 
             _appRoot.DebugDisplayText(Name + " - safeishrotate 0", Enumerations.DisplayStatusMessageTypes.Debug);
@@ -78,7 +78,7 @@ namespace TinkerTank.Servos
             var rotateTask = Task.Run(async() =>
             {
                 _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", Enumerations.DisplayStatusMessageTypes.Debug);
-                _servo.RotateTo(desiredAngle);
+                _servo.RotateTo(desiredAngle.Value);
             });
 
             var monitorTask = Task.Run(async () =>
@@ -107,7 +107,7 @@ namespace TinkerTank.Servos
                         //Status = Enumerations.ComponentStatus.Error;
                         result = -1;
 
-                        if (desiredAngle.Degrees < _servo.Angle.Value.Degrees)
+                        if (desiredAngle.Value.Degrees < _servo.Angle.Value.Degrees)
                         {
                             SetNewMinimum(_servo.Angle);
                             _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, Enumerations.DisplayStatusMessageTypes.Important);
@@ -193,10 +193,29 @@ namespace TinkerTank.Servos
             InitServo();
         }
 
-        public Angle DefaultAngle
+        public Angle? MinAngle
+        {
+            get => _minAngle;
+        }
+
+        public Angle? MaxAngle
+        {
+            get => _maxAngle;
+        }
+
+        public Angle? DefaultAngle
         {
             get => _defaultAngle;
-            set => SetProperty(ref _defaultAngle, value);
+            set { _defaultAngle = value; }
+            // SetProperty(ref _defaultAngle, value);
+        }
+
+        public Angle? CurrentAngle
+        {
+            get
+            {
+                return _servo.Angle;
+            }
         }
 
         private string Name 

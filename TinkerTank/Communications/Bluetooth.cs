@@ -4,6 +4,7 @@ using Meadow;
 using Meadow.Devices;
 using Meadow.Gateways;
 using Meadow.Gateways.Bluetooth;
+using Meadow.Units;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +21,10 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, Move, PanTilt, Power, AdvancedMove, PanSweep, Distance };
-        private enum CharacteristicsUUID { UUIDStop, UUIDMove, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance };
+        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, Distance };
+        private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
-        private const string UUIDMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5101";
         private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
         private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
         private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
@@ -34,7 +34,6 @@ namespace Communications
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
         private CharacteristicInt32  charStop;
-        private CharacteristicString charMove;
         private CharacteristicString charPanTilt;
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
@@ -140,8 +139,8 @@ namespace Communications
 
                     if (device < _appRoot.PanTilts.Count)
                     {
-                        _appRoot.PanTilts[device].PanTo(pan, speed);
-                        _appRoot.PanTilts[device].TiltTo(tilt, speed);
+                        _appRoot.PanTilts[device].PanTo(new Angle(pan), speed);
+                        _appRoot.PanTilts[device].TiltTo(new Angle(tilt), speed);
                     }
                 }
             }
@@ -190,40 +189,6 @@ namespace Communications
             _appRoot.movementController.Stop();
         }
 
-        /*
-        private void RequestMove(string payload)
-        {
-            var testMotorDuration = new TimeSpan(0, 0, 0, 0, 250);
-
-            switch (Convert.ToInt32(payload))
-            {
-                case -1:
-                    _appRoot.movementController.Stop();
-                    break;
-                case (int)Direction.Forward: //0
-                    _appRoot.movementController.Move(Direction.Forward, 0, testMotorDuration);
-                    break;
-                case (int)Direction.Backwards://1
-                    _appRoot.movementController.Move(Direction.Backwards, 0, testMotorDuration);
-                    break;
-                case (int)Direction.TurnLeft://2
-                    _appRoot.movementController.Move(Direction.TurnLeft, 0, testMotorDuration);
-                    break;
-                case (int)Direction.TurnRight://3
-                    _appRoot.movementController.Move(Direction.TurnRight, 0, testMotorDuration);
-                    break;
-                case (int)Direction.RotateLeft://4
-                    _appRoot.movementController.Move(Direction.RotateLeft, 0, testMotorDuration);
-                    break;
-                case (int)Direction.RotateRight://5
-                    _appRoot.movementController.Move(Direction.RotateRight, 0, testMotorDuration);
-                    break;
-                default:
-                    break;
-            }
-        }
-        */
-
         private void RequestAdvancedMove(string payload)
         {
             //movementDirection-powerPercent-durationInMilliseconds
@@ -252,7 +217,7 @@ namespace Communications
         {
             try
             {
-                charDistance.SetValue(_appRoot.PeriscopeCameraMovement.Sensor.DistanceInMillimeters);
+                charDistance.SetValue(_appRoot.DistancePanTilt.Sensor.DistanceInMillimeters);
             }
             catch (Exception)
             {
@@ -269,7 +234,6 @@ namespace Communications
                     serviceName,
                     serviceUuid,
                     charStop,
-                    charMove,
                     charPanTilt,
                     charPower,
                     charAdvancedMove,
@@ -307,14 +271,6 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             descriptors: new Descriptor(UUIDStop, CharacteristicsNames.Stop.ToString())
-                            );
-            charMove = new CharacteristicString(
-                            name: CharacteristicsNames.Move.ToString(),
-                            uuid: UUIDMove,
-                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
-                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 12,
-                            descriptors: new Descriptor(UUIDMove, CharacteristicsNames.Move.ToString())
                             );
             charPanTilt = new CharacteristicString(
                             name: CharacteristicsNames.PanTilt.ToString(),
@@ -387,7 +343,6 @@ namespace Communications
                         switch (c.Name)
                         {
                             case "Stop": RequestStop(); break;
-                            case "Move": break;
                             case "PanTilt": RequestPanTilt(payload); break;
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;

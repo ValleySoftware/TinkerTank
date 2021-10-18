@@ -1,4 +1,5 @@
 ﻿using Base;
+using Enumerations;
 using Meadow.Foundation.Servos;
 using Servos;
 using System;
@@ -40,31 +41,31 @@ namespace TinkerTank.Movement
                 servos.Clear();
 
                 //_appRoot.DebugDisplayText("arm - base pan");
-                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, TinkerServoBase.ServoType.MG996R, null, null, "Base Pan");
+                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Base Pan");
                 servos.Add(BasePanServo);
                 BasePanServo.InitServo(false);
 
                 //_appRoot.DebugDisplayText("arm - base tilt");
-                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, TinkerServoBase.ServoType.MG996R, null, null, "Base Tilt");
+                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, ServoType.MG996R, null, null, "Base Tilt");
                 servos.Add(BaseTiltServo);
                 BaseTiltServo.InitServo();
 
                 //_appRoot.DebugDisplayText("arm - Shoulder");
-                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 8, TinkerServoBase.ServoType.MG996R, null, null, "Shoulder");
+                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 8, ServoType.MG996R, null, null, "Shoulder");
                 servos.Add(ShoulderServo);
                 ShoulderServo.InitServo();
 
                 //_appRoot.DebugDisplayText("arm - Elbow");
-                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 9, TinkerServoBase.ServoType.MG996R, null, null, "Elbow");
+                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 9, ServoType.MG996R, null, null, "Elbow");
                 servos.Add(ElbowServo);
                 ElbowServo.InitServo();
 
                 //_appRoot.DebugDisplayText("arm - Wrist");
-                WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, TinkerServoBase.ServoType.MG996R, null, null, "Wrist");
+                WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, ServoType.MG996R, null, null, "Wrist");
                 servos.Add(WristServo);
                 WristServo.InitServo();
 
-                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, TinkerServoBase.ServoType.MG996R, null, null, "Claw");
+                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, ServoType.MG996R, null, null, "Claw");
                 servos.Add(ClawServo);
                 ClawServo.InitServo(true);
                 //ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));

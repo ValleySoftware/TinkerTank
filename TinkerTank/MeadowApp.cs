@@ -6,6 +6,7 @@ using Meadow;
 using Meadow.Devices;
 using Meadow.Foundation.Sensors.Buttons;
 using Meadow.Hardware;
+using Meadow.Units;
 using Peripherals;
 using Servos;
 using System;
@@ -31,16 +32,15 @@ namespace TinkerTank
 
         public PushButton button;
 
-        public Dist53l0 distance;
         public readonly int PWMFrequency = 50;
 
         public ArmControl Arm;
 
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
-        public PanTiltBase DriveCameraMovement;
-        public PanTiltDistance PeriscopeCameraMovement;
+        public PanTiltDistance DistancePanTilt;
+        public PanTiltBase CameraPanTilt;
 
-        public static bool ShowDebugLogs = false;
+        public static bool ShowDebugLogs = true;
 
         public II2cBus i2CBus;
 
@@ -113,37 +113,48 @@ namespace TinkerTank
                 TBObjects.Add((TinkerBase)Arm);
                 Arm.Init();
 
+
                 DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                DriveCameraMovement = new
-                   PanTiltBase(
-                       this,
-                       i2CPWMController.GetPwmPort(0),
-                       i2CPWMController.GetPwmPort(1),
-                       "DriveCamera",
-                       ServoType.SG90Standard);
+                try
+                {
+                    DistancePanTilt = new
+                        PanTiltDistance(
+                            this,
+                            i2CPWMController,
+                            "Range Finder",
+                            MeadowApp.Device.Pins.D09);
 
-                PanTilts.Add(DriveCameraMovement);
-                DriveCameraMovement.Init();
-                DriveCameraMovement.DefaultPan = 110;
-                DriveCameraMovement.DefaultTilt = 100;
-                DriveCameraMovement.GoToDefault();
+                    PanTilts.Add(DistancePanTilt);
+                    DistancePanTilt.Init(2, 3);
+                    //DistancePanTilt.DefaultPan = new Angle(55);
+                    //DistancePanTilt.DefaultTilt = new Angle(40);
+                    DistancePanTilt.GoToDefault();
+                }
+                catch (Exception e)
+                {
+                    DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                }
 
-                PeriscopeCameraMovement = new
-                    PanTiltDistance(
-                        this,
-                        i2CPWMController.GetPwmPort(2),
-                        i2CPWMController.GetPwmPort(3),
-                        "PeriscopeCamera",
-                        ServoType.SG90Standard,
-                        MeadowApp.Device.Pins.D09);
+                try
+                {
+                    CameraPanTilt = new
+                        PanTiltBase(
+                            this,
+                            i2CPWMController,
+                            "Forward Pan Tilt Camera");
 
-                PanTilts.Add(PeriscopeCameraMovement);
-                PeriscopeCameraMovement.Init();
-                PeriscopeCameraMovement.DefaultPan = 55;
-                PeriscopeCameraMovement.DefaultTilt = 40;
-                PeriscopeCameraMovement.GoToDefault();
+                    PanTilts.Add(CameraPanTilt);
+                    CameraPanTilt.Init(0, 1);
+                    //CameraPanTilt.DefaultPan = new Angle(55);
+                    //CameraPanTilt.DefaultTilt = new Angle(40);
+                    CameraPanTilt.GoToDefault();
+                }
+                catch (Exception e)
+                {
+                    DebugDisplayText("Camera Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                }
 
                 //Final
 

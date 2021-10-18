@@ -12,8 +12,8 @@ namespace Enumerations
     public enum DriveMethod { TwoWheelDrive, FourWheelDrive, DualTracks }
     public enum Direction { Forward, Backwards, TurnLeft, TurnRight, RotateLeft, RotateRight }
     public enum DisplayStatusMessageTypes { Debug, Important, Error };
-    public enum ServoType { SG90Standard, MG996RStandard };
     public enum ServoMovementSpeed { Slow, Medium, Fast, Flank, Stop };
+    public enum ServoType { SG90, SG90Continuous, MG996R };
 
 
 }

@@ -15,16 +15,17 @@ namespace TinkerTank.Servos
         private IDigitalOutputPort laserDigitaPort;
         IPin LaserPin;
 
-        public  PanTiltDistance(MeadowApp appRoot, IPwmPort panPwmPort, IPwmPort tiltPwmPort, string name, ServoType servoType = ServoType.SG90Standard, IPin laserPin = null) : 
-            base(appRoot, panPwmPort, tiltPwmPort, name,  ServoType.SG90Standard)
+        public PanTiltDistance(MeadowApp appRoot, PCA9685 servoControllerDevice, string name, IPin laserPin = null) :
+            base(appRoot, servoControllerDevice, name)
         {
             LaserPin = laserPin;
         }
 
-        public override void Init() 
+        public override void Init(int panPwmPort, int tiltPwmPort, ServoType servoType = ServoType.SG90)
         {
-            base.Init();
+            base.Init(panPwmPort, tiltPwmPort, servoType);
 
+            _appRoot.DebugDisplayText("Init distance sensor.");
             Sensor = new Dist53l0(MeadowApp.Device, _appRoot, ref _appRoot.i2CBus, LaserPin);
             Sensor.Init();
         }

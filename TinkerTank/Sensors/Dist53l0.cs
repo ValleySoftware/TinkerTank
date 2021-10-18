@@ -39,11 +39,13 @@ namespace TinkerTank.Sensors
             
             try
             {
+                _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
                 distanceSensor = new Vl53l0x(_device, sharedBus);
                 distanceSensor.Updated += DistanceSensor_Updated;
                 //distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(250));
                 distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(2000));
 
+                _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
