@@ -81,24 +81,38 @@ namespace Servos
             }
         }
 
-        public Task PanTo(Angle? newAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public async Task Move(PanTiltAxis axis, Angle? destinationAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
-            if (newAngle == null)
+            TinkerServoBase servoToUse = null; ;
+
+            if (axis == PanTiltAxis.pan)
             {
-                newAngle = new Angle(90);
+                servoToUse = servoPan;
+
+                if (destinationAngle == null)
+                {
+                    destinationAngle = DefaultPan;
+                }
             }
-            
-            _appRoot.DebugDisplayText("Pan requested");
+            else
+            {
+                servoToUse = servoTilt;
+
+                if (destinationAngle == null)
+                {
+                    destinationAngle = DefaultTilt;
+                }
+            }
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
                 StopRequested = false;
 
-                var t = Task.Run(() =>
-                {
-                    Status = ComponentStatus.Action;
-                    _appRoot.DebugDisplayText("Pan Task Running");
+                //var t = Task.Run(() =>
+                //{
+                    //Status = ComponentStatus.Action;
+                    _appRoot.DebugDisplayText("Pan Running");
 
                     if (movementSpeed == ServoMovementSpeed.Stop)
                     {
@@ -109,9 +123,8 @@ namespace Servos
                         if (movementSpeed == ServoMovementSpeed.Flank)
                         {
                             _appRoot.DebugDisplayText("Pan speed flank");
-                            servoPan.SafeIshRotate(newAngle);
+                            servoToUse.SafeIshRotate(destinationAngle);
                             _appRoot.DebugDisplayText("Pan at flank finished");
-
                         }
                         else
                         {                            
@@ -125,69 +138,37 @@ namespace Servos
                                 default: millisecondDelay = 250; break;
                             }
 
-                            Angle? newPos = new Angle(CurrentPanPosition.Value.Degrees);
+                            Angle? stepPos = new Angle(CurrentPanPosition.Value.Degrees);
 
-                            _appRoot.DebugDisplayText("Pan from " + newPos.Value.Degrees + " to " + newAngle.Value.Degrees + " with " + millisecondDelay);
+                            _appRoot.DebugDisplayText("servo move from " + stepPos.Value.Degrees + " to " + destinationAngle.Value.Degrees + " with " + millisecondDelay);
 
-                            if (newPos.Value.Degrees > newAngle.Value.Degrees)
-                            {
+                        var incriment = 1;
 
-                                while (newPos.Value.Degrees > newAngle.Value.Degrees)
+                        if (stepPos.Value.Degrees < destinationAngle.Value.Degrees)
+                        {
+                            incriment = -1;
+                        }
+
+                                while (Math.Round(stepPos.Value.Degrees) != Math.Round(destinationAngle.Value.Degrees))
                                 {
-                                    newPos = new Angle(newPos.Value.Degrees - 1);
-                                    servoPan.SafeIshRotate(newPos);
+                                    stepPos = new Angle(stepPos.Value.Degrees + incriment);
+                                    var servoMovedTo = servoToUse.SafeIshRotate(stepPos);
                                     Thread.Sleep(millisecondDelay);
 
-                                    if (StopRequested)
+                                    if (StopRequested ||
+                                        servoMovedTo == -1)
                                     {
                                         break;
                                     }
                                 }
-                            }
-                            else
-                            {
-                                while (newPos < newAngle)
-                                {
-                                    newPos = new Angle(newPos.Value.Degrees + 1);
-                                    servoPan.SafeIshRotate(newPos);
-                                    Task.Delay(millisecondDelay);
-
-                                    if (StopRequested)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
                         }
                     }
                     Status = ComponentStatus.Ready;
-                });
+                //});
 
-                return t;
+                //return t;
             }
-            return null;
-        }
-
-        public void TiltTo(Angle? newAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
-        {
-            if (newAngle == null)
-            {
-                newAngle = new Angle(90);
-            }
-
-            _appRoot.DebugDisplayText("Tilt requested");
-
-            if (Status != ComponentStatus.Error &&
-                Status != ComponentStatus.UnInitialised)
-            {
-
-                var t = Task.Run(() =>
-                {
-                    Status = ComponentStatus.Action;
-                    servoTilt.SafeIshRotate(newAngle);
-                    Status = ComponentStatus.Ready;
-                });
-            }
+            //return null;
         }
 
         public void RefreshStatus()
@@ -220,7 +201,7 @@ namespace Servos
 
                     _appRoot.DebugDisplayText("Pan to Min (" + servoPan.MinAngle.Value.Degrees + ")");
 
-                    var t = PanTo(servoPan.MinAngle, speed);
+                    var t = Move( PanTiltAxis.pan, servoPan.MinAngle, speed);
                     t.Wait();
 
 
@@ -230,7 +211,7 @@ namespace Servos
                     }
                     _appRoot.DebugDisplayText("Pan to Max (" + servoPan.MaxAngle.Value.Degrees + ")");
 
-                    t = PanTo(servoPan.MaxAngle, speed);
+                    t = Move(PanTiltAxis.pan ,servoPan.MaxAngle, speed);
                     t.Wait();
 
                     if (StopRequested)
@@ -245,9 +226,9 @@ namespace Servos
         public void GoToDefault()
         {
             var t = Task.Run(() =>
-            { 
-                PanTo(DefaultPan);
-                TiltTo(DefaultTilt);
+            {
+                Move(PanTiltAxis.pan, DefaultPan);
+                Move(PanTiltAxis.tilt, DefaultTilt);
             });
         }
     }

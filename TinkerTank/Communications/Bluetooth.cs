@@ -139,8 +139,8 @@ namespace Communications
 
                     if (device < _appRoot.PanTilts.Count)
                     {
-                        _appRoot.PanTilts[device].PanTo(new Angle(pan), speed);
-                        _appRoot.PanTilts[device].TiltTo(new Angle(tilt), speed);
+                        _appRoot.PanTilts[device].Move(PanTiltAxis.pan, new Angle(pan), speed);
+                        _appRoot.PanTilts[device].Move(PanTiltAxis.tilt , new Angle(tilt), speed);
                     }
                 }
             }
@@ -213,11 +213,17 @@ namespace Communications
             }
         }
 
-        private void RequestUpdateDistance()
+        public void RequestUpdateDistance(int newDistance = -1)
         {
             try
             {
-                charDistance.SetValue(_appRoot.DistancePanTilt.Sensor.DistanceInMillimeters);
+                if (newDistance == -1)
+                {
+                    newDistance = _appRoot.DistancePanTilt.Sensor.DistanceInMillimeters;
+                }
+                _appRoot.DebugDisplayText("dist sensor updating to " + newDistance, DisplayStatusMessageTypes.Debug);
+                charDistance.SetValue(newDistance);
+                _appRoot.DebugDisplayText("dist updated. " + charDistance, DisplayStatusMessageTypes.Debug);
             }
             catch (Exception)
             {

@@ -13,7 +13,7 @@ namespace TinkerTank.Sensors
     {
         private Vl53l0x distanceSensor;
         II2cBus sharedBus;
-        double _distanceInMillimeters;
+        int _distanceInMillimeters;
         F7Micro _device;
         public IPin LaserPin { get; set; }
         private IDigitalOutputPort laserDigitaPort;
@@ -27,10 +27,16 @@ namespace TinkerTank.Sensors
             LaserPin = laserPin;
         }
 
-        public double DistanceInMillimeters
+        public int DistanceInMillimeters
         {
             get => _distanceInMillimeters;
-            set => SetProperty(ref _distanceInMillimeters, value); 
+            set
+            {
+                _distanceInMillimeters = value;
+                //SetProperty(ref _distanceInMillimeters, value);
+                _appRoot.communications.RequestUpdateDistance(_distanceInMillimeters);
+            }
+
         }
 
         public void Init()
@@ -65,7 +71,7 @@ namespace TinkerTank.Sensors
             {
                 return;
             }
-            DistanceInMillimeters = e.New.Millimeters;
+            DistanceInMillimeters = Convert.ToInt32(Math.Round(e.New.Millimeters));
             _appRoot.DebugDisplayText($"{DistanceInMillimeters}mm", DisplayStatusMessageTypes.Important);
 
             LaserOff();

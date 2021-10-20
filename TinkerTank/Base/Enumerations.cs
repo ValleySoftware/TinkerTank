@@ -15,5 +15,5 @@ namespace Enumerations
     public enum ServoMovementSpeed { Slow, Medium, Fast, Flank, Stop };
     public enum ServoType { SG90, SG90Continuous, MG996R };
 
-
+    public enum PanTiltAxis { pan, tilt };
 }
