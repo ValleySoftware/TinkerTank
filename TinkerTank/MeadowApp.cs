@@ -124,6 +124,7 @@ namespace TinkerTank
                             this,
                             i2CPWMController,
                             "Range Finder",
+                            ref i2CBus,
                             MeadowApp.Device.Pins.D09);
 
                     PanTilts.Add(DistancePanTilt);

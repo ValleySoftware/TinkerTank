@@ -38,7 +38,7 @@ namespace Communications
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
         private CharacteristicString charPanSweep;
-        private CharacteristicString charDistance;
+        private CharacteristicInt32 charDistance;
         F7Micro _device;
 
         public BlueTooth(F7Micro device, MeadowApp appRoot)
@@ -223,7 +223,7 @@ namespace Communications
                 }
                 _appRoot.DebugDisplayText("dist sensor updating to " + newDistance, DisplayStatusMessageTypes.Debug);
                 charDistance.SetValue(newDistance);
-                _appRoot.DebugDisplayText("dist updated. " + charDistance, DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("dist updated. " + charDistance.ValueHandle, DisplayStatusMessageTypes.Debug);
             }
             catch (Exception)
             {
@@ -310,12 +310,11 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
                             );
-            charDistance = new CharacteristicString(
+            charDistance = new CharacteristicInt32(
                             name: CharacteristicsNames.Distance.ToString(),
                             uuid: UUIDDistance,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 12,
                             descriptors: new Descriptor(UUIDDistance, CharacteristicsNames.Distance.ToString())
                             );
         }
