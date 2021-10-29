@@ -113,8 +113,6 @@ namespace Servos
 
                 StopRequested = false;
 
-                //var t = Task.Run(() =>
-                //{
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Running");
 
@@ -168,7 +166,7 @@ namespace Servos
                         }
                     }
                     Status = ComponentStatus.Ready;
-                //});
+
             }
         }
 

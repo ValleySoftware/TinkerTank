@@ -30,7 +30,7 @@ namespace Display
         private List<StatusMessage> Log;
         private StatusMessage CurrentLog;
 
-        public static bool ShowDebugLogs = true;
+        public static bool ShowDebugLogs = false;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
             {
@@ -44,7 +44,7 @@ namespace Display
                 Log = new List<StatusMessage>();
             }
 
-            Log.Add(new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
+            Log.Insert(0,new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
 
             if (ShowDebugLogs ||
                 statusType != DisplayStatusMessageTypes.Debug)
