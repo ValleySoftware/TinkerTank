@@ -34,7 +34,7 @@ namespace Utilities.Power
                 _appRoot.DebugDisplayText("Power Controller Ready");
                 Status = ComponentStatus.Ready;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Status = ComponentStatus.Error;
             }

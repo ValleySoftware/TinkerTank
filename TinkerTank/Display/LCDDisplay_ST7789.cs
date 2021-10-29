@@ -1,5 +1,6 @@
 ﻿using Base;
 using Enumerations;
+using Meadow;
 using Meadow.Foundation;
 using Meadow.Foundation.Displays.TftSpi;
 using Meadow.Foundation.Graphics;
@@ -27,60 +28,55 @@ namespace Display
         St7789 display;
         static int NoOfLinesOnDisplay = 11;
         private List<StatusMessage> Log;
+        private StatusMessage CurrentLog;
+
+        public static bool ShowDebugLogs = true;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
             {
                 _appRoot = appRoot;
             }
 
-        public void AddNewLineOfText(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false)
+        public void AddMessage(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
             if (Log == null)
             {
                 Log = new List<StatusMessage>();
             }
 
-            if (clearFirst)
-            {
-                Log.Clear();
-            }
+            Log.Add(new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
 
-            Log.Insert(0, new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
-            UpdateDisplay(clearFirst);
+            if (ShowDebugLogs ||
+                statusType != DisplayStatusMessageTypes.Debug)
+            {
+                CurrentLog = Log[0];
+                UpdateDisplay(CurrentLog);
+            }
 
         }
 
-        private void UpdateDisplay(bool singleMessage)
+        private void UpdateDisplay(StatusMessage messageToShow = null)
         {
             graphics.Clear();
 
-            int i = 0;
+            CurrentLog = messageToShow;
 
-            foreach (var logElement in Log)
+            if (CurrentLog != null)
             {
-                var logSplitIntoLines = SplitInParts(logElement.Text, 19);
+                int i = 0;
+
+                var logSplitIntoLines = SplitInParts(CurrentLog.Text, 19);
 
                 foreach (var lineOfLog in logSplitIntoLines)
                 {
                     //Console.WriteLine(lineOfLog);
-                    graphics.DrawText(0, 24 * i, lineOfLog, StatusMessage.statusColours[(int)logElement.StatusType], GraphicsLibrary.ScaleFactor.X1);
+                    graphics.DrawText(0, 24 * i, lineOfLog, StatusMessage.statusColours[(int)CurrentLog.StatusType], GraphicsLibrary.ScaleFactor.X1);
                     i++;
 
                     if (i > NoOfLinesOnDisplay)
                     {
                         break;
                     }
-                }
-
-                if (i > NoOfLinesOnDisplay)
-                {
-                    break;
-                }
-
-                if (singleMessage)
-                {
-                    Console.WriteLine("singleMessageRequested");
-                    break;
                 }
             }
 
@@ -105,12 +101,12 @@ namespace Display
                     {
                         lineLength = partLength;
                     }
-                    l.Add(s.Substring(currentCharIndex, lineLength));
+                    l.Insert(0, s.Substring(currentCharIndex, lineLength));
 
                     currentCharIndex = currentCharIndex + lineLength;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("exception hit splitting string.");
             }
@@ -120,7 +116,7 @@ namespace Display
 
         public void RefreshDisplay()
             {
-                UpdateDisplay(false);
+                UpdateDisplay(CurrentLog);
             }
 
         public void Init()

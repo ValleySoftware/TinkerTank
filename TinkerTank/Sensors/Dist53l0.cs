@@ -17,6 +17,7 @@ namespace TinkerTank.Sensors
         F7Micro _device;
         public IPin LaserPin { get; set; }
         private IDigitalOutputPort laserDigitaPort;
+        public int UpdateIntervalInMS = 20000;
 
 
         public Dist53l0(F7Micro device, MeadowApp appRoot, ref II2cBus i2cBus, IPin laserPin)
@@ -49,14 +50,14 @@ namespace TinkerTank.Sensors
                 distanceSensor = new Vl53l0x(_device, sharedBus);
                 distanceSensor.Updated += DistanceSensor_Updated;
                 //distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(250));
-                distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(2000));
+                distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
 
                 _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("dist " + ex.Message, DisplayStatusMessageTypes.Error, true);
+                _appRoot.DebugDisplayText("dist " + ex.Message, DisplayStatusMessageTypes.Error);
                 Status = ComponentStatus.Error;
             }
 

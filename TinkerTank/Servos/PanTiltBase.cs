@@ -36,8 +36,11 @@ namespace Servos
         public virtual void Init(int panPwmPort, int tiltPwmPort, ServoType servoType = ServoType.SG90)
         {
             servoPan = new TinkerServoBase(_appRoot, _servoControllerDevice, panPwmPort, servoType, null, null, "Pan");
+            servoPan.InitServo();
+            servoTilt = new TinkerServoBase(_appRoot, _servoControllerDevice, tiltPwmPort, servoType, null, null, "Tilt");
+            servoTilt.InitServo();
 
-            _appRoot.DebugDisplayText("Pantilt " + Name + " registered and ready");
+            _appRoot.DebugDisplayText("PanTilt " + Name + " registered and ready on ports " + panPwmPort + " and " + tiltPwmPort);
             Status = ComponentStatus.Ready;
         }
 
@@ -81,9 +84,9 @@ namespace Servos
             }
         }
 
-        public async Task Move(PanTiltAxis axis, Angle? destinationAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public void Move(PanTiltAxis axis, Angle? destinationAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
-            TinkerServoBase servoToUse = null; ;
+            TinkerServoBase servoToUse = null;
 
             if (axis == PanTiltAxis.pan)
             {
@@ -107,11 +110,12 @@ namespace Servos
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
+
                 StopRequested = false;
 
                 //var t = Task.Run(() =>
                 //{
-                    //Status = ComponentStatus.Action;
+                    Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan Running");
 
                     if (movementSpeed == ServoMovementSpeed.Stop)
@@ -165,10 +169,7 @@ namespace Servos
                     }
                     Status = ComponentStatus.Ready;
                 //});
-
-                //return t;
             }
-            //return null;
         }
 
         public void RefreshStatus()
@@ -179,9 +180,9 @@ namespace Servos
         {
         }
 
-        public void ErrorEncountered()
+        public virtual void ErrorEncountered()
         {
-
+            
         }
 
         public void AutoPanSweep(ServoMovementSpeed speed)
@@ -201,9 +202,7 @@ namespace Servos
 
                     _appRoot.DebugDisplayText("Pan to Min (" + servoPan.MinAngle.Value.Degrees + ")");
 
-                    var t = Move( PanTiltAxis.pan, servoPan.MinAngle, speed);
-                    t.Wait();
-
+                    Move( PanTiltAxis.pan, servoPan.MinAngle, speed);
 
                     if (StopRequested)
                     {
@@ -211,8 +210,7 @@ namespace Servos
                     }
                     _appRoot.DebugDisplayText("Pan to Max (" + servoPan.MaxAngle.Value.Degrees + ")");
 
-                    t = Move(PanTiltAxis.pan ,servoPan.MaxAngle, speed);
-                    t.Wait();
+                    Move(PanTiltAxis.pan ,servoPan.MaxAngle, speed);
 
                     if (StopRequested)
                     {
@@ -225,11 +223,11 @@ namespace Servos
 
         public void GoToDefault()
         {
-            var t = Task.Run(() =>
-            {
+            //var t = Task.Run(() =>
+            //{
                 Move(PanTiltAxis.pan, DefaultPan);
                 Move(PanTiltAxis.tilt, DefaultTilt);
-            });
+            //});
         }
     }
 }

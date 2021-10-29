@@ -43,7 +43,7 @@ namespace TinkerTank.Movement
                 //_appRoot.DebugDisplayText("arm - base pan");
                 BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Base Pan");
                 servos.Add(BasePanServo);
-                BasePanServo.InitServo(false);
+                BasePanServo.InitServo();
 
                 //_appRoot.DebugDisplayText("arm - base tilt");
                 BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, ServoType.MG996R, null, null, "Base Tilt");
@@ -67,7 +67,7 @@ namespace TinkerTank.Movement
 
                 ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, ServoType.MG996R, null, null, "Claw");
                 servos.Add(ClawServo);
-                ClawServo.InitServo(true);
+                ClawServo.InitServo();
                 //ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));
 
                 //ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);

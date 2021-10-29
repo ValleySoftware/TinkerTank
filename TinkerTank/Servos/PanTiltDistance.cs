@@ -12,7 +12,6 @@ namespace TinkerTank.Servos
     {
         public Dist53l0 Sensor { get; set; }
 
-        private IDigitalOutputPort laserDigitaPort;
         IPin LaserPin;
         II2cBus sharedBus;
 
@@ -33,9 +32,9 @@ namespace TinkerTank.Servos
         }
 
 
-        public void ErrorEncountered()
+        public override void ErrorEncountered()
         {
-
+            base.ErrorEncountered();
         }
 
     }

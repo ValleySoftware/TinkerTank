@@ -206,7 +206,7 @@ namespace Communications
 
                     _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
                 }
-                catch (Exception decipherAdvancedMoveEx)
+                catch (Exception)
                 {
 
                 }
@@ -253,7 +253,7 @@ namespace Communications
                 {
                     element.SetValue(element.Name);
                 }
-                catch (Exception iDontKnowHowToCheckCharactiristicTypeSoThisWillCatchBoolOrInt)
+                catch (Exception)
                 {
 
                 }
@@ -328,7 +328,7 @@ namespace Communications
                 characteristic.ValueSet += (c, d) =>
                 {
 
-                    _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Debug, false);
+                    _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Debug);
 
                     string payload = string.Empty;
 
@@ -338,10 +338,10 @@ namespace Communications
                     }
                     catch (Exception dataEx)
                     {
-                        _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug, false, false);
+                        _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug);
                     }
 
-                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Important, false);
+                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Important);
 
                     try
                     {      
@@ -361,7 +361,7 @@ namespace Communications
                     catch (Exception ex)
                     {
                         Status = ComponentStatus.Error;
-                        _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error, true);
+                        _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
                     }
                 };
 

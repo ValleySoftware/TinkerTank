@@ -40,8 +40,6 @@ namespace TinkerTank
         public PanTiltDistance DistancePanTilt;
         public PanTiltBase CameraPanTilt;
 
-        public static bool ShowDebugLogs = true;
-
         public II2cBus i2CBus;
 
         IDigitalOutputPort blueLED;
@@ -129,8 +127,8 @@ namespace TinkerTank
 
                     PanTilts.Add(DistancePanTilt);
                     DistancePanTilt.Init(2, 3);
-                    //DistancePanTilt.DefaultPan = new Angle(55);
-                    //DistancePanTilt.DefaultTilt = new Angle(40);
+                    DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
+                    DistancePanTilt.DefaultTilt = new Angle(40); //?
                     DistancePanTilt.GoToDefault();
                 }
                 catch (Exception e)
@@ -148,8 +146,8 @@ namespace TinkerTank
 
                     PanTilts.Add(CameraPanTilt);
                     CameraPanTilt.Init(0, 1);
-                    //CameraPanTilt.DefaultPan = new Angle(55);
-                    //CameraPanTilt.DefaultTilt = new Angle(40);
+                    CameraPanTilt.DefaultPan = new Angle(110); //Higher = Left
+                    CameraPanTilt.DefaultTilt = new Angle(120);  //Higher = down
                     CameraPanTilt.GoToDefault();
                 }
                 catch (Exception e)
@@ -180,7 +178,6 @@ namespace TinkerTank
 
         public void RefreshStatus()
         {
-            //DebugDisplayText("Checking Component Status", DisplayStatusMessageTypes.Debug, false);
             foreach (var element in TBObjects)
             {
                 SetStatus(element.Status);
@@ -218,15 +215,15 @@ namespace TinkerTank
                 {
                     case ComponentStatus.Error:
                         redLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error, false);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error);
                         break;
                     case ComponentStatus.Action:
                         blueLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, false);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important);
                         break;
                     case ComponentStatus.Ready:
                         greenLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important, true);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important);
                         break;
                     default:
                         break;
@@ -236,29 +233,39 @@ namespace TinkerTank
             }
         }
 
-        public void DebugDisplayText(string textToShow, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug, bool clearFirst = false, bool ConsoleOnly = false)
+        public void NextDebugMessage()
         {
-            if (ShowDebugLogs ||
-                statusType != DisplayStatusMessageTypes.Debug)
-            {
+
+        }
+        public void PreviousDebugMessage()
+        {
+
+        }
+
+        public void ShowDebugMessage(int messageIndex)
+        {
+
+        }
+
+        public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
+        {
                 var t = new Task(() =>
                 {
-                    Console.WriteLine(textToShow);
+                    Console.WriteLine(newText);
         
-                    if (!ConsoleOnly && lcd != null)
+                    if (lcd != null)
                     {
                         try
                         {
-                            lcd.AddNewLineOfText(textToShow, statusType, clearFirst);
+                            lcd.AddMessage(newText, statusType);
                         }
-                        catch (Exception displayError)
+                        catch (Exception)
                         {
                             //Display add process went through,but not talking.  Is it plugged in?
                         }
                     }
                     });
                 t.Start();
-            }
         }
     }
 }

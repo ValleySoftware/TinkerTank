@@ -65,7 +65,7 @@ namespace Peripherals
                 _appRoot.DebugDisplayText("Setting Motor Controller Ready");
                 Status = ComponentStatus.Ready;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Status = ComponentStatus.Error;
             }
@@ -154,7 +154,7 @@ namespace Peripherals
                     Task.Run(async () =>
                     {
                         await Task.Delay(TimeSpan.FromSeconds(3));
-                        _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important,false, false);
+                        _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
                         Stop();
                     });
                 }
@@ -164,7 +164,7 @@ namespace Peripherals
                     {
                         await Task.Delay(movementDuration);
                         Stop();
-                        _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug, false, true);
+                        _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
                     });
                 }
             }
@@ -220,7 +220,7 @@ namespace Peripherals
             motorLeft.Power = 0;
             motorRight.Power = 0;
             Status = ComponentStatus.Ready;
-            _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important, false, false);
+            _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important);
         }
 
         public void BreakAndHold()
