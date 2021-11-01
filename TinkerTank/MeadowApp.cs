@@ -19,8 +19,19 @@ using Utilities.Power;
 
 namespace TinkerTank
 {
+    public class PinAssignment
+    {
+        public int PinIndex { get; set; }
+        public IPin PinLink { get; set; }
+        public bool IsInUse { get; }
+        public ITinkerBase UsedFor { get; set; }
+        public BasePinType TypeOfPin { get; set; }
+    }
+
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
+        public List<PinAssignment> PinRegister;
+
         public IMovementInterface movementController;
         public PowerControl powerController;
 
@@ -32,7 +43,7 @@ namespace TinkerTank
 
         public PushButton button;
 
-        public readonly int PWMFrequency = 50;
+        public readonly int PWMFrequency = 60;//50;
 
         public ArmControl Arm;
 
@@ -50,6 +61,15 @@ namespace TinkerTank
         private List<TinkerBase> TBObjects;
         private System.Timers.Timer _statusPoller;
 
+        private PushButton nextLogButton;
+        private PushButton previousLogButton;
+
+        private bool EnableDistanceSensor = false;
+        private bool EnablePanTiltCamera = false;
+        private bool EnableDisplay = false;
+        private bool EnableArm = true;
+        private bool EnableDisplayLogButtons = false;
+
         public MeadowApp()
         {
             Init();
@@ -61,6 +81,7 @@ namespace TinkerTank
             {
                 TBObjects = new List<TinkerBase>();
 
+                //InitialisePinRegister();
 
                 //Display And Logging
 
@@ -69,10 +90,34 @@ namespace TinkerTank
                 greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
                 redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
-                DebugDisplayText("start lcd", DisplayStatusMessageTypes.Important);
-                lcd = new LCDDisplay_ST7789(this);
-                TBObjects.Add(lcd);
-                lcd.Init();
+                if (EnableDisplay)
+                {
+                    try
+                    {
+                        DebugDisplayText("start lcd", DisplayStatusMessageTypes.Important);
+                        lcd = new LCDDisplay_ST7789(this);
+                        TBObjects.Add(lcd);
+                        lcd.Init();
+                    }
+                    catch (Exception broadLCDException)
+                    {
+
+                    }
+                }
+
+                if (EnableDisplayLogButtons)
+                {
+                    try
+                    {
+                        //nextLogButton = new PushButton(Device.CreateDigitalInputPort());
+                        //previousLogButton = new PushButton();
+
+                    }
+                    catch (Exception broadLCDException)
+                    {
+
+                    }
+                }
 
                 //Communications and control
 
@@ -106,37 +151,53 @@ namespace TinkerTank
                     Device.Pins.D13, Device.Pins.D12, Device.Pins.D11,
                     Device.Pins.D05, Device.Pins.D06, Device.Pins.D02);
 
-                DebugDisplayText("Start Arm");
-                Arm = new ArmControl(this, i2CPWMController);
-                TBObjects.Add((TinkerBase)Arm);
-                Arm.Init();
+                if (EnableArm)
+                {
+                    try
+                    {
+                        DebugDisplayText("Start Arm");
+                        Arm = new ArmControl(this, i2CPWMController);
+                        TBObjects.Add((TinkerBase)Arm);
+                        Arm.Init();
+
+                    }
+                    catch (Exception broadLCDException)
+                    {
+
+                    }
+                }   
 
 
                 DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                try
+                if (EnableDistanceSensor)
                 {
-                    DistancePanTilt = new
-                        PanTiltDistance(
-                            this,
-                            i2CPWMController,
-                            "Range Finder",
-                            ref i2CBus,
-                            MeadowApp.Device.Pins.D09);
+                    try
+                    {
+                        DistancePanTilt = new
+                            PanTiltDistance(
+                                this,
+                                i2CPWMController,
+                                "Range Finder",
+                                ref i2CBus,
+                                MeadowApp.Device.Pins.D09);
 
-                    PanTilts.Add(DistancePanTilt);
-                    DistancePanTilt.Init(2, 3);
-                    DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
-                    DistancePanTilt.DefaultTilt = new Angle(40); //?
-                    DistancePanTilt.GoToDefault();
+                        PanTilts.Add(DistancePanTilt);
+                        DistancePanTilt.Init(2, 3);
+                        DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
+                        DistancePanTilt.DefaultTilt = new Angle(40); //?
+                        DistancePanTilt.GoToDefault();
+                    }
+                    catch (Exception e)
+                    {
+                        DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                    }
                 }
-                catch (Exception e)
+
+                if (EnablePanTiltCamera)
                 {
-                    DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
-                }
-
-                try
+                    try
                 {
                     CameraPanTilt = new
                         PanTiltBase(
@@ -144,15 +205,16 @@ namespace TinkerTank
                             i2CPWMController,
                             "Forward Pan Tilt Camera");
 
-                    PanTilts.Add(CameraPanTilt);
-                    CameraPanTilt.Init(0, 1);
-                    CameraPanTilt.DefaultPan = new Angle(110); //Higher = Left
-                    CameraPanTilt.DefaultTilt = new Angle(120);  //Higher = down
-                    CameraPanTilt.GoToDefault();
-                }
-                catch (Exception e)
-                {
-                    DebugDisplayText("Camera Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                        PanTilts.Add(CameraPanTilt);
+                        CameraPanTilt.Init(0, 1);
+                        CameraPanTilt.DefaultPan = new Angle(110); //Higher = Left
+                        CameraPanTilt.DefaultTilt = new Angle(120);  //Higher = down
+                        CameraPanTilt.GoToDefault();
+                    }
+                    catch (Exception e)
+                    {
+                        DebugDisplayText("Camera Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                    }
                 }
 
                 //Final
@@ -169,6 +231,36 @@ namespace TinkerTank
             {
                 DebugDisplayText("Main Init Exception: " + iex.Message, DisplayStatusMessageTypes.Error);
             }
+        }
+
+        private void InitialisePinRegister()
+        {
+            PinRegister = new List<PinAssignment>();
+
+            PinRegister.Add(new PinAssignment() { PinIndex = 0 , TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A00 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 1, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A01 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 2, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A02 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 3, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A03 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 4, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A04 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 5, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A05 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 0, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D00 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 1, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D01 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 2, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D02 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 3, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D03 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 4, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D04 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 5, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D05 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 6, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D06 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 7, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D07 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 8, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D08 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 9, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D09 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 10, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D10 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 11, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D11 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 12, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D12 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 13, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D13 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 14, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D14 });
+            PinRegister.Add(new PinAssignment() { PinIndex = 15, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D15 });
+            PinRegister.Add(new PinAssignment() { PinIndex = -1, TypeOfPin = BasePinType.scl, PinLink = Device.Pins.I2C_SCL });
+            PinRegister.Add(new PinAssignment() { PinIndex = -1, TypeOfPin = BasePinType.sda, PinLink = Device.Pins.I2C_SDA });
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -235,16 +327,52 @@ namespace TinkerTank
 
         public void NextDebugMessage()
         {
+            if (lcd != null && lcd.Log.Count > 0)
+            {
+                var oldIndex = lcd.Log.IndexOf(lcd.CurrentLog);
 
+                if (oldIndex >= 0)
+                {
+                    ShowDebugMessage(oldIndex - 1);
+                }
+            }
         }
+
         public void PreviousDebugMessage()
         {
+            if (lcd != null && lcd.Log.Count > 0)
+            {
+                var oldIndex = lcd.Log.IndexOf(lcd.CurrentLog);
 
+                if  (oldIndex >= 0)
+                {
+                    ShowDebugMessage(oldIndex + 1);
+                }
+            }
+        }
+
+        public void FirstMessage()
+        {
+            if (lcd != null && lcd.Log.Count > 0)
+            {
+                lcd.CurrentLog = lcd.Log[lcd.Log.Count - 1];
+            }
+        }
+
+        public void LastMessage()
+        {
+            if (lcd != null && lcd.Log.Count > 0)
+            {
+                lcd.CurrentLog = lcd.Log[0];
+            }
         }
 
         public void ShowDebugMessage(int messageIndex)
         {
+            if (lcd != null && lcd.Log.Count > messageIndex)
+            {
 
+            }
         }
 
         public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)

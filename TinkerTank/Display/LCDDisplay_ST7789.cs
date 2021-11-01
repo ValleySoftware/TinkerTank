@@ -27,23 +27,34 @@ namespace Display
         GraphicsLibrary graphics;
         St7789 display;
         static int NoOfLinesOnDisplay = 11;
-        private List<StatusMessage> Log;
-        private StatusMessage CurrentLog;
+        private List<StatusMessage> _log;
+        private StatusMessage _currentLog;
 
-        public static bool ShowDebugLogs = false;
+        public static bool ShowDebugLogs = true;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
+        {
+            _appRoot = appRoot;
+            _log = new List<StatusMessage>();
+        }
+
+        public List<StatusMessage> Log
+        {
+            get => _log;
+        }
+
+        public StatusMessage CurrentLog
+        {
+            get => _currentLog;
+            set
             {
-                _appRoot = appRoot;
+                _currentLog = value;
+                UpdateDisplay();
             }
+        }
 
         public void AddMessage(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-            if (Log == null)
-            {
-                Log = new List<StatusMessage>();
-            }
-
             Log.Insert(0,new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
 
             if (ShowDebugLogs ||

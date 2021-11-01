@@ -33,15 +33,20 @@ namespace TinkerTank.Servos
 
             if (maxAngle == null)
             {
-                maxAngle = new Angle(270, Angle.UnitType.Degrees);
+                maxAngle = new Angle(245, Angle.UnitType.Degrees);
             }
 
             return new ServoConfig(
                     minAngle,
                     maxAngle,
                     500,
-                    2500,
+                    3000,
                     50);
+        }
+
+        public ServoBase servoDirectAccess
+        {
+            get => _servo;
         }
 
         public TinkerServoBase(MeadowApp appRoot, PCA9685 servoControllerDevice, int portIndex, ServoType typeOfServo, Angle? minAngle, Angle? maxAngle, string name)
@@ -125,6 +130,7 @@ namespace TinkerTank.Servos
                      */
 
             result = _servo.Angle.Value.Degrees;
+            _appRoot.DebugDisplayText(Name + " - new angle is " + result, DisplayStatusMessageTypes.Debug);
             Status = ComponentStatus.Ready;
 
             return result;
@@ -137,14 +143,16 @@ namespace TinkerTank.Servos
                 _servo.Stop();
             }
 
-            if (_minAngle == null)
+            if (_minAngle == null &&
+                _servoType != ServoType.MG996R)
             {
                 _minAngle = new Angle(0, Angle.UnitType.Degrees);
             }
 
-            if (_maxAngle == null)
+            if (_maxAngle == null &&
+                _servoType != ServoType.MG996R)
             {
-                _maxAngle = new Angle(180, Angle.UnitType.Degrees);
+                _maxAngle = new Angle(245, Angle.UnitType.Degrees);
             }
 
             ServoConfig config = null;
@@ -153,12 +161,12 @@ namespace TinkerTank.Servos
             {
                 case ServoType.SG90: config = NamedServoConfigs.SG90; break;
                 case ServoType.SG90Continuous: config = NamedServoConfigs.IdealContinuousRotationServo; break;
-                case ServoType.MG996R: _maxAngle = new Angle(270, Angle.UnitType.Degrees); config = Create996rConfig(_minAngle, _maxAngle); break;
+                case ServoType.MG996R: config = Create996rConfig(_minAngle, _maxAngle); break;
                 default: config = NamedServoConfigs.SG90; break;
             }
 
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
-            _appRoot.DebugDisplayText(Name + " - instantiated on port " + _portIndex, Enumerations.DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText(Name + " (" + _servoType.ToString() + ") - instantiated on port " + _portIndex, Enumerations.DisplayStatusMessageTypes.Important);
 
             if (GoToDefaultOnStart)
             {

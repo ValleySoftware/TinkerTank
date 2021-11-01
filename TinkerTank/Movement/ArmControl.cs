@@ -5,6 +5,7 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using TinkerTank.Servos;
 
 namespace TinkerTank.Movement
@@ -40,37 +41,50 @@ namespace TinkerTank.Movement
 
                 servos.Clear();
 
-                //_appRoot.DebugDisplayText("arm - base pan");
-                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Base Pan");
+                BasePanServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, ServoType.MG996R, null, null, "Base Pan");//
                 servos.Add(BasePanServo);
                 BasePanServo.InitServo();
 
-                //_appRoot.DebugDisplayText("arm - base tilt");
-                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, ServoType.MG996R, null, null, "Base Tilt");
+                BaseTiltServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 7, ServoType.MG996R, null, null, "Base Tilt");//
                 servos.Add(BaseTiltServo);
                 BaseTiltServo.InitServo();
 
-                //_appRoot.DebugDisplayText("arm - Shoulder");
-                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 8, ServoType.MG996R, null, null, "Shoulder");
+                ShoulderServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 9, ServoType.MG996R, null, null, "Shoulder");//
                 servos.Add(ShoulderServo);
                 ShoulderServo.InitServo();
 
-                //_appRoot.DebugDisplayText("arm - Elbow");
-                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 9, ServoType.MG996R, null, null, "Elbow");
+                ElbowServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 8, ServoType.MG996R, null, null, "Elbow");//
                 servos.Add(ElbowServo);
                 ElbowServo.InitServo();
 
-                //_appRoot.DebugDisplayText("arm - Wrist");
                 WristServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 10, ServoType.MG996R, null, null, "Wrist");
                 servos.Add(WristServo);
                 WristServo.InitServo();
 
-                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 15, ServoType.MG996R, null, null, "Claw");
+                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Claw");//
                 servos.Add(ClawServo);
                 ClawServo.InitServo();
-                //ClawServo.SafeIshRotate(new Meadow.Units.Angle(60, Meadow.Units.Angle.UnitType.Degrees));
+                //ClawServo.SafeIshRotate(new Meadow.Units.Angle(180, Meadow.Units.Angle.UnitType.Degrees));
 
-                //ClawServo.DefaultAngle = new Meadow.Units.Angle(50, Meadow.Units.Angle.UnitType.Degrees);
+                //Test Servo
+
+                var testservo  = new TinkerServoBase(_appRoot, _servoControllerDevice, 5, ServoType.MG996R, null, null, "Test Servo");//
+                testservo.InitServo();
+
+                //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
+
+                //_appRoot.DebugDisplayText("test rotate to mid point", DisplayStatusMessageTypes.Important);
+                //testservo.servoDirectAccess.RotateTo(new Meadow.Units.Angle(90, Meadow.Units.Angle.UnitType.Degrees));
+
+                //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
+
+                _appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MaximumAngle);
+
+                Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
+
+                _appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MinimumAngle);
 
                 Status = Enumerations.ComponentStatus.Ready;
                 _appRoot.DebugDisplayText("arm - init complete");
