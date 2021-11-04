@@ -5,6 +5,7 @@ using Meadow.Devices;
 using Meadow.Foundation.Sensors.Distance;
 using Meadow.Hardware;
 using System;
+using System.Threading;
 using static Meadow.Foundation.Sensors.Distance.Vl53l0x;
 
 namespace TinkerTank.Sensors
@@ -12,20 +13,23 @@ namespace TinkerTank.Sensors
     public class Dist53l0 : TinkerBase, ITinkerBase, ISensor
     {
         private Vl53l0x distanceSensor;
-        II2cBus sharedBus;
+        private DistanceSensorController _controller;
         int _distanceInMillimeters;
         F7Micro _device;
         public IPin LaserPin { get; set; }
         private IDigitalOutputPort laserDigitaPort;
         public int UpdateIntervalInMS = 250;
+        private IPin XShutPin { get; set; }
+        private IDigitalOutputPort xShutPort;
 
 
-        public Dist53l0(F7Micro device, MeadowApp appRoot, ref II2cBus i2cBus, IPin laserPin)
+        public Dist53l0(F7Micro device, MeadowApp appRoot, ref DistanceSensorController controller, IPin laserPin, IPin xShutPin)
         {
             _appRoot = appRoot;
-            sharedBus = i2cBus;
+            _controller = controller;
             _device = device;
             LaserPin = laserPin;
+            XShutPin = xShutPin;
         }
 
         public int DistanceInMillimeters
@@ -47,7 +51,7 @@ namespace TinkerTank.Sensors
             try
             {
                 _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
-                distanceSensor = new Vl53l0x(_device, sharedBus);
+                distanceSensor = new Vl53l0x(_device, _controller.DistanceSensori2cBus, XShutPin);
                 distanceSensor.Updated += DistanceSensor_Updated;
                 distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
 
@@ -60,6 +64,24 @@ namespace TinkerTank.Sensors
                 Status = ComponentStatus.Error;
             }
 
+        }
+        
+        public void ToggleXShut(bool newState)
+        {
+            distanceSensor.ShutDown(newState);
+        }
+        
+        public bool ChangeAddress(byte newAddress)
+        {
+            var result = false;
+
+            ToggleXShut(true);
+            ToggleXShut(false);
+            Thread.Sleep(500);
+
+            distanceSensor.SetAddress(newAddress);
+
+            return result;
         }
 
         private void DistanceSensor_Updated(object sender, Meadow.IChangeResult<Meadow.Units.Length> e)

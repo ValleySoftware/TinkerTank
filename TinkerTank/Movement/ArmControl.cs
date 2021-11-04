@@ -61,30 +61,24 @@ namespace TinkerTank.Movement
                 servos.Add(WristServo);
                 WristServo.InitServo();
 
-                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Claw");//
+                ClawServo = new TinkerServoBase(_appRoot, _servoControllerDevice, 6, ServoType.MG996R, null, null, "Claw");// higher = closed. Lower = open
                 servos.Add(ClawServo);
                 ClawServo.InitServo();
-                //ClawServo.SafeIshRotate(new Meadow.Units.Angle(180, Meadow.Units.Angle.UnitType.Degrees));
+                //ClawServo.servoDirectAccess.RotateTo(new Meadow.Units.Angle(200, Meadow.Units.Angle.UnitType.Degrees));
+                //ClawServo.SafeIshRotate();
 
                 //Test Servo
 
-                var testservo  = new TinkerServoBase(_appRoot, _servoControllerDevice, 5, ServoType.MG996R, null, null, "Test Servo");//
-                testservo.InitServo();
+                //var testservo  = new TinkerServoBase(_appRoot, _servoControllerDevice, 5, ServoType.MG996R, null, null, "Test Servo");//
+                //testservo.InitServo();                
+
+                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MaximumAngle);
 
                 //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
 
-                //_appRoot.DebugDisplayText("test rotate to mid point", DisplayStatusMessageTypes.Important);
-                //testservo.servoDirectAccess.RotateTo(new Meadow.Units.Angle(90, Meadow.Units.Angle.UnitType.Degrees));
-
-                //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
-
-                _appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, DisplayStatusMessageTypes.Important);
-                testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MaximumAngle);
-
-                Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
-
-                _appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, DisplayStatusMessageTypes.Important);
-                testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MinimumAngle);
+                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MinimumAngle);
 
                 Status = Enumerations.ComponentStatus.Ready;
                 _appRoot.DebugDisplayText("arm - init complete");

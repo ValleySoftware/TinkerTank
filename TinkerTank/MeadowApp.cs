@@ -47,6 +47,8 @@ namespace TinkerTank
 
         public ArmControl Arm;
 
+        public DistanceSensorController distController;
+
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
         public PanTiltDistance DistancePanTilt;
         public PanTiltBase CameraPanTilt;
@@ -131,10 +133,21 @@ namespace TinkerTank
                 DebugDisplayText("Init i2c");
                 i2CBus = Device.CreateI2cBus();
 
+                if (EnableDistanceSensor)
+                {
+                    DebugDisplayText("Init distance sensor cotroller");
+                    distController = new DistanceSensorController(Device, this, ref i2CBus);
+                    TBObjects.Add(distController);
+                    distController.Init();
+                }
+
+
                 DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
                 i2CPWMController = new PCA9685(this, ref i2CBus);
                 TBObjects.Add(i2CPWMController);
                 i2CPWMController.Init();
+
+
 
                 //Movement and power            
 
@@ -180,7 +193,7 @@ namespace TinkerTank
                                 this,
                                 i2CPWMController,
                                 "Range Finder",
-                                ref i2CBus,
+                                ref distController,
                                 MeadowApp.Device.Pins.D09);
 
                         PanTilts.Add(DistancePanTilt);

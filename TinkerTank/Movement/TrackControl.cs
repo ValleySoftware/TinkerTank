@@ -25,6 +25,7 @@ namespace Peripherals
         private double _defaultPower = 50;
         PCA9685 _pcaDevice;
         F7Micro _device;
+        bool _stopRequested = false;
 
         public TrackControl(F7Micro device, PCA9685 pcaDevice, MeadowApp appRoot)
         {
@@ -75,7 +76,6 @@ namespace Peripherals
 
         public DriveMethod driveMethod { get => _driveMethod; }
 
-
         public void SetDefaultPower(int defaultPower)
         {
             if (defaultPower > 100)
@@ -95,7 +95,6 @@ namespace Peripherals
             }
         }
 
-
         public bool ReverseMotorOrientation
         {
             get => _reverseMotorOrientation;
@@ -113,7 +112,7 @@ namespace Peripherals
             }
         }
 
-        public void Move(Direction direction, int power, TimeSpan movementDuration)
+        public void Move(Direction direction, int power, TimeSpan movementDuration, bool smoothPowerTranstion = false)
         {
             if (power == 0)
             {
@@ -123,31 +122,35 @@ namespace Peripherals
             //if (_appRoot.HasDrivePower)
             {
                 Status = ComponentStatus.Action;
+                StopRequested = false;
 
-                switch (direction)
+                Task.Run(async () =>
                 {
-                    case Direction.Forward:
-                        Forward(power);
-                        break;
-                    case Direction.Backwards:
-                        Backwards(power);
-                        break;
-                    case Direction.TurnLeft:
-                        TurnLeft(power);
-                        break;
-                    case Direction.TurnRight:
-                        TurnRight(power);
-                        break;
-                    case Direction.RotateLeft:
-                        RotateLeft(power);
-                        break;
-                    case Direction.RotateRight:
-                        RotateRight(power);
-                        break;
-                    default:
-                        Stop();
-                        break;
-                }
+                    switch (direction)
+                    {
+                        case Direction.Forward:
+                            Forward(power);
+                            break;
+                        case Direction.Backwards:
+                            Backwards(power);
+                            break;
+                        case Direction.TurnLeft:
+                            TurnLeft(power);
+                            break;
+                        case Direction.TurnRight:
+                            TurnRight(power);
+                            break;
+                        case Direction.RotateLeft:
+                            RotateLeft(power);
+                            break;
+                        case Direction.RotateRight:
+                            RotateRight(power);
+                            break;
+                        default:
+                            Stop();
+                            break;
+                    }
+                });
 
                 if (movementDuration.Equals(TimeSpan.Zero))
                 {
@@ -155,6 +158,7 @@ namespace Peripherals
                     {
                         await Task.Delay(TimeSpan.FromSeconds(3));
                         _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
+                        StopRequested = true;
                         Stop();
                     });
                 }
@@ -163,6 +167,7 @@ namespace Peripherals
                     Task.Run(async () =>
                     {
                         await Task.Delay(movementDuration);
+                        StopRequested = true;
                         Stop();
                         _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
                     });
@@ -170,103 +175,102 @@ namespace Peripherals
             }
         }
 
-        public bool MoveManual(float leftPower, float rightPower, TimeSpan movementDuration)
+        public bool StopRequested
         {
-            //if (_appRoot.HasDrivePower)
-            {
-                motorLeft.IsNeutral = true;
-                motorRight.IsNeutral = true;
-                motorLeft.Power = leftPower * reverseMotorOrientationMultiplier;
-                motorRight.Power = rightPower * reverseMotorOrientationMultiplier;
-                Status = ComponentStatus.Action;
-
-                if (!movementDuration.Equals(TimeSpan.Zero))
-                {
-                    Task.Run(async () =>
-                    {
-                        await Task.Delay(movementDuration);
-                        Stop();
-
-                    });
-                }
-            }
-
-            return true;
+            get => _stopRequested;
+            set => SetProperty(ref _stopRequested, value);
         }
 
-        public bool MoveManual(float leftFrontPower, float rightFrontPower, float leftRearPower, float rightRearPower, TimeSpan movementDuration)
+        public void Stop(bool smoothPowerTranstion = false)
         {
-            double leftPower = _defaultPower;
-            double rightPower = _defaultPower;
+            StopRequested = true;
 
-            leftPower = leftFrontPower * reverseMotorOrientationMultiplier;
-            rightPower = rightFrontPower * reverseMotorOrientationMultiplier;
-            //if (_appRoot.HasDrivePower)
-            {
-                motorLeft.IsNeutral = true;
-                motorRight.IsNeutral = true;
-                motorLeft.Power = leftFrontPower * reverseMotorOrientationMultiplier;
-                motorRight.Power = rightFrontPower * reverseMotorOrientationMultiplier;
-                Status = ComponentStatus.Action;
-            }
-
-            return true;
-        }
-
-        public void Stop()
-        {
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = 0;
-            motorRight.Power = 0;
+
+            //float powerSetting = 0;
+
+
+            //while (powerSetting >= 0)
+            //{
+                motorLeft.Power = 0;
+                motorRight.Power = 0;
+                //powerSetting = powerSetting - (float)0.1;
+                //Thread.Sleep(100);
+           // }
+
             Status = ComponentStatus.Ready;
             _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important);
         }
 
-        public void BreakAndHold()
+        public void BreakAndHold(bool smoothPowerTranstion = false)
         {
+            StopRequested = true;
+
             motorLeft.IsNeutral = false;
             motorRight.IsNeutral = false;
-            motorLeft.Power = 0;
-            motorRight.Power = 0;
+
+            //float powerSetting = 0;
+
+            //if (smoothPowerTranstion)
+            //{
+            //    powerSetting = motorLeft.Power;
+            //}
+
+           // while (powerSetting >= 0)
+            //{
+                motorLeft.Power = 0;
+                motorRight.Power = 0;
+                //powerSetting = powerSetting - (float)0.1;
+                //Thread.Sleep(100);
+            //}
+
             Status = ComponentStatus.Ready;
         }
 
-        private void Forward(float power)
+        private void Forward(float power, bool smoothPowerTranstion = false)
         {
-            double leftPower = _defaultPower;
-            double rightPower = _defaultPower;
+            //testing
+            smoothPowerTranstion = true;
 
-            leftPower = power * reverseMotorOrientationMultiplier;
-            rightPower = power * reverseMotorOrientationMultiplier;
+            double useThisPower = _defaultPower;
 
-            SanityCheckPower(ref leftPower, ref rightPower);
+            useThisPower = power * reverseMotorOrientationMultiplier;
+
+            SanityCheckPower(ref useThisPower, ref useThisPower);
 
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
+
+            float powerSetting = 0;
+
+            if (!smoothPowerTranstion)
+            {
+                powerSetting = (float)useThisPower;
+            }
+
+            while (powerSetting <= useThisPower)
+            {
+                if (StopRequested)
+                {
+                    Stop();
+                    break;
+                }
+                motorLeft.Power = powerSetting;
+                motorRight.Power = powerSetting;
+                powerSetting = powerSetting + (float)0.2;
+                Thread.Sleep(100);
+            }
+
             Status = ComponentStatus.Action;
         }
 
-        private void Backwards(float power)
+        private void Backwards(float power, bool smoothPowerTranstion = false)
         {
-            double leftPower = _defaultPower;
-            double rightPower = _defaultPower;
-
-            leftPower = power * -1 * reverseMotorOrientationMultiplier;
-            rightPower = power * -1 * reverseMotorOrientationMultiplier;
-
-            SanityCheckPower(ref leftPower, ref rightPower);
-
-            motorLeft.IsNeutral = true;
-            motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
-            Status = ComponentStatus.Action;
+            Forward(power * -1, smoothPowerTranstion);
         }
 
-        private void TurnLeft(float power)
+        private void TurnLeft(float power, bool smoothPowerTranstion = false)
         {
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
@@ -278,8 +282,8 @@ namespace Peripherals
 
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
+            motorLeft.Power = (float)leftPower;
+            motorRight.Power = (float)rightPower;
             Status = ComponentStatus.Action;
         }
 
@@ -303,7 +307,7 @@ namespace Peripherals
             }
         }
 
-        private void TurnRight(float power)
+        private void TurnRight(float power, bool smoothPowerTranstion = false)
         {
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
@@ -315,12 +319,12 @@ namespace Peripherals
 
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
+            motorLeft.Power = (float)leftPower;
+            motorRight.Power = (float)rightPower;
             Status = ComponentStatus.Action;
         }
 
-        private void RotateLeft(float power)
+        private void RotateLeft(float power, bool smoothPowerTranstion = false)
         {
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
@@ -332,12 +336,12 @@ namespace Peripherals
 
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
+            motorLeft.Power = (float)leftPower;
+            motorRight.Power = (float)rightPower;
             Status = ComponentStatus.Action;
         }
 
-        private void RotateRight(float power)
+        private void RotateRight(float power, bool smoothPowerTranstion = false)
         { 
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
@@ -349,8 +353,8 @@ namespace Peripherals
 
             motorLeft.IsNeutral = true;
             motorRight.IsNeutral = true;
-            motorLeft.Power = (int)Math.Round(leftPower);
-            motorRight.Power = (int)Math.Round(rightPower);
+            motorLeft.Power = (float)leftPower;
+            motorRight.Power = (float)rightPower;
             Status = ComponentStatus.Action;
         }
 

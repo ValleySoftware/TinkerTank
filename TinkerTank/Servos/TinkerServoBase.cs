@@ -22,6 +22,8 @@ namespace TinkerTank.Servos
         private Angle? _maxAngle;
         private string _name;
         private Angle? _defaultAngle;
+        private Angle? _stowedAngle;
+        private Angle? _readyAngle;
 
         public static ServoConfig Create996rConfig(Angle? minAngle, Angle? maxAngle)
         {
@@ -61,6 +63,16 @@ namespace TinkerTank.Servos
             _minAngle = minAngle;
             _maxAngle = maxAngle;
             _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
+        }
+
+        public double AdjustRotationBy(double amountToRotate = 5)
+        {
+            var newDegrees = _servo.Angle.Value.Degrees + amountToRotate;
+            var newAngle = new Angle(newDegrees, Angle.UnitType.Degrees);
+
+            _servo.RotateTo(newAngle);
+
+            return _servo.Angle.Value.Degrees;
         }
 
         public double SafeIshRotate(Angle? desiredAngle)
@@ -205,6 +217,18 @@ namespace TinkerTank.Servos
         {
             get => _defaultAngle;
             set { _defaultAngle = value; }
+        }
+
+        public Angle? StowedAngle
+        {
+            get => _stowedAngle;
+            set { _stowedAngle = value; }
+        }
+
+        public Angle? ReadyAngle
+        {
+            get => _readyAngle;
+            set { _readyAngle = value; }
         }
 
         public Angle? CurrentAngle
