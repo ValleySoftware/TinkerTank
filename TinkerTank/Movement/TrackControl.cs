@@ -178,7 +178,7 @@ namespace Peripherals
         public bool StopRequested
         {
             get => _stopRequested;
-            set => SetProperty(ref _stopRequested, value);
+            set => _stopRequested = value;
         }
 
         public void Stop(bool smoothPowerTranstion = false)

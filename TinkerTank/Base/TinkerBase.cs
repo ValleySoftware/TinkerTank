@@ -8,11 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using TinkerTank;
 using Enumerations;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace Base
 {
-    public class TinkerBase : ObservableObject
+    public class TinkerBase
     {
 
         protected ComponentStatus _status = ComponentStatus.UnInitialised;
@@ -23,19 +22,19 @@ namespace Base
         public ComponentStatus Status
         {
             get => _status;
-            set => SetProperty(ref _status, value);
+            set => _status = value;
         }
 
         public string StatusText 
         {
             get => _statusText;
-            set => SetProperty(ref _statusText, value);
+            set => _statusText = value;
         }
 
         public AutomaticErrorResponse ErrorResponse
         {
             get => _errorResponse;
-            set => SetProperty(ref _errorResponse, value);
+            set => _errorResponse = value;
         }
     }
 }

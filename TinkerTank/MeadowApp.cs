@@ -66,11 +66,13 @@ namespace TinkerTank
         private PushButton nextLogButton;
         private PushButton previousLogButton;
 
-        private bool EnableDistanceSensor = false;
+        private bool EnableDistanceSensors = true;
+        private bool EnablePanTiltDistance = false;
         private bool EnablePanTiltCamera = false;
         private bool EnableDisplay = false;
-        private bool EnableArm = true;
+        private bool EnableArm = false;
         private bool EnableDisplayLogButtons = false;
+        private bool EnablePCA9685 = false;
 
         public MeadowApp()
         {
@@ -133,23 +135,30 @@ namespace TinkerTank
                 DebugDisplayText("Init i2c");
                 i2CBus = Device.CreateI2cBus();
 
-                if (EnableDistanceSensor)
+                Dist53l0 panTiltDistanceSensor = null;
+                Dist53l0 staticForwardDistanceSensor = null;
+
+                if (EnableDistanceSensors)
                 {
-                    DebugDisplayText("Init distance sensor cotroller");
+                    DebugDisplayText("Init distance sensor controller");
                     distController = new DistanceSensorController(Device, this, ref i2CBus);
                     TBObjects.Add(distController);
                     distController.Init();
+                    DebugDisplayText("Init sensor 0");
+                    panTiltDistanceSensor = distController.InitNewSensor(Device.Pins.D09, Device.Pins.D14);
+                    //DebugDisplayText("Init sensor 1");
+                    //staticForwardDistanceSensor = distController.InitNewSensor(Device.Pins.D04, Device.Pins.D15);
                 }
 
+                if (EnablePCA9685)
+                {
+                    DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
+                    i2CPWMController = new PCA9685(this, ref i2CBus);
+                    TBObjects.Add(i2CPWMController);
+                    i2CPWMController.Init();
 
-                DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-                i2CPWMController = new PCA9685(this, ref i2CBus);
-                TBObjects.Add(i2CPWMController);
-                i2CPWMController.Init();
-
-
-
-                //Movement and power            
+                    //Movement and power            
+                }
 
                 DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
                 powerController = new PowerControl(this);
@@ -184,7 +193,7 @@ namespace TinkerTank
                 DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                if (EnableDistanceSensor)
+                if (EnableDistanceSensors && EnablePanTiltDistance)
                 {
                     try
                     {
@@ -192,12 +201,10 @@ namespace TinkerTank
                             PanTiltDistance(
                                 this,
                                 i2CPWMController,
-                                "Range Finder",
-                                ref distController,
-                                MeadowApp.Device.Pins.D09);
+                                "Range Finder");
 
                         PanTilts.Add(DistancePanTilt);
-                        DistancePanTilt.Init(2, 3);
+                        DistancePanTilt.Init(2, 3, panTiltDistanceSensor);
                         DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
                         DistancePanTilt.DefaultTilt = new Angle(40); //?
                         DistancePanTilt.GoToDefault();

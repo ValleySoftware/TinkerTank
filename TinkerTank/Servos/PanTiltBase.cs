@@ -30,7 +30,7 @@ namespace Servos
         public bool StopRequested
         {
             get => _stopRequested;
-            set => SetProperty(ref _stopRequested, value);
+            set => _stopRequested = value;
         }
 
         public virtual void Init(int panPwmPort, int tiltPwmPort, ServoType servoType = ServoType.SG90)
@@ -63,7 +63,7 @@ namespace Servos
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set => _name = value;
         }
 
         public Angle? DefaultPan

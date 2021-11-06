@@ -242,7 +242,7 @@ namespace TinkerTank.Servos
         private string Name 
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set => _name = value;
         }
 
         public void GoToDefaultPosition()

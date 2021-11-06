@@ -93,37 +93,37 @@ namespace TinkerTank.Movement
         private TinkerServoBase ClawServo
         {
             get => _clawServo;
-            set => SetProperty(ref _clawServo, value);
+            set => _clawServo = value;
         }
 
         private TinkerServoBase WristServo
         {
             get => _wristServo;
-            set => SetProperty(ref _wristServo, value);
+            set => _wristServo = value;
         }
 
         private TinkerServoBase ElbowServo
         {
             get => _elbowServo;
-            set => SetProperty(ref _elbowServo, value);
+            set => _elbowServo = value;
         }
 
         private TinkerServoBase ShoulderServo
         {
             get => _shoulderServo;
-            set => SetProperty(ref _shoulderServo, value);
+            set => _shoulderServo = value;
         }
 
         private TinkerServoBase BasePanServo
         {
             get => _basePanServo;
-            set => SetProperty(ref _basePanServo, value);
+            set => _basePanServo = value;
         }
 
         private TinkerServoBase BaseTiltServo
         {
             get => _baseTiltServo;
-            set => SetProperty(ref _baseTiltServo, value);
+            set => _baseTiltServo = value;
         }
 
         public void GoToDefaultPosition()

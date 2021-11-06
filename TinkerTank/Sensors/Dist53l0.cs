@@ -20,10 +20,9 @@ namespace TinkerTank.Sensors
         private IDigitalOutputPort laserDigitaPort;
         public int UpdateIntervalInMS = 250;
         private IPin XShutPin { get; set; }
-        private IDigitalOutputPort xShutPort;
 
 
-        public Dist53l0(F7Micro device, MeadowApp appRoot, ref DistanceSensorController controller, IPin laserPin, IPin xShutPin)
+        public Dist53l0(F7Micro device, MeadowApp appRoot, DistanceSensorController controller, IPin laserPin, IPin xShutPin)
         {
             _appRoot = appRoot;
             _controller = controller;
@@ -38,7 +37,6 @@ namespace TinkerTank.Sensors
             set
             {
                 _distanceInMillimeters = value;
-                //SetProperty(ref _distanceInMillimeters, value);
                 _appRoot.communications.RequestUpdateDistance(_distanceInMillimeters);
             }
 
@@ -52,8 +50,6 @@ namespace TinkerTank.Sensors
             {
                 _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
                 distanceSensor = new Vl53l0x(_device, _controller.DistanceSensori2cBus, XShutPin);
-                distanceSensor.Updated += DistanceSensor_Updated;
-                distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
 
                 _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
@@ -65,21 +61,27 @@ namespace TinkerTank.Sensors
             }
 
         }
+
+        public void BeginPolling()
+        {
+            distanceSensor.Updated += DistanceSensor_Updated;
+            distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
+
+        }
         
         public void ToggleXShut(bool newState)
         {
-            distanceSensor.ShutDown(newState);
+            distanceSensor.ShutDown(newState); //true = off/shutdown. false = on
         }
         
         public bool ChangeAddress(byte newAddress)
         {
             var result = false;
 
-            ToggleXShut(true);
-            ToggleXShut(false);
-            Thread.Sleep(500);
-
             distanceSensor.SetAddress(newAddress);
+            Thread.Sleep(500);
+            distanceSensor.Updated += DistanceSensor_Updated;
+            distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
 
             return result;
         }
