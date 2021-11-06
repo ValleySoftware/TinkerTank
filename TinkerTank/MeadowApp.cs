@@ -67,12 +67,12 @@ namespace TinkerTank
         private PushButton previousLogButton;
 
         private bool EnableDistanceSensors = true;
-        private bool EnablePanTiltDistance = false;
-        private bool EnablePanTiltCamera = false;
+        private bool EnablePanTiltDistance = true;
+        private bool EnablePanTiltCamera = true;
         private bool EnableDisplay = false;
-        private bool EnableArm = false;
+        private bool EnableArm = true;
         private bool EnableDisplayLogButtons = false;
-        private bool EnablePCA9685 = false;
+        private bool EnablePCA9685 = true;
 
         public MeadowApp()
         {
@@ -135,19 +135,14 @@ namespace TinkerTank
                 DebugDisplayText("Init i2c");
                 i2CBus = Device.CreateI2cBus();
 
-                Dist53l0 panTiltDistanceSensor = null;
-                Dist53l0 staticForwardDistanceSensor = null;
-
                 if (EnableDistanceSensors)
                 {
                     DebugDisplayText("Init distance sensor controller");
+
                     distController = new DistanceSensorController(Device, this, ref i2CBus);
+
                     TBObjects.Add(distController);
                     distController.Init();
-                    DebugDisplayText("Init sensor 0");
-                    panTiltDistanceSensor = distController.InitNewSensor(Device.Pins.D09, Device.Pins.D14);
-                    //DebugDisplayText("Init sensor 1");
-                    //staticForwardDistanceSensor = distController.InitNewSensor(Device.Pins.D04, Device.Pins.D15);
                 }
 
                 if (EnablePCA9685)
@@ -193,7 +188,7 @@ namespace TinkerTank
                 DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                if (EnableDistanceSensors && EnablePanTiltDistance)
+                if (EnablePanTiltDistance)
                 {
                     try
                     {
@@ -204,7 +199,7 @@ namespace TinkerTank
                                 "Range Finder");
 
                         PanTilts.Add(DistancePanTilt);
-                        DistancePanTilt.Init(2, 3, panTiltDistanceSensor);
+                        DistancePanTilt.Init(2, 3, distController.PeriscopeDistance);
                         DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
                         DistancePanTilt.DefaultTilt = new Angle(40); //?
                         DistancePanTilt.GoToDefault();
