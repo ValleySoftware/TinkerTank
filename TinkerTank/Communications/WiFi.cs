@@ -37,7 +37,7 @@ namespace Communications
             _appRoot.DebugDisplayText("Initialize wifi...");
 
             // initialize the wifi adpater
-            if (!MeadowApp.Device.InitWiFiAdapter().Result)
+            if (!MeadowApp.Device.WiFiAdapter.StartWiFiInterface())
             {
                 throw new Exception("Could not initialize the WiFi adapter.");
             }

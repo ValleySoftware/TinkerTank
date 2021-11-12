@@ -63,7 +63,6 @@ namespace Communications
 
                 PrepareDefinition();
 
-                _device.InitCoprocessor();
                 _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
                 _appRoot.DebugDisplayText("BT Service started", DisplayStatusMessageTypes.Important);
