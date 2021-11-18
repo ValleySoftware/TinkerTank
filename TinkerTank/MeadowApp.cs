@@ -4,6 +4,7 @@ using Display;
 using Enumerations;
 using Meadow;
 using Meadow.Devices;
+using Meadow.Foundation.ICs.IOExpanders;
 using Meadow.Foundation.Sensors.Buttons;
 using Meadow.Hardware;
 using Meadow.Units;
@@ -41,6 +42,8 @@ namespace TinkerTank
 
         public PCA9685 i2CPWMController;
 
+        public Tca9548a i2cExpander;
+
         public PushButton button;
 
         public readonly int PWMFrequency = 60;//50;
@@ -53,7 +56,7 @@ namespace TinkerTank
         public PanTiltDistance DistancePanTilt;
         public PanTiltBase CameraPanTilt;
 
-        public II2cBus i2CBus;
+        private II2cBus primaryi2CBus;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -133,13 +136,16 @@ namespace TinkerTank
                 //Shared
 
                 DebugDisplayText("Init i2c");
-                i2CBus = Device.CreateI2cBus();
+                primaryi2CBus = Device.CreateI2cBus();
+
+                DebugDisplayText("Init i2c Expander");
+                i2cExpander = new Tca9548a(primaryi2CBus);
 
                 if (EnableDistanceSensors)
                 {
                     DebugDisplayText("Init distance sensor controller");
 
-                    distController = new DistanceSensorController(Device, this, ref i2CBus);
+                    distController = new DistanceSensorController(Device, this, Geti2cBus(i2cBusIdentifier.distanceBus));
 
                     TBObjects.Add(distController);
                     distController.Init();
@@ -148,12 +154,12 @@ namespace TinkerTank
                 if (EnablePCA9685)
                 {
                     DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-                    i2CPWMController = new PCA9685(this, ref i2CBus);
+                    i2CPWMController = new PCA9685(this, Geti2cBus(i2cBusIdentifier.distanceBus));
                     TBObjects.Add(i2CPWMController);
                     i2CPWMController.Init();
-
-                    //Movement and power            
                 }
+
+                //Movement and power    
 
                 DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
                 powerController = new PowerControl(this);
@@ -245,6 +251,16 @@ namespace TinkerTank
             catch (Exception iex)
             {
                 DebugDisplayText("Main Init Exception: " + iex.Message, DisplayStatusMessageTypes.Error);
+            }
+        }
+
+        private II2cBus Geti2cBus(i2cBusIdentifier bus)
+        {
+            switch (bus)
+            {
+                case i2cBusIdentifier.sharedBus:return i2cExpander.Bus0;
+                case i2cBusIdentifier.distanceBus: return i2cExpander.Bus1;
+                default: return i2cExpander.Bus0;
             }
         }
 

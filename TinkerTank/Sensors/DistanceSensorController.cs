@@ -22,7 +22,7 @@ namespace TinkerTank.Sensors
 
         public static Byte[] distanceAddresses = new Byte[5] { 0x42, 0x43, 0x44, 0x4, 0x46 };
 
-        public DistanceSensorController(F7Micro device, MeadowApp appRoot, ref II2cBus i2cbus)
+        public DistanceSensorController(F7Micro device, MeadowApp appRoot, II2cBus i2cbus)
         {
             Status = ComponentStatus.UnInitialised;
 

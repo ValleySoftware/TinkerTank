@@ -19,4 +19,5 @@ namespace Enumerations
     public enum PanTiltAxis { pan, tilt };
     public enum BasePinType { digital, analogue, scl, sda };
     public enum DistanceSensorLocation { front, rear, periscope }
+    public enum i2cBusIdentifier { sharedBus, distanceBus}
 }

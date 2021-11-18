@@ -19,7 +19,7 @@ namespace Servos
         private Pca9685 pca9685;
         II2cBus Sharedi2cBus;
 
-        public PCA9685(MeadowApp appRoot, ref II2cBus sharedi2cBus)
+        public PCA9685(MeadowApp appRoot, II2cBus sharedi2cBus)
         {
             _appRoot = appRoot;
             Sharedi2cBus = sharedi2cBus;
