@@ -24,7 +24,7 @@
 	  <PackageReference Include="Meadow" Version="0.28.0" />
 	  <PackageReference Include="Meadow.F7" Version="0.28.0" />
 	  <PackageReference Include="Meadow.Foundation" Version="0.30.0" />
-	  <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.48" />
+	  <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.49" />
 	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Pca9685" Version="0.1.40" />
 	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Tca9548a" Version="0.1.8" />
 	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.36" />

@@ -218,12 +218,13 @@ namespace Communications
             {
                 if (newDistance == -1)
                 {
-                    newDistance = _appRoot.DistancePanTilt.Sensor.DistanceInMillimeters;
+                    newDistance = _appRoot.distController.FixedFrontDistance.DistanceInMillimeters;
                 }
-                charDistance.SetValue(newDistance);
-                _appRoot.DebugDisplayText("dist updated. " + charDistance.ValueHandle, DisplayStatusMessageTypes.Debug);
+
+                charDistance.SetValue(newDistance.ToString());
+                _appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
             }

@@ -20,18 +20,9 @@ using Utilities.Power;
 
 namespace TinkerTank
 {
-    public class PinAssignment
-    {
-        public int PinIndex { get; set; }
-        public IPin PinLink { get; set; }
-        public bool IsInUse { get; }
-        public ITinkerBase UsedFor { get; set; }
-        public BasePinType TypeOfPin { get; set; }
-    }
 
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
-        public List<PinAssignment> PinRegister;
 
         public IMovementInterface movementController;
         public PowerControl powerController;
@@ -91,8 +82,7 @@ namespace TinkerTank
                 //InitialisePinRegister();
 
                 //Display And Logging
-
-                //Indicators to see what's going on
+                
                 blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
                 greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
                 redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
@@ -136,16 +126,16 @@ namespace TinkerTank
                 //Shared
 
                 DebugDisplayText("Init i2c");
-                primaryi2CBus = Device.CreateI2cBus();
+                primaryi2CBus = Device.CreateI2cBus(I2cBusSpeed.Standard);
 
                 DebugDisplayText("Init i2c Expander");
-                i2cExpander = new Tca9548a(primaryi2CBus);
+                i2cExpander = new Tca9548a(primaryi2CBus, 0x70);
 
                 if (EnableDistanceSensors)
                 {
-                    DebugDisplayText("Init distance sensor controller");
+                    DebugDisplayText("Start distance sensor controller");
 
-                    distController = new DistanceSensorController(Device, this, Geti2cBus(i2cBusIdentifier.distanceBus));
+                    distController = new DistanceSensorController(Device, this, i2cExpander);
 
                     TBObjects.Add(distController);
                     distController.Init();
@@ -154,7 +144,7 @@ namespace TinkerTank
                 if (EnablePCA9685)
                 {
                     DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-                    i2CPWMController = new PCA9685(this, Geti2cBus(i2cBusIdentifier.distanceBus));
+                    i2CPWMController = new PCA9685(this, primaryi2CBus);
                     TBObjects.Add(i2CPWMController);
                     i2CPWMController.Init();
                 }
@@ -254,44 +244,14 @@ namespace TinkerTank
             }
         }
 
-        private II2cBus Geti2cBus(i2cBusIdentifier bus)
+        public II2cBus Geti2cBus(DistanceSensorLocation sensor)
         {
-            switch (bus)
+            switch (sensor)
             {
-                case i2cBusIdentifier.sharedBus:return i2cExpander.Bus0;
-                case i2cBusIdentifier.distanceBus: return i2cExpander.Bus1;
-                default: return i2cExpander.Bus0;
+                case DistanceSensorLocation.periscopeDistance: return i2cExpander.Bus0;
+                case DistanceSensorLocation.fixedForwardDistance: return i2cExpander.Bus1;
+                default: return i2cExpander.Bus7;
             }
-        }
-
-        private void InitialisePinRegister()
-        {
-            PinRegister = new List<PinAssignment>();
-
-            PinRegister.Add(new PinAssignment() { PinIndex = 0 , TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A00 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 1, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A01 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 2, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A02 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 3, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A03 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 4, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A04 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 5, TypeOfPin = BasePinType.analogue, PinLink = Device.Pins.A05 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 0, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D00 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 1, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D01 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 2, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D02 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 3, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D03 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 4, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D04 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 5, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D05 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 6, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D06 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 7, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D07 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 8, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D08 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 9, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D09 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 10, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D10 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 11, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D11 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 12, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D12 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 13, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D13 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 14, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D14 });
-            PinRegister.Add(new PinAssignment() { PinIndex = 15, TypeOfPin = BasePinType.digital, PinLink = Device.Pins.D15 });
-            PinRegister.Add(new PinAssignment() { PinIndex = -1, TypeOfPin = BasePinType.scl, PinLink = Device.Pins.I2C_SCL });
-            PinRegister.Add(new PinAssignment() { PinIndex = -1, TypeOfPin = BasePinType.sda, PinLink = Device.Pins.I2C_SDA });
         }
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

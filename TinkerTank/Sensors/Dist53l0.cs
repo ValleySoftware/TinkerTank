@@ -19,16 +19,18 @@ namespace TinkerTank.Sensors
         public IPin LaserPin { get; set; }
         private IDigitalOutputPort laserDigitaPort;
         public int UpdateIntervalInMS = 250;
-        private IPin XShutPin { get; set; }
+        private II2cBus _bus;
+        private string _name;
 
 
-        public Dist53l0(F7Micro device, MeadowApp appRoot, DistanceSensorController controller, IPin laserPin, IPin xShutPin)
+        public Dist53l0(F7Micro device, MeadowApp appRoot, DistanceSensorController controller, IPin laserPin, II2cBus bus, string name)
         {
             _appRoot = appRoot;
             _controller = controller;
             _device = device;
             LaserPin = laserPin;
-            XShutPin = xShutPin;
+            _bus = bus;
+            _name = name;
         }
 
         public int DistanceInMillimeters
@@ -39,7 +41,12 @@ namespace TinkerTank.Sensors
                 _distanceInMillimeters = value;
                 _appRoot.communications.RequestUpdateDistance(_distanceInMillimeters);
             }
+        }
 
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
         }
 
         public void Init()
@@ -49,7 +56,7 @@ namespace TinkerTank.Sensors
             try
             {
                 _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
-                distanceSensor = new Vl53l0x(_device, _controller.DistanceSensori2cBus, XShutPin);
+                distanceSensor = new Vl53l0x(_device, _bus);
 
                 _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
@@ -66,24 +73,11 @@ namespace TinkerTank.Sensors
         {
             distanceSensor.Updated += DistanceSensor_Updated;
             distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
-
         }
         
         public void ToggleXShut(bool newState)
         {
             distanceSensor.ShutDown(newState); //true = off/shutdown. false = on
-        }
-        
-        public bool ChangeAddress(byte newAddress)
-        {
-            var result = false;
-
-            distanceSensor.SetAddress(newAddress);
-            Thread.Sleep(500);
-            distanceSensor.Updated += DistanceSensor_Updated;
-            distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
-
-            return result;
         }
 
         private void DistanceSensor_Updated(object sender, Meadow.IChangeResult<Meadow.Units.Length> e)
@@ -96,9 +90,9 @@ namespace TinkerTank.Sensors
                 return;
             }
             DistanceInMillimeters = Convert.ToInt32(Math.Round(e.New.Millimeters));
-            _appRoot.DebugDisplayText($"{DistanceInMillimeters}mm", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText($"{Name} - {DistanceInMillimeters}mm", DisplayStatusMessageTypes.Debug);
 
-            LaserOff();
+            //LaserOff();
         }
 
         public void LaserOn()
