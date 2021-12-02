@@ -13,7 +13,7 @@ namespace TinkerTank.Abstractions
         public decimal AutoStopDistance { get; set; }
         private int defaultPower = 75;
         private bool defaultSafeMove = true;
-        private int defaultAccelleration = 10;
+        private bool defaultSmoothAccelleration = true;
         private TimeSpan defaultMovementDuration = TimeSpan.FromSeconds(1);
 
         public MovementAbstractions(IMovementInterface movementController)
@@ -28,27 +28,27 @@ namespace TinkerTank.Abstractions
 
         public void Move(Direction directionToMove)
         {
-            Move(directionToMove, defaultPower, defaultSafeMove, defaultAccelleration, defaultMovementDuration);
+            Move(directionToMove, defaultPower, defaultSafeMove, defaultSmoothAccelleration, defaultMovementDuration);
         }
 
         public void Move(Direction directionToMove, int power)
         {
-            Move(directionToMove, power, defaultSafeMove, defaultAccelleration, defaultMovementDuration);
+            Move(directionToMove, power, defaultSafeMove, defaultSmoothAccelleration, defaultMovementDuration);
         }
 
         public void Move(Direction directionToMove, int power, bool safeMove)
         {
-            Move(directionToMove, power, safeMove, defaultAccelleration, defaultMovementDuration);
+            Move(directionToMove, power, safeMove, defaultSmoothAccelleration, defaultMovementDuration);
         }
 
-        public void Move(Direction directionToMove, int power, bool safeMove, int accelleration)
+        public void Move(Direction directionToMove, int power, bool safeMove, bool smoothAccelleration)
         {
-            Move(directionToMove, power, safeMove, accelleration, defaultMovementDuration);
+            Move(directionToMove, power, safeMove, smoothAccelleration, defaultMovementDuration);
         }
 
-        public void Move(Direction directionToMove, int power, bool safeMove, int accelleration, TimeSpan movementDuration )
+        public void Move(Direction directionToMove, int power, bool safeMove, bool smoothAccelleration, TimeSpan movementDuration )
         {
-            MovementController.Move(directionToMove, power, safeMove, accelleration, movementDuratio)
+            //MovementController.Move(directionToMove, power, safeMove, smoothAccelleration);//, movementDuration);
             //Move(directionToMove, power, safeMove, accelleration, movementDuration);
         }
 

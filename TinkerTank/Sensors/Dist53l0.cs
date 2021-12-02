@@ -90,7 +90,7 @@ namespace TinkerTank.Sensors
                 return;
             }
             DistanceInMillimeters = Convert.ToInt32(Math.Round(e.New.Millimeters));
-            _appRoot.DebugDisplayText($"{Name} - {DistanceInMillimeters}mm", DisplayStatusMessageTypes.Debug);
+            //_appRoot.DebugDisplayText($"{Name} - {DistanceInMillimeters}mm", DisplayStatusMessageTypes.Debug);
 
             //LaserOff();
         }
