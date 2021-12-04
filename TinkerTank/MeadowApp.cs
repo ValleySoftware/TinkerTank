@@ -57,15 +57,11 @@ namespace TinkerTank
         private List<TinkerBase> TBObjects;
         private System.Timers.Timer _statusPoller;
 
-        private PushButton nextLogButton;
-        private PushButton previousLogButton;
-
         private bool EnableDistanceSensors = true;
         private bool EnablePanTiltDistance = true;
         private bool EnablePanTiltCamera = true;
         private bool EnableDisplay = false;
         private bool EnableArm = true;
-        private bool EnableDisplayLogButtons = false;
         private bool EnablePCA9685 = true;
 
         public MeadowApp()
@@ -102,20 +98,6 @@ namespace TinkerTank
                     }
                 }
 
-                if (EnableDisplayLogButtons)
-                {
-                    try
-                    {
-                        //nextLogButton = new PushButton(Device.CreateDigitalInputPort());
-                        //previousLogButton = new PushButton();
-
-                    }
-                    catch (Exception broadLCDException)
-                    {
-
-                    }
-                }
-
                 //Communications and control
 
                 DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
@@ -123,13 +105,15 @@ namespace TinkerTank
                 TBObjects.Add(communications);
                 communications.Init();
 
-                //Shared
+                //I2C
 
                 DebugDisplayText("Init i2c");
                 primaryi2CBus = Device.CreateI2cBus(I2cBusSpeed.Standard);
 
                 DebugDisplayText("Init i2c Expander");
                 i2cExpander = new Tca9548a(primaryi2CBus, 0x70);
+
+                //Sensors
 
                 if (EnableDistanceSensors)
                 {

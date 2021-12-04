@@ -2,6 +2,7 @@
 using Enumerations;
 using Meadow.Devices;
 using Meadow.Foundation.ICs.IOExpanders;
+using Meadow.Gateways.Bluetooth;
 using Meadow.Hardware;
 using Meadow.Units;
 using System;
@@ -36,15 +37,16 @@ namespace TinkerTank.Sensors
             _appRoot.DebugDisplayText("Distance sensor controller Init method");
             Status = ComponentStatus.UnInitialised;
 
-            //PeriscopeDistance = InitNewSensor(_device.Pins.D01, null, _appRoot.Geti2cBus(DistanceSensorLocation.periscopeDistance), "pan");
-            FixedFrontDistance = InitNewSensor(null, null, _appRoot.Geti2cBus(DistanceSensorLocation.fixedForwardDistance), "fwd");
+            PeriscopeDistance = InitNewSensor(_device.Pins.D01, _appRoot.Geti2cBus(DistanceSensorLocation.periscopeDistance), "pan", _appRoot.communications.charPanTiltDistance);
+            FixedFrontDistance = InitNewSensor(null, _appRoot.Geti2cBus(DistanceSensorLocation.fixedForwardDistance), "fwd", _appRoot.communications.charForwardDistance);
 
             Status = ComponentStatus.Ready;
         }
 
-        public Dist53l0 InitNewSensor(IPin LaserPin, IPin XShutPin, II2cBus bus, string name)
+        public Dist53l0 InitNewSensor(IPin LaserPin, II2cBus bus, string name, Characteristic charac)
         {
             var sensor = new Dist53l0(MeadowApp.Device, _appRoot, this, LaserPin, bus, name);
+            sensor.AssignBluetoothCharacteristicToUpdate(charac);
             sensor.Init();
 
             sensor.BeginPolling();

@@ -21,7 +21,7 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, Distance };
+        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance};
         private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
@@ -29,7 +29,8 @@ namespace Communications
         private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
         private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
         private const string UUIDPanSweep = @"017e99d6-8a61-11eb-8dcd-0242ac1a5105";
-        private const string UUIDDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
+        private const string UUIDForwardDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
+        private const string UUIDPanTiltDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5107";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -38,7 +39,8 @@ namespace Communications
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
         private CharacteristicString charPanSweep;
-        private CharacteristicString charDistance;
+        public CharacteristicString charForwardDistance;
+        public CharacteristicString charPanTiltDistance;
         F7Micro _device;
 
         public BlueTooth(F7Micro device, MeadowApp appRoot)
@@ -212,24 +214,25 @@ namespace Communications
             }
         }
 
-        public void RequestUpdateDistance(int newDistance = -1)
+        /*
+        public void RequestUpdatePanTiltDistance(int newDistance = -1)
         {
             try
             {
                 if (newDistance == -1)
                 {
-                    newDistance = _appRoot.distController.FixedFrontDistance.DistanceInMillimeters;
+                    newDistance = _appRoot.distController.PeriscopeDistance.DistanceInMillimeters;
                 }
 
-                charDistance.SetValue(newDistance.ToString());
-                _appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
+                charPanTiltDistance.SetValue(newDistance.ToString());
+                //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
             }
             catch (Exception ex)
             {
 
             }
         }
-
+        */
         private void PrepareDefinition()
         {
             _appRoot.DebugDisplayText("PrepBLEDefinitions", DisplayStatusMessageTypes.Debug);
@@ -243,7 +246,8 @@ namespace Communications
                     charPower,
                     charAdvancedMove,
                     charPanSweep,
-                    charDistance
+                    charForwardDistance,
+                    charPanTiltDistance
                     );
 
             foreach (var element in primaryControlService.Characteristics)
@@ -309,13 +313,21 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
                             );
-            charDistance = new CharacteristicString(
-                            name: CharacteristicsNames.Distance.ToString(),
-                            uuid: UUIDDistance,
+            charForwardDistance = new CharacteristicString(
+                            name: CharacteristicsNames.ForwardDistance.ToString(),
+                            uuid: UUIDForwardDistance,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDDistance, CharacteristicsNames.Distance.ToString())
+                            descriptors: new Descriptor(UUIDForwardDistance, CharacteristicsNames.ForwardDistance.ToString())
+                            );
+            charPanTiltDistance = new CharacteristicString(
+                            name: CharacteristicsNames.PanTiltDistance.ToString(),
+                            uuid: UUIDPanTiltDistance,
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 12,
+                            descriptors: new Descriptor(UUIDPanTiltDistance, CharacteristicsNames.PanTiltDistance.ToString())
                             );
         }
 
@@ -352,7 +364,8 @@ namespace Communications
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;
                             case "PanSweep": RequestPanSweep(payload); break;
-                            case "Distance": RequestUpdateDistance(); break;
+                            case "ForwardDistance": _appRoot.distController.FixedFrontDistance.UpdateBleValue(null); break;
+                            case "PanTiltDistance": _appRoot.distController.PeriscopeDistance.UpdateBleValue(null); break;
                             default: RequestStop(); break;
                         }
 

@@ -6,5 +6,6 @@ namespace TinkerTank.Sensors
 {
     public interface ISensor
     {
+
     }
 }
