@@ -232,9 +232,9 @@ namespace TinkerTank
         {
             switch (sensor)
             {
-                case DistanceSensorLocation.periscopeDistance: return i2cExpander.Bus0;
+                case DistanceSensorLocation.periscopeDistance: return i2cExpander.Bus2;
                 case DistanceSensorLocation.fixedForwardDistance: return i2cExpander.Bus1;
-                default: return i2cExpander.Bus7;
+                default: return i2cExpander.Bus0;
             }
         }
 

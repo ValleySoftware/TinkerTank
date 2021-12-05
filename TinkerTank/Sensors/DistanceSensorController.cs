@@ -45,7 +45,7 @@ namespace TinkerTank.Sensors
 
         public Dist53l0 InitNewSensor(IPin LaserPin, II2cBus bus, string name, Characteristic charac)
         {
-            var sensor = new Dist53l0(MeadowApp.Device, _appRoot, this, LaserPin, bus, name);
+            var sensor = new Dist53l0(MeadowApp.Device, _appRoot, LaserPin, bus, name);
             sensor.AssignBluetoothCharacteristicToUpdate(charac);
             sensor.Init();
 

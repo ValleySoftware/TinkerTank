@@ -30,7 +30,7 @@ namespace Display
         private List<StatusMessage> _log;
         private StatusMessage _currentLog;
 
-        public static bool ShowDebugLogs = true;
+        public static bool ShowDebugLogs = false;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
         {

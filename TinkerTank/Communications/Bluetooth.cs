@@ -339,7 +339,7 @@ namespace Communications
             {
                 characteristic.ValueSet += (c, d) =>
                 {
-
+                    
                     _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Debug);
 
                     string payload = string.Empty;

@@ -14,17 +14,15 @@ namespace TinkerTank.Sensors
     public class Dist53l0 : BLESensorBase, ITinkerBase, ISensor
     {
         private Vl53l0x distanceSensor;
-        private DistanceSensorController _controller;
         public IPin LaserPin { get; set; }
         private IDigitalOutputPort _laserDigitaPort;
         public int UpdateIntervalInMS = 500;
         private II2cBus _bus;
 
 
-        public Dist53l0(F7Micro device, MeadowApp appRoot, DistanceSensorController controller, IPin laserPin, II2cBus bus, string name)
+        public Dist53l0(F7Micro device, MeadowApp appRoot, IPin laserPin, II2cBus bus, string name)
             :base(device, appRoot, name)
         {
-            _controller = controller;
             LaserPin = laserPin;
             _bus = bus;
 
@@ -46,7 +44,7 @@ namespace TinkerTank.Sensors
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("dist " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("dist " + Name + " - " + ex.Message, DisplayStatusMessageTypes.Error);
                 Status = ComponentStatus.Error;
             }
 
