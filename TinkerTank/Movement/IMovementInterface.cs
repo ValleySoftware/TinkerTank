@@ -13,7 +13,7 @@ namespace Peripherals
         ComponentStatus Init(
             Meadow.Hardware.IPin HBridge1PinA, Meadow.Hardware.IPin HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,
             Meadow.Hardware.IPin HBridge2PinA, Meadow.Hardware.IPin HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable);
-        void Move(Direction direction, int power, TimeSpan movementDuration, bool smoothPowerTranstion = false);
+        void Move(Direction direction, int power, TimeSpan movementDuration, bool safeMove, bool smoothPowerTranstion = false);
         void SetDefaultPower(int defaultPower);
         void Stop(bool smoothPowerTranstion = false);
         bool StopRequested { get; set; }

@@ -43,6 +43,8 @@ namespace Communications
         public CharacteristicString charPanTiltDistance;
         F7Micro _device;
 
+        private readonly bool UseExternalAntenna = false;
+
         public BlueTooth(F7Micro device, MeadowApp appRoot)
         {
             _appRoot = appRoot;
@@ -57,10 +59,12 @@ namespace Communications
             try
             {
                 //This kills the bluetooth process.... to be investigated
-                //_appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
-                //_device.SetAntenna(AntennaType.External);
-                //_appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
-
+                if (UseExternalAntenna)
+                {
+                    _appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+                    _device.SetAntenna(AntennaType.External);
+                    _appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
+                }
                 PrepareCharacteristics();
 
                 PrepareDefinition();

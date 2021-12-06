@@ -112,7 +112,7 @@ namespace Peripherals
             }
         }
 
-        public void Move(Direction direction, int power, TimeSpan movementDuration, bool smoothPowerTranstion = false)
+        public void Move(Direction direction, int power, TimeSpan movementDuration, bool safeMove, bool smoothPowerTranstion = false)
         {
             if (power == 0)
             {
@@ -251,7 +251,8 @@ namespace Peripherals
 
             while (powerSetting <= useThisPower)
             {
-                if (StopRequested)
+                if (StopRequested ||
+                    Convert.ToInt32(_appRoot.distController.FixedFrontDistance.SensorValue) < 50)
                 {
                     Stop();
                     break;
