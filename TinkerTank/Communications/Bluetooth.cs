@@ -21,8 +21,8 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance};
-        private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance };
+        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights};
+        private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance, UUIDLights };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
@@ -31,6 +31,7 @@ namespace Communications
         private const string UUIDPanSweep = @"017e99d6-8a61-11eb-8dcd-0242ac1a5105";
         private const string UUIDForwardDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
         private const string UUIDPanTiltDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5107";
+        private const string UUIDLights = @"017e99d6-8a61-11eb-8dcd-0242ac1a5108";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -41,6 +42,7 @@ namespace Communications
         private CharacteristicString charPanSweep;
         public CharacteristicString charForwardDistance;
         public CharacteristicString charPanTiltDistance;
+        public CharacteristicString charLights;
         F7Micro _device;
 
         private readonly bool UseExternalAntenna = false;
@@ -251,7 +253,8 @@ namespace Communications
                     charAdvancedMove,
                     charPanSweep,
                     charForwardDistance,
-                    charPanTiltDistance
+                    charPanTiltDistance,
+                    charLights
                     );
 
             foreach (var element in primaryControlService.Characteristics)
@@ -333,6 +336,14 @@ namespace Communications
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDPanTiltDistance, CharacteristicsNames.PanTiltDistance.ToString())
                             );
+            charLights = new CharacteristicString(
+                            name: CharacteristicsNames.Lights.ToString(),
+                            uuid: UUIDLights,
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 12,
+                            descriptors: new Descriptor(UUIDLights, CharacteristicsNames.Lights.ToString())
+                            );
         }
 
         private void PrepareCharacteristicEventHandlers()
@@ -370,6 +381,7 @@ namespace Communications
                             case "PanSweep": RequestPanSweep(payload); break;
                             case "ForwardDistance": _appRoot.distController.FixedFrontDistance.UpdateBleValue(null); break;
                             case "PanTiltDistance": _appRoot.distController.PeriscopeDistance.UpdateBleValue(null); break;
+                            case "Lights": _appRoot.Lights.RequestLightsDo(payload); break;
                             default: RequestStop(); break;
                         }
 

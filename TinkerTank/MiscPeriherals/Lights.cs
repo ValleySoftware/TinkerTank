@@ -5,6 +5,7 @@ using Meadow.Foundation;
 using Meadow.Foundation.Leds;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace TinkerTank.MiscPeriherals
@@ -13,12 +14,15 @@ namespace TinkerTank.MiscPeriherals
     {
         F7Micro _device;
 
-        private Led led;
+        private List<Led> LightList;
+        private Led _fixedForwardLed;
 
         public Lights(F7Micro device, MeadowApp appRoot)
         {
             _appRoot = appRoot;
             _device = device;
+
+            LightList = new List<Led>();
 
             ErrorResponse = AutomaticErrorResponse.DoNothing;
         }
@@ -31,7 +35,9 @@ namespace TinkerTank.MiscPeriherals
             {
                 _appRoot.DebugDisplayText("LED init method started.", DisplayStatusMessageTypes.Debug);
 
-                led = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
+                _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
+                LightList.Add(_fixedForwardLed);
+                LEDOn(_fixedForwardLed, false);
 
                 _appRoot.DebugDisplayText("LED init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
@@ -44,14 +50,47 @@ namespace TinkerTank.MiscPeriherals
 
         }
 
-        public void LEDOn(bool on)
+        public void RequestLightsDo(string payload)
         {
-            if (led == null)
+
+            //lightIdentifier-newOnValue
+            //00-000-00000
+
+            var sp = payload.Split("-");
+
+            if (sp.Count() == 2)
+            {
+                try
+                {
+                    int lightIndex = Convert.ToInt32(sp[0]);
+                    int newStatus = Convert.ToInt32(sp[1]);
+                    bool newStatusBool = false;
+
+                    var l = LightList[lightIndex];
+
+                    if (newStatus == 1)
+                    {
+                        newStatusBool = true;
+                    }
+
+                    LEDOn(l, newStatusBool);
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+        }
+
+
+        private void LEDOn(Led ledToChange, bool newValue)
+        {
+            if (ledToChange == null)
             {
                 return;
             }
 
-            led.IsOn = on;
+            ledToChange.IsOn = newValue;
         }
 
         public void ErrorEncountered()

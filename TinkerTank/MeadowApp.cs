@@ -24,7 +24,7 @@ namespace TinkerTank
 
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
-        public Lights lights;
+        public Lights Lights;
 
         public IMovementInterface movementController;
         public PowerControl powerController;
@@ -217,9 +217,8 @@ namespace TinkerTank
 
                 try
                 {
-                    lights = new Lights(Device, this);
-                    lights.Init();
-                    lights.LEDOn(true);
+                    Lights = new Lights(Device, this);
+                    Lights.Init();
                 }
                 catch (Exception ledEx)
                 {
