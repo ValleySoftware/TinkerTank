@@ -112,8 +112,10 @@ namespace Peripherals
             }
         }
 
-        public void Move(Direction direction, int power, TimeSpan movementDuration, bool safeMove, bool smoothPowerTranstion = false)
+        public void Move(Direction direction, int power, TimeSpan movementDuration, bool safeMove = true, bool smoothPowerTranstion = false)
         {
+            try
+            { 
             if (power == 0)
             {
                 power = (int)Math.Round(_defaultPower);
@@ -129,7 +131,7 @@ namespace Peripherals
                     switch (direction)
                     {
                         case Direction.Forward:
-                            Forward(power);
+                            Forward(power, safeMove);
                             break;
                         case Direction.Backwards:
                             Backwards(power);
@@ -156,22 +158,41 @@ namespace Peripherals
                 {
                     Task.Run(async () =>
                     {
+                        try
+                        { 
                         await Task.Delay(TimeSpan.FromSeconds(3));
                         _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
                         StopRequested = true;
                         Stop();
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
                     });
                 }
                 else
                 {
                     Task.Run(async () =>
                     {
+                        try
+                        { 
                         await Task.Delay(movementDuration);
                         StopRequested = true;
                         Stop();
                         _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
                     });
                 }
+                }
+            }
+            catch (Exception exo)
+            {
+
             }
         }
 
@@ -205,6 +226,7 @@ namespace Peripherals
 
         public void BreakAndHold(bool smoothPowerTranstion = false)
         {
+            try { 
             StopRequested = true;
 
             motorLeft.IsNeutral = false;
@@ -226,41 +248,60 @@ namespace Peripherals
             //}
 
             Status = ComponentStatus.Ready;
+
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+            }
         }
 
-        private void Forward(float power, bool smoothPowerTranstion = false)
+        private void Forward(float power, bool safeMove = true, bool smoothPowerTranstion = false)
         {
-            //testing
-            smoothPowerTranstion = true;
-
-            double useThisPower = _defaultPower;
-
-            useThisPower = power * reverseMotorOrientationMultiplier;
-
-            SanityCheckPower(ref useThisPower, ref useThisPower);
-
-            motorLeft.IsNeutral = true;
-            motorRight.IsNeutral = true;
-
-            float powerSetting = 0;
-
-            if (!smoothPowerTranstion)
+            try
             {
-                powerSetting = (float)useThisPower;
-            }
+                //testing
+                smoothPowerTranstion = true;
 
-            while (powerSetting <= useThisPower)
-            {
-                if (StopRequested ||
-                    Convert.ToInt32(_appRoot.distController.FixedFrontDistance.SensorValue) < 50)
+                double useThisPower = _defaultPower;
+
+                useThisPower = power * reverseMotorOrientationMultiplier;
+
+                SanityCheckPower(ref useThisPower, ref useThisPower);
+
+                motorLeft.IsNeutral = true;
+                motorRight.IsNeutral = true;
+
+                float powerSetting = 0;
+
+                if (!smoothPowerTranstion)
                 {
-                    Stop();
-                    break;
+                    powerSetting = (float)useThisPower;
                 }
-                motorLeft.Power = powerSetting;
-                motorRight.Power = powerSetting;
-                powerSetting = powerSetting + (float)0.2;
-                Thread.Sleep(100);
+
+                while (powerSetting <= useThisPower)
+                {
+                    if (safeMove &&
+                        Convert.ToInt32(_appRoot.distController.FixedFrontDistance.SensorValue) < 50)
+                    {
+                        StopRequested = true;
+                        _appRoot.DebugDisplayText("SafeStop due to distance", DisplayStatusMessageTypes.Debug);
+                    }
+
+                    if (StopRequested)
+                    {
+                        Stop();
+                        break;
+                    }
+                    motorLeft.Power = powerSetting;
+                    motorRight.Power = powerSetting;
+                    powerSetting = powerSetting + (float)0.2;
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
             }
 
             Status = ComponentStatus.Action;

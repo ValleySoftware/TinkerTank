@@ -13,6 +13,7 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TinkerTank.MiscPeriherals;
 using TinkerTank.Movement;
 using TinkerTank.Sensors;
 using TinkerTank.Servos;
@@ -23,6 +24,7 @@ namespace TinkerTank
 
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
+        public Lights lights;
 
         public IMovementInterface movementController;
         public PowerControl powerController;
@@ -211,6 +213,19 @@ namespace TinkerTank
                         DebugDisplayText("Camera Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
                     }
                 }
+
+
+                try
+                {
+                    lights = new Lights(Device, this);
+                    lights.Init();
+                    lights.LEDOn(true);
+                }
+                catch (Exception ledEx)
+                {
+
+                }
+
 
                 //Final
 
