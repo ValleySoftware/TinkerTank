@@ -28,9 +28,10 @@ namespace Display
         St7789 display;
         static int NoOfLinesOnDisplay = 11;
         private List<StatusMessage> _log;
+        bool EnableLogging = false;
         private StatusMessage _currentLog;
 
-        public static bool ShowDebugLogs = false;
+        private bool ShowDebugLogs => _appRoot.ShowDebugLogs;
 
         public LCDDisplay_ST7789(MeadowApp appRoot)
         {
@@ -55,12 +56,20 @@ namespace Display
 
         public void AddMessage(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-            Log.Insert(0,new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
 
             if (ShowDebugLogs ||
                 statusType != DisplayStatusMessageTypes.Debug)
             {
-                CurrentLog = Log[0];
+                if (EnableLogging)
+                {
+                    Log.Insert(0, new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now });
+                    CurrentLog = Log[0];
+                }
+                else
+                {
+                    CurrentLog = new StatusMessage() { Text = textToDisplay, StatusType = statusType, TimeLogged = DateTimeOffset.Now };
+                }
+
                 UpdateDisplay(CurrentLog);
             }
 

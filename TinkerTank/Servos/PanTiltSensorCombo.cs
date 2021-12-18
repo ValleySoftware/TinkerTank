@@ -8,11 +8,11 @@ using TinkerTank.Sensors;
 
 namespace TinkerTank.Servos
 {
-    public class PanTiltDistance : PanTiltBase
+    public class PanTiltSensorCombo : PanTiltBase
     {
         public Dist53l0 Sensor { get; set; }
 
-        public PanTiltDistance(MeadowApp appRoot, PCA9685 servoControllerDevice, string name) :
+        public PanTiltSensorCombo(MeadowApp appRoot, PCA9685 servoControllerDevice, string name) :
             base(appRoot, servoControllerDevice, name)
         {
         }

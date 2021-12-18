@@ -24,7 +24,7 @@ namespace TinkerTank
 
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
-        public Lights Lights;
+        public Lights LightsController;
 
         public IMovementInterface movementController;
         public PowerControl powerController;
@@ -46,8 +46,7 @@ namespace TinkerTank
         public DistanceSensorController distController;
 
         public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
-        public PanTiltDistance DistancePanTilt;
-        public PanTiltBase CameraPanTilt;
+        public PanTiltSensorCombo panTiltSensorCombo;
 
         private II2cBus primaryi2CBus;
 
@@ -60,11 +59,13 @@ namespace TinkerTank
         private System.Timers.Timer _statusPoller;
 
         private bool EnableDistanceSensors = true;
-        private bool EnablePanTiltDistance = true;
-        private bool EnablePanTiltCamera = true;
+        private bool EnablePanTiltSensors = true;
         private bool EnableDisplay = false;
-        private bool EnableArm = true;
+        private bool EnableArm = false;
         private bool EnablePCA9685 = true;
+        private bool EnableStatusPolling = true;
+
+        public bool ShowDebugLogs = true;
 
         public MeadowApp()
         {
@@ -170,21 +171,21 @@ namespace TinkerTank
                 DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                if (EnablePanTiltDistance)
+                if (EnablePanTiltSensors)
                 {
                     try
                     {
-                        DistancePanTilt = new
-                            PanTiltDistance(
+                        panTiltSensorCombo = new
+                            PanTiltSensorCombo(
                                 this,
                                 i2CPWMController,
-                                "Range Finder");
+                                "Pan Tilt Sensor Array");
 
-                        PanTilts.Add(DistancePanTilt);
-                        DistancePanTilt.Init(2, 3, distController.PeriscopeDistance);
-                        DistancePanTilt.DefaultPan = new Angle(75); //Higher = Left
-                        DistancePanTilt.DefaultTilt = new Angle(40); //?
-                        DistancePanTilt.GoToDefault();
+                        PanTilts.Add(panTiltSensorCombo);
+                        panTiltSensorCombo.Init(2, 3, distController.PeriscopeDistance);
+                        panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
+                        panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
+                        panTiltSensorCombo.GoToDefault();
                     }
                     catch (Exception e)
                     {
@@ -192,33 +193,11 @@ namespace TinkerTank
                     }
                 }
 
-                if (EnablePanTiltCamera)
-                {
-                    try
-                {
-                    CameraPanTilt = new
-                        PanTiltBase(
-                            this,
-                            i2CPWMController,
-                            "Forward Pan Tilt Camera");
-
-                        PanTilts.Add(CameraPanTilt);
-                        CameraPanTilt.Init(0, 1);
-                        CameraPanTilt.DefaultPan = new Angle(110); //Higher = Left
-                        CameraPanTilt.DefaultTilt = new Angle(120);  //Higher = down
-                        CameraPanTilt.GoToDefault();
-                    }
-                    catch (Exception e)
-                    {
-                        DebugDisplayText("Camera Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
-                    }
-                }
-
 
                 try
                 {
-                    Lights = new Lights(Device, this);
-                    Lights.Init();
+                    LightsController = new Lights(Device, this);
+                    LightsController.Init();
                 }
                 catch (Exception ledEx)
                 {
@@ -228,11 +207,14 @@ namespace TinkerTank
 
                 //Final
 
-                DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
-                _statusPoller = new System.Timers.Timer(2000);
-                _statusPoller.Elapsed += _statusPoller_Elapsed;
-                _statusPoller.AutoReset = true;
-                _statusPoller.Enabled = true;
+                if (EnableStatusPolling)
+                {
+                    DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
+                    _statusPoller = new System.Timers.Timer(2000);
+                    _statusPoller.Elapsed += _statusPoller_Elapsed;
+                    _statusPoller.AutoReset = true;
+                    _statusPoller.Enabled = true;
+                }
 
                 DebugDisplayText("Startup Complete", DisplayStatusMessageTypes.Important);
             }
@@ -242,12 +224,12 @@ namespace TinkerTank
             }
         }
 
-        public II2cBus Geti2cBus(DistanceSensorLocation sensor)
+        public II2cBus Geti2cBus(I2CExpanderChannel sensor)
         {
             switch (sensor)
             {
-                case DistanceSensorLocation.periscopeDistance: return i2cExpander.Bus2;
-                case DistanceSensorLocation.fixedForwardDistance: return i2cExpander.Bus1;
+                case I2CExpanderChannel.periscopeDistance: return i2cExpander.Bus1;
+                case I2CExpanderChannel.fixedForwardDistance: return i2cExpander.Bus2;
                 default: return i2cExpander.Bus0;
             }
         }

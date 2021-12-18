@@ -18,5 +18,5 @@ namespace Enumerations
     public enum ServoType { SG90, SG90Continuous, MG996R };
     public enum PanTiltAxis { pan, tilt };
     public enum BasePinType { digital, analogue, scl, sda };
-    public enum DistanceSensorLocation { sensorZero, fixedForwardDistance , periscopeDistance }
+    public enum I2CExpanderChannel { sensorZero, fixedForwardDistance , periscopeDistance }
 }

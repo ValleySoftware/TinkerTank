@@ -37,8 +37,8 @@ namespace TinkerTank.Sensors
             _appRoot.DebugDisplayText("Distance sensor controller Init method");
             Status = ComponentStatus.UnInitialised;
 
-            PeriscopeDistance = InitNewSensor(_device.Pins.D01, _appRoot.Geti2cBus(DistanceSensorLocation.periscopeDistance), "pan", _appRoot.communications.charPanTiltDistance);
-            FixedFrontDistance = InitNewSensor(null, _appRoot.Geti2cBus(DistanceSensorLocation.fixedForwardDistance), "fwd", _appRoot.communications.charForwardDistance);
+            PeriscopeDistance = InitNewSensor(_device.Pins.D03, _appRoot.Geti2cBus(I2CExpanderChannel.periscopeDistance), "pan", _appRoot.communications.charPanTiltDistance);
+            FixedFrontDistance = InitNewSensor(null, _appRoot.Geti2cBus(I2CExpanderChannel.fixedForwardDistance), "fwd", _appRoot.communications.charForwardDistance);
 
             Status = ComponentStatus.Ready;
         }

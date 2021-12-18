@@ -261,7 +261,7 @@ namespace Peripherals
             try
             {
                 //testing
-                smoothPowerTranstion = true;
+                //smoothPowerTranstion = true;
 
                 double useThisPower = _defaultPower;
 
@@ -309,7 +309,52 @@ namespace Peripherals
 
         private void Backwards(float power, bool smoothPowerTranstion = false)
         {
-            Forward(power * -1, smoothPowerTranstion);
+
+            try
+            {
+                //testing
+                //smoothPowerTranstion = true;
+
+                _appRoot.DebugDisplayText("a - " + power, DisplayStatusMessageTypes.Debug);
+
+                double useThisPower = _defaultPower * -1;
+
+                _appRoot.DebugDisplayText("b - " + useThisPower, DisplayStatusMessageTypes.Debug);
+
+                useThisPower = power * reverseMotorOrientationMultiplier;
+
+                SanityCheckPower(ref useThisPower, ref useThisPower);
+
+                motorLeft.IsNeutral = true;
+                motorRight.IsNeutral = true;
+
+                float powerSetting = 0;
+
+                if (!smoothPowerTranstion)
+                {
+                    powerSetting = (float)useThisPower;
+                }
+
+                while (powerSetting >= useThisPower)
+                {
+                    if (StopRequested)
+                    {
+                        Stop();
+                        break;
+                    }
+
+                    motorLeft.Power = powerSetting;
+                    motorRight.Power = powerSetting;
+                    powerSetting = powerSetting - (float)0.2;
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+            }
+
+            Status = ComponentStatus.Action;
         }
 
         private void TurnLeft(float power, bool smoothPowerTranstion = false)

@@ -13,6 +13,7 @@ namespace TinkerTank.Sensors
         protected F7Micro device;
         private Characteristic _characteristic;
         private object _sensorValue;
+        private DateTimeOffset _lastBleUpdate;
 
         public BLESensorBase(F7Micro device, MeadowApp appRoot, string name)
         {
@@ -30,29 +31,34 @@ namespace TinkerTank.Sensors
         public bool AssignBluetoothCharacteristicToUpdate(Characteristic characteristicString)
         {
             _characteristic = characteristicString;
+            _lastBleUpdate = DateTimeOffset.Now;
 
             return _characteristic != null;
         }
 
         public void UpdateBleValue(object newValue)
         {
-            try
+            if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > TimeSpan.FromSeconds(3))
             {
-
-                if (_characteristic != null)
+                try
                 {
-                    if (newValue == null)
+
+                    if (_characteristic != null)
                     {
-                        newValue = SensorValue;
+                        if (newValue == null)
+                        {
+                            newValue = SensorValue;
+                        }
+
+                        _lastBleUpdate = DateTimeOffset.Now;
+                        _characteristic.SetValue(Convert.ToString(newValue));
+                        //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
                     }
-
-                    _characteristic.SetValue(Convert.ToString(newValue));
-                    //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
                 }
-            }
-            catch (Exception ex)
-            {
+                catch (Exception ex)
+                {
 
+                }
             }
         }
 

@@ -309,7 +309,7 @@ namespace Communications
                             uuid: UUIDAdvancedMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 12,
+                            maxLength: 20,
                             descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
             charPanSweep = new CharacteristicString(
@@ -381,7 +381,7 @@ namespace Communications
                             case "PanSweep": RequestPanSweep(payload); break;
                             case "ForwardDistance": _appRoot.distController.FixedFrontDistance.UpdateBleValue(null); break;
                             case "PanTiltDistance": _appRoot.distController.PeriscopeDistance.UpdateBleValue(null); break;
-                            case "Lights": _appRoot.Lights.RequestLightsDo(payload); break;
+                            case "Lights": _appRoot.LightsController.RequestLightsDo(payload); break;
                             default: RequestStop(); break;
                         }
 

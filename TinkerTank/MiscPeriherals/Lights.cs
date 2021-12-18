@@ -56,6 +56,8 @@ namespace TinkerTank.MiscPeriherals
             //lightIdentifier-newOnValue
             //00-000-00000
 
+            _appRoot.DebugDisplayText("LED request: " + payload, DisplayStatusMessageTypes.Error);
+
             var sp = payload.Split("-");
 
             if (sp.Count() == 2)
@@ -85,12 +87,19 @@ namespace TinkerTank.MiscPeriherals
 
         private void LEDOn(Led ledToChange, bool newValue)
         {
-            if (ledToChange == null)
+            try
             {
-                return;
-            }
+                if (ledToChange == null)
+                {
+                    return;
+                }
 
-            ledToChange.IsOn = newValue;
+                ledToChange.IsOn = newValue;
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         public void ErrorEncountered()
