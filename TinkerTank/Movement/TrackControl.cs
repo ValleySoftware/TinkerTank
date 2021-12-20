@@ -128,7 +128,7 @@ namespace Peripherals
                     Status = ComponentStatus.Action;
                     StopRequested = false;
 
-                    Task.Run(async () =>
+                    Task.Run(() =>
                     {
                         switch (direction)
                         {
@@ -167,7 +167,7 @@ namespace Peripherals
                                 StopRequested = true;
                                 Stop();
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
 
                             }
@@ -184,7 +184,7 @@ namespace Peripherals
                             Stop();
                             _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
 
                             }
@@ -192,7 +192,7 @@ namespace Peripherals
                     }
                 }
             }
-            catch (Exception exo)
+            catch (Exception)
             {
 
             }
@@ -252,7 +252,7 @@ namespace Peripherals
             Status = ComponentStatus.Ready;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Status = ComponentStatus.Error;
             }
@@ -301,7 +301,7 @@ namespace Peripherals
                     Thread.Sleep(100);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Status = ComponentStatus.Error;
             }
@@ -351,7 +351,7 @@ namespace Peripherals
                     Thread.Sleep(100);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Status = ComponentStatus.Error;
             }

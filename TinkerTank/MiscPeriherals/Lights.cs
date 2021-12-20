@@ -77,7 +77,7 @@ namespace TinkerTank.MiscPeriherals
 
                     LEDOn(l, newStatusBool);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -96,7 +96,7 @@ namespace TinkerTank.MiscPeriherals
 
                 ledToChange.IsOn = newValue;
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }

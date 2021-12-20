@@ -1,4 +1,5 @@
 ﻿using Enumerations;
+using Meadow.Gateways.Bluetooth;
 using Meadow.Hardware;
 using Servos;
 using System;

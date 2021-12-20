@@ -46,7 +46,6 @@ namespace TinkerTank
 
         public DistanceSensorController distController;
 
-        public List<PanTiltBase> PanTilts = new List<PanTiltBase>();
         public PanTiltSensorCombo panTiltSensorCombo;
 
         private II2cBus primaryi2CBus;
@@ -81,12 +80,20 @@ namespace TinkerTank
 
                 //InitialisePinRegister();
 
-                //Display And Logging
+                //BIOS
                 
                 blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
                 greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
                 redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
 
+                //Communications and control
+
+                DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
+                communications = new BlueTooth(Device as F7Micro, this);
+                TBObjects.Add(communications);
+                communications.Init();
+
+                //Display
                 if (EnableDisplay)
                 {
                     try
@@ -96,18 +103,11 @@ namespace TinkerTank
                         TBObjects.Add(lcd);
                         lcd.Init();
                     }
-                    catch (Exception broadLCDException)
+                    catch (Exception)
                     {
 
                     }
                 }
-
-                //Communications and control
-
-                DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
-                communications = new BlueTooth(Device as F7Micro, this);
-                TBObjects.Add(communications);
-                communications.Init();
 
                 //I2C
 
@@ -162,7 +162,7 @@ namespace TinkerTank
                         Arm.Init();
 
                     }
-                    catch (Exception broadLCDException)
+                    catch (Exception)
                     {
 
                     }
@@ -182,11 +182,11 @@ namespace TinkerTank
                                 i2CPWMController,
                                 "Pan Tilt Sensor Array");
 
-                        PanTilts.Add(panTiltSensorCombo);
                         panTiltSensorCombo.Init(2, 3, distController.PeriscopeDistance);
                         panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
                         panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
                         panTiltSensorCombo.GoToDefault();
+                        panTiltSensorCombo.AssignBluetoothCharacteristicToUpdate(communications.charPanTilt);
                     }
                     catch (Exception e)
                     {
@@ -200,7 +200,7 @@ namespace TinkerTank
                     LightsController = new Lights(Device, this);
                     LightsController.Init();
                 }
-                catch (Exception ledEx)
+                catch (Exception)
                 {
 
                 }

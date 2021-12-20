@@ -36,7 +36,7 @@ namespace Communications
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
         private CharacteristicInt32  charStop;
-        private CharacteristicString charPanTilt;
+        public CharacteristicString charPanTilt;
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
         private CharacteristicString charPanSweep;
@@ -91,6 +91,7 @@ namespace Communications
 
         private void RequestPower(string payload)
         {
+            _appRoot.DebugDisplayText("Request Power received with: " + payload, DisplayStatusMessageTypes.Debug);
 
             var valueAsInt = Convert.ToInt32(payload);
 
@@ -122,17 +123,16 @@ namespace Communications
 
         private void RequestPanTilt(string payload)
         {
-            //Device-PanTo-TiltTo-Speed
-            //00-000-000-0
+            //PanTo-TiltTo-Speed
+            //000-000-0
 
             try
             {
                 var sp = payload.Split("-");
 
-                if (sp.Count() >= 3)
+                if (sp.Count() >= 2)
                 {
 
-                    int device = Convert.ToInt32(sp[0]);
                     int pan = Convert.ToInt32(sp[1]);
                     int tilt = Convert.ToInt32(sp[2]);
                     ServoMovementSpeed speed = ServoMovementSpeed.Flank;
@@ -142,13 +142,10 @@ namespace Communications
                         speed = (ServoMovementSpeed)s;
                     }
 
-                    _appRoot.DebugDisplayText(device.ToString() + " " + pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
+                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                    if (device < _appRoot.PanTilts.Count)
-                    {
-                        _appRoot.PanTilts[device].Move(PanTiltAxis.pan, new Angle(pan), speed);
-                        _appRoot.PanTilts[device].Move(PanTiltAxis.tilt , new Angle(tilt), speed);
-                    }
+                        _appRoot.panTiltSensorCombo.Move(PanTiltAxis.pan, new Angle(pan), speed);
+                        _appRoot.panTiltSensorCombo.Move(PanTiltAxis.tilt , new Angle(tilt), speed);
                 }
             }
             catch (Exception decipherPanTiltEx)
@@ -161,28 +158,21 @@ namespace Communications
         private void RequestPanSweep(string payload)
         {
             //Device-Speed
-            //00-0
+            //0
 
             try
             {
-                var sp = payload.Split("-");
 
-                if (sp.Count() == 2)
-                {
-
-                    int device = Convert.ToInt32(sp[0]);
+                    int device = Convert.ToInt32(payload);
                     ServoMovementSpeed speed = ServoMovementSpeed.Flank;
 
-                        int s = Convert.ToInt32(sp[1]);
+                        int s = Convert.ToInt32(payload);
                         speed = (ServoMovementSpeed)s;
 
                     _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                    if (device < _appRoot.PanTilts.Count)
-                    {
-                        _appRoot.PanTilts[device].AutoPanSweep(speed);
-                    }
-                }
+                        _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
+                
             }
             catch (Exception decipherPanTiltEx)
             {

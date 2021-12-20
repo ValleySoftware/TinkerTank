@@ -44,20 +44,5 @@ namespace TinkerTank.Abstractions
         {
             MovementController.Move(directionToMove, power, movementDuration, safeMove, smoothAccelleration);//, movementDuration);
         }
-
-        public void ErrorEncountered()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RefreshStatus()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Test()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

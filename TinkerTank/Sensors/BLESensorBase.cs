@@ -55,7 +55,7 @@ namespace TinkerTank.Sensors
                         //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
 
                 }

@@ -84,7 +84,7 @@ namespace TinkerTank.Servos
 
             _appRoot.DebugDisplayText(Name + " - safeishrotate prep", DisplayStatusMessageTypes.Debug);
 
-            bool Completed = false;
+            //bool Completed = false;
             _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), DisplayStatusMessageTypes.Important);
 
             //var oldAngle = _servo.Angle;

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TinkerTank;
 using Meadow.Units;
 using TinkerTank.Servos;
+using Meadow.Gateways.Bluetooth;
 
 namespace Servos
 {
@@ -19,6 +20,8 @@ namespace Servos
         protected PCA9685 _servoControllerDevice;
 
         bool _stopRequested = false;
+
+        private Characteristic _characteristic;
 
         public PanTiltBase(MeadowApp appRoot, PCA9685 servoControllerDevice, string name)
         {
@@ -60,6 +63,33 @@ namespace Servos
             }
         }
 
+        public bool AssignBluetoothCharacteristicToUpdate(Characteristic characteristicString)
+        {
+            _characteristic = characteristicString;
+
+            UpdateBleValue();
+
+            return _characteristic != null;
+        }
+
+        public void UpdateBleValue()
+        {
+                try
+                {
+
+                    if (_characteristic != null)
+                    {
+                         var newValue = CurrentPanPosition.Value.Degrees + "-" + CurrentTiltPosition.Value.Degrees;                        
+
+                        _characteristic.SetValue(Convert.ToString(newValue));
+                    }
+                }
+                catch (Exception)
+                {
+
+                }
+        }
+
         public string Name
         {
             get => _name;
@@ -80,7 +110,7 @@ namespace Servos
             get => servoTilt.DefaultAngle;
             set
             {
-                servoTilt.DefaultAngle = value;                
+                servoTilt.DefaultAngle = value;
             }
         }
 
@@ -167,11 +197,13 @@ namespace Servos
                     }
                     Status = ComponentStatus.Ready;
 
+                UpdateBleValue();
             }
         }
 
         public void RefreshStatus()
         {
+            UpdateBleValue();
         }
 
         public void Test()
@@ -225,6 +257,7 @@ namespace Servos
             //{
                 Move(PanTiltAxis.pan, DefaultPan);
                 Move(PanTiltAxis.tilt, DefaultTilt);
+                UpdateBleValue();
             //});
         }
     }
