@@ -71,7 +71,7 @@ namespace Communications
         [HttpGet]
         public void Stop()
         {
-            _appRoot.movementController.Stop();
+            _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
         }
 
         [HttpGet]
@@ -84,7 +84,7 @@ namespace Communications
                 _appRoot.DebugDisplayText("ForwardRequested");
                 _appRoot.movementController.Move(Direction.Forward, testMotorSpeed, TimeSpan.Zero);
                 Thread.Sleep(250);
-                _appRoot.movementController.Stop();
+                _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
             });
 
             this.Context.Response.ContentType = ContentTypes.Application_Text;

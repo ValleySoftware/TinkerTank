@@ -13,6 +13,7 @@ using Servos;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TinkerTank.Abstractions;
 using TinkerTank.MiscPeriherals;
 using TinkerTank.Movement;
 using TinkerTank.Sensors;
@@ -26,7 +27,7 @@ namespace TinkerTank
     {
         public Lights LightsController;
 
-        public IMovementInterface movementController;
+        public MovementAbstractions movementController;
         public PowerControl powerController;
 
         public LCDDisplay_ST7789 lcd;
@@ -144,7 +145,7 @@ namespace TinkerTank
                 powerController.Init(Device.Pins.D10);
 
                 DebugDisplayText("start motor controller");
-                movementController = new TrackControl(Device, i2CPWMController, this);
+                movementController = new MovementAbstractions(this);
                 TBObjects.Add((TinkerBase)movementController);
 
                 movementController.Init(

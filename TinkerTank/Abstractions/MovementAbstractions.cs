@@ -7,28 +7,22 @@ using System.Text;
 
 namespace TinkerTank.Abstractions
 {
-    public class MovementAbstractions : TinkerBase, ITinkerBase
+    public class MovementAbstractions : TrackControl
     {
         public IMovementInterface MovementController { get; set; }
         public decimal AutoStopDistance { get; set; }
-        private int defaultPower = 75;
         private bool defaultSafeMove = true;
         private bool defaultSmoothAccelleration = true;
         private TimeSpan defaultMovementDuration = TimeSpan.FromSeconds(1);
 
-        public MovementAbstractions(IMovementInterface movementController)
+        public MovementAbstractions(MeadowApp appRoot) : base(appRoot)
         {
-            if (movementController == null)
-            {
-                throw new NullReferenceException();
-            }
-
-            MovementController = movementController;
+            SetDefaultPower(75);
         }
 
         public void Move(Direction directionToMove)
         {
-            Move(directionToMove, defaultPower, defaultSafeMove, defaultSmoothAccelleration, defaultMovementDuration);
+            Move(directionToMove, _defaultPower, defaultSafeMove, defaultSmoothAccelleration, defaultMovementDuration);
         }
 
         public void Move(Direction directionToMove, int power)
@@ -48,8 +42,7 @@ namespace TinkerTank.Abstractions
 
         public void Move(Direction directionToMove, int power, bool safeMove, bool smoothAccelleration, TimeSpan movementDuration )
         {
-            //MovementController.Move(directionToMove, power, safeMove, smoothAccelleration);//, movementDuration);
-            //Move(directionToMove, power, safeMove, accelleration, movementDuration);
+            MovementController.Move(directionToMove, power, movementDuration, safeMove, smoothAccelleration);//, movementDuration);
         }
 
         public void ErrorEncountered()

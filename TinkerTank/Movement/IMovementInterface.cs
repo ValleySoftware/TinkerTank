@@ -15,7 +15,6 @@ namespace Peripherals
             Meadow.Hardware.IPin HBridge2PinA, Meadow.Hardware.IPin HBridge2Pinb, Meadow.Hardware.IPin HBridge2PinEnable);
         void Move(Direction direction, int power, TimeSpan movementDuration, bool safeMove = true, bool smoothPowerTranstion = false);
         void SetDefaultPower(int defaultPower);
-        void Stop(bool smoothPowerTranstion = false);
         bool StopRequested { get; set; }
 
     }

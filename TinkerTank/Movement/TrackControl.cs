@@ -22,16 +22,12 @@ namespace Peripherals
         private bool _reverseMotorOrientation = false;
         private int reverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
         private static double opposingActionMultiplier = 1.5; //If the motors are going opposite ways, apply more power as they face more resistance.
-        private double _defaultPower = 50;
-        PCA9685 _pcaDevice;
-        F7Micro _device;
+        protected int _defaultPower = 50;
         bool _stopRequested = false;
 
-        public TrackControl(F7Micro device, PCA9685 pcaDevice, MeadowApp appRoot)
+        public TrackControl(MeadowApp appRoot)
         {
             _appRoot = appRoot;
-            _pcaDevice = pcaDevice;
-            _device = device;
 
             ErrorResponse = AutomaticErrorResponse.DisableMotorPower;
         }
@@ -116,78 +112,84 @@ namespace Peripherals
         {
             try
             { 
-            if (power == 0)
-            {
-                power = (int)Math.Round(_defaultPower);
-            }
-
-            //if (_appRoot.HasDrivePower)
-            {
-                Status = ComponentStatus.Action;
-                StopRequested = false;
-
-                Task.Run(async () =>
+                if (direction == Direction.Stop)
                 {
-                    switch (direction)
+                    Stop(smoothPowerTranstion);
+                    return;
+                }
+
+                if (power == 0)
+                {
+                    power = _defaultPower;
+                }
+
+                if (_appRoot.powerController.Status == ComponentStatus.Ready)
+                {
+                    Status = ComponentStatus.Action;
+                    StopRequested = false;
+
+                    Task.Run(async () =>
                     {
-                        case Direction.Forward:
-                            Forward(power, safeMove);
-                            break;
-                        case Direction.Backwards:
-                            Backwards(power);
-                            break;
-                        case Direction.TurnLeft:
-                            TurnLeft(power);
-                            break;
-                        case Direction.TurnRight:
-                            TurnRight(power);
-                            break;
-                        case Direction.RotateLeft:
-                            RotateLeft(power);
-                            break;
-                        case Direction.RotateRight:
-                            RotateRight(power);
-                            break;
-                        default:
-                            Stop();
-                            break;
+                        switch (direction)
+                        {
+                            case Direction.Forward:
+                                Forward(power, safeMove);
+                                break;
+                            case Direction.Backwards:
+                                Backwards(power);
+                                break;
+                            case Direction.TurnLeft:
+                                TurnLeft(power);
+                                break;
+                            case Direction.TurnRight:
+                                TurnRight(power);
+                                break;
+                            case Direction.RotateLeft:
+                                RotateLeft(power);
+                                break;
+                            case Direction.RotateRight:
+                                RotateRight(power);
+                                break;
+                            default:
+                                Stop();
+                                break;
+                        }
+                    });
+
+                    if (movementDuration.Equals(TimeSpan.Zero))
+                    {
+                        Task.Run(async () =>
+                        {
+                            try
+                            { 
+                                await Task.Delay(TimeSpan.FromSeconds(3));
+                                _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
+                                StopRequested = true;
+                                Stop();
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        });
                     }
-                });
-
-                if (movementDuration.Equals(TimeSpan.Zero))
-                {
-                    Task.Run(async () =>
+                    else
                     {
-                        try
-                        { 
-                        await Task.Delay(TimeSpan.FromSeconds(3));
-                        _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
-                        StopRequested = true;
-                        Stop();
-                        }
-                        catch (Exception ex)
+                        Task.Run(async () =>
                         {
+                            try
+                            { 
+                            await Task.Delay(movementDuration);
+                            StopRequested = true;
+                            Stop();
+                            _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
+                            }
+                            catch (Exception ex)
+                            {
 
-                        }
-                    });
-                }
-                else
-                {
-                    Task.Run(async () =>
-                    {
-                        try
-                        { 
-                        await Task.Delay(movementDuration);
-                        StopRequested = true;
-                        Stop();
-                        _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    });
-                }
+                            }
+                        });
+                    }
                 }
             }
             catch (Exception exo)
@@ -202,7 +204,7 @@ namespace Peripherals
             set => _stopRequested = value;
         }
 
-        public void Stop(bool smoothPowerTranstion = false)
+        private void Stop(bool smoothPowerTranstion = false)
         {
             StopRequested = true;
 
@@ -224,7 +226,7 @@ namespace Peripherals
             _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important);
         }
 
-        public void BreakAndHold(bool smoothPowerTranstion = false)
+        private void BreakAndHold(bool smoothPowerTranstion = false)
         {
             try { 
             StopRequested = true;

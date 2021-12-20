@@ -193,7 +193,7 @@ namespace Communications
 
         private void RequestStop()
         {
-            _appRoot.movementController.Stop();
+            _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
         }
 
         private void RequestAdvancedMove(string payload)

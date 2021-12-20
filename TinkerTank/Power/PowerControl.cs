@@ -34,9 +34,10 @@ namespace Utilities.Power
                 _appRoot.DebugDisplayText("Power Controller Ready");
                 Status = ComponentStatus.Ready;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("Power Init Failed - " + ex.Message, DisplayStatusMessageTypes.Error);
+                ErrorEncountered();
             }
 
             return Status;
@@ -58,8 +59,8 @@ namespace Utilities.Power
 
         public void Test()
         {
-            while (true)
-            {
+            try
+            { 
                 Connect();
                 
                 Thread.Sleep(5000);
@@ -67,11 +68,25 @@ namespace Utilities.Power
                 Disconnect();
                 Thread.Sleep(5000);
             }
+            catch (Exception e)
+            {
+                _appRoot.DebugDisplayText("Power Test Failed - " + e.Message, DisplayStatusMessageTypes.Error);
+                ErrorEncountered();
+            }
         }
 
         public void ErrorEncountered()
         {
-
+            try
+            {
+                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("Power ErrorEncountered method triggered", DisplayStatusMessageTypes.Error);
+                Disconnect();
+            }
+            catch (Exception ex)
+            {
+                _appRoot.DebugDisplayText("Power Safety Disconnect Failed - " + ex.Message, DisplayStatusMessageTypes.Error);
+            }
         }
     }
 }
