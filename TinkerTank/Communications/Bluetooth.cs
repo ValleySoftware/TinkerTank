@@ -91,33 +91,40 @@ namespace Communications
 
         private void RequestPower(string payload)
         {
-            _appRoot.DebugDisplayText("Request Power received with: " + payload, DisplayStatusMessageTypes.Debug);
-
-            var valueAsInt = Convert.ToInt32(payload);
-
-            switch (valueAsInt)
+            try
             {
-                case 0: _appRoot.powerController.Disconnect(); break;
-                case 1: _appRoot.powerController.Connect(); break;
-                default:
-                    {
-                        if (valueAsInt >= 100)
+                _appRoot.DebugDisplayText("Request Power received with: " + payload, DisplayStatusMessageTypes.Debug);
+
+                var valueAsInt = Convert.ToInt32(payload);
+
+                switch (valueAsInt)
+                {
+                    case 0: _appRoot.powerController.Disconnect(); break;
+                    case 1: _appRoot.powerController.Connect(); break;
+                    default:
                         {
-                            _appRoot.movementController.SetDefaultPower(100);
-                        }
-                        else
-                        {
-                            if (valueAsInt <= 2)
+                            if (valueAsInt >= 100)
                             {
-                                _appRoot.movementController.SetDefaultPower(0);
+                                _appRoot.movementController.SetDefaultPower(100);
                             }
                             else
                             {
-                                _appRoot.movementController.SetDefaultPower(valueAsInt);
+                                if (valueAsInt <= 2)
+                                {
+                                    _appRoot.movementController.SetDefaultPower(0);
+                                }
+                                else
+                                {
+                                    _appRoot.movementController.SetDefaultPower(valueAsInt);
+                                }
                             }
                         }
-                    }
-                    break;
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload, DisplayStatusMessageTypes.Error);
             }
         }
 
@@ -183,7 +190,14 @@ namespace Communications
 
         private void RequestStop()
         {
-            _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
+            try
+            {
+                _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
+            }
+            catch (Exception ex)
+            {
+                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, DisplayStatusMessageTypes.Error);
+            }
         }
 
         private void RequestAdvancedMove(string payload)
@@ -203,9 +217,9 @@ namespace Communications
 
                     _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, DisplayStatusMessageTypes.Error);
                 }
             }
         }
@@ -254,9 +268,9 @@ namespace Communications
                 {
                     element.SetValue(element.Name);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    _appRoot.DebugDisplayText("BLE Prepare Exception: " + ex.Message, DisplayStatusMessageTypes.Error);
                 }
             }
 
@@ -369,9 +383,9 @@ namespace Communications
                             case "Power": RequestPower(payload); break;
                             case "AdvancedMove": RequestAdvancedMove(payload); break;
                             case "PanSweep": RequestPanSweep(payload); break;
-                            case "ForwardDistance": _appRoot.distController.FixedFrontDistance.UpdateBleValue(null); break;
-                            case "PanTiltDistance": _appRoot.distController.PeriscopeDistance.UpdateBleValue(null); break;
-                            case "Lights": _appRoot.LightsController.RequestLightsDo(payload); break;
+                            case "ForwardDistance": RequestFrontDistanceUpdate(); break;
+                            case "PanTiltDistance": RequestPanTiltDistanceUpdate(); break;
+                            case "Lights": RequestLights(payload); break;
                             default: RequestStop(); break;
                         }
 
@@ -388,6 +402,45 @@ namespace Communications
             }
 
             _appRoot.DebugDisplayText("BT receivers registered", DisplayStatusMessageTypes.Important);
+        }
+
+        private void RequestLights(string payload)
+        {
+            try
+            {
+                _appRoot.LightsController.RequestLightsDo(payload);
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestFrontDistanceUpdate()
+        {
+            try
+            {
+                _appRoot.distController.FixedFrontDistance.UpdateBleValue(null);
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestPanTiltDistanceUpdate()
+        {
+            try
+            {
+                _appRoot.distController.PeriscopeDistance.UpdateBleValue(null);
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+            }
         }
 
         public void RefreshStatus()

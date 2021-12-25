@@ -24,7 +24,7 @@ namespace Display
 
     public class LCDDisplay_ST7789 : TinkerBase, ITinkerBase
     {
-        GraphicsLibrary graphics;
+        MicroGraphics graphics;
         St7789 display;
         static int NoOfLinesOnDisplay = 11;
         private List<StatusMessage> _log;
@@ -90,7 +90,7 @@ namespace Display
                 foreach (var lineOfLog in logSplitIntoLines)
                 {
                     //Console.WriteLine(lineOfLog);
-                    graphics.DrawText(0, 24 * i, lineOfLog, StatusMessage.statusColours[(int)CurrentLog.StatusType], GraphicsLibrary.ScaleFactor.X1);
+                    graphics.DrawText(0, 24 * i, lineOfLog, StatusMessage.statusColours[(int)CurrentLog.StatusType], Meadow.Foundation.Graphics.ScaleFactor.X1);
                     i++;
 
                     if (i > NoOfLinesOnDisplay)
@@ -146,9 +146,9 @@ namespace Display
 
             var config = new SpiClockConfiguration
             (
-                speedKHz: 6000,
+                speed: new Meadow.Units.Frequency(6000),
                 mode: SpiClockConfiguration.Mode.Mode3
-            );
+            ); ;
 
             display = new St7789
             (
@@ -161,7 +161,7 @@ namespace Display
                 width: 240, height: 240
             );
 
-            graphics = new GraphicsLibrary(display);
+            graphics = new MicroGraphics(display);
             graphics.CurrentFont = new Font12x20();
 
             graphics.Clear();

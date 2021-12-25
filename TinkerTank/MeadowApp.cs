@@ -63,7 +63,7 @@ namespace TinkerTank
         private bool EnableDisplay = false;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
-        private bool EnableStatusPolling = true;
+        private bool EnableStatusPolling = false;
 
         public bool ShowDebugLogs = true;
 
