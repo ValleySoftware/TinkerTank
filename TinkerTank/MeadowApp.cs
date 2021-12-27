@@ -63,13 +63,26 @@ namespace TinkerTank
         private bool EnableDisplay = false;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
-        private bool EnableStatusPolling = false;
+        private bool EnableStatusPolling = true;
 
         public bool ShowDebugLogs = true;
 
         public MeadowApp()
         {
+            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             Init();
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), DisplayStatusMessageTypes.Error);
+        }
+
+        private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+
         }
 
         void Init()
@@ -163,9 +176,7 @@ namespace TinkerTank
 
                     }
                     catch (Exception)
-                    {
-
-                    }
+                    { }
                 }   
 
 
