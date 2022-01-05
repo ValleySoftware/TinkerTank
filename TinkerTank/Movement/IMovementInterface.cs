@@ -8,7 +8,8 @@ namespace Peripherals
 
     public interface IMovementInterface: ITinkerBase
     {
-        bool ReverseMotorOrientation { get; set; }
+        bool ReverseLeftMotorOrientation { get; set; }
+        bool ReverseRightMotorOrientation { get; set; }
         DriveMethod driveMethod { get; }
         ComponentStatus Init(
             Meadow.Hardware.IPin HBridge1PinA, Meadow.Hardware.IPin HBridge1Pinb, Meadow.Hardware.IPin HBridge1PinEnable,

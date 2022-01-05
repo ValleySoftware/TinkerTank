@@ -19,8 +19,10 @@ namespace Peripherals
         private DriveMethod _driveMethod;
         private HBridgeMotor motorLeft;
         private HBridgeMotor motorRight;
-        private bool _reverseMotorOrientation = false;
-        private int reverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
+        private bool _reverseLeftMotorOrientation = false;
+        private bool _reverseRightMotorOrientation = false;
+        private int leftReverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
+        private int rightReverseMotorOrientationMultiplier = 1; //This is changed in the public property if the motor controller is backwards.
         private static double opposingActionMultiplier = 1.5; //If the motors are going opposite ways, apply more power as they face more resistance.
         protected int _defaultPower = 50;
         bool _stopRequested = false;
@@ -42,8 +44,7 @@ namespace Peripherals
             {
                 _appRoot.DebugDisplayText("Init Motor Controller");
 
-                _driveMethod = DriveMethod.TwoWheelDrive;
-
+                _driveMethod = DriveMethod.DualTracks;
                 
                 motorLeft = new HBridgeMotor(MeadowApp.Device,
                     a1Pin: HBridge1PinA,
@@ -52,13 +53,17 @@ namespace Peripherals
 
                 motorLeft.IsNeutral = true;
 
+                ReverseLeftMotorOrientation = false;
+
                 motorRight = new HBridgeMotor(MeadowApp.Device,
                     a1Pin: HBridge2PinA,
                     a2Pin: HBridge2Pinb,
                     enablePin: HBridge2PinEnable);
 
                 motorRight.IsNeutral = true;
-                
+
+                ReverseRightMotorOrientation = true;
+
                 _appRoot.DebugDisplayText("Setting Motor Controller Ready");
                 Status = ComponentStatus.Ready;
             }
@@ -91,19 +96,36 @@ namespace Peripherals
             }
         }
 
-        public bool ReverseMotorOrientation
+        public bool ReverseLeftMotorOrientation
         {
-            get => _reverseMotorOrientation;
+            get => _reverseLeftMotorOrientation;
             set
             {
-                _reverseMotorOrientation = value;
+                _reverseLeftMotorOrientation = value;
                 if (value)
                 {
-                    reverseMotorOrientationMultiplier = -1;
+                    leftReverseMotorOrientationMultiplier = -1;
                 }
                 else
                 {
-                    reverseMotorOrientationMultiplier = 1;
+                    leftReverseMotorOrientationMultiplier = 1;
+                }
+            }
+        }
+
+        public bool ReverseRightMotorOrientation
+        {
+            get => _reverseRightMotorOrientation;
+            set
+            {
+                _reverseRightMotorOrientation = value;
+                if (value)
+                {
+                    rightReverseMotorOrientationMultiplier = -1;
+                }
+                else
+                {
+                    rightReverseMotorOrientationMultiplier = 1;
                 }
             }
         }
@@ -267,7 +289,7 @@ namespace Peripherals
 
                 double useThisPower = _defaultPower;
 
-                useThisPower = power * reverseMotorOrientationMultiplier;
+                useThisPower = power;
 
                 SanityCheckPower(ref useThisPower, ref useThisPower);
 
@@ -295,8 +317,8 @@ namespace Peripherals
                         Stop();
                         break;
                     }
-                    motorLeft.Power = powerSetting;
-                    motorRight.Power = powerSetting;
+                    motorLeft.Power = powerSetting * leftReverseMotorOrientationMultiplier;
+                    motorRight.Power = powerSetting * rightReverseMotorOrientationMultiplier;
                     powerSetting = powerSetting + (float)0.2;
                     Thread.Sleep(100);
                 }
@@ -323,7 +345,7 @@ namespace Peripherals
 
                 _appRoot.DebugDisplayText("b - " + useThisPower, DisplayStatusMessageTypes.Debug);
 
-                useThisPower = power * reverseMotorOrientationMultiplier;
+                useThisPower = power;
 
                 SanityCheckPower(ref useThisPower, ref useThisPower);
 
@@ -365,7 +387,7 @@ namespace Peripherals
             double rightPower = _defaultPower;
 
             leftPower = 0;
-            rightPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = power * rightReverseMotorOrientationMultiplier * opposingActionMultiplier;
 
             SanityCheckPower(ref leftPower, ref rightPower);
 
@@ -401,7 +423,7 @@ namespace Peripherals
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
 
-            leftPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            leftPower = power * leftReverseMotorOrientationMultiplier * opposingActionMultiplier;
             rightPower = 0;
 
             SanityCheckPower(ref leftPower, ref rightPower);
@@ -418,8 +440,8 @@ namespace Peripherals
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
 
-            leftPower = power * -1 * reverseMotorOrientationMultiplier * opposingActionMultiplier;
-            rightPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            leftPower = power * -1 * leftReverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = power * rightReverseMotorOrientationMultiplier * opposingActionMultiplier;
 
             SanityCheckPower(ref leftPower, ref rightPower);
 
@@ -435,8 +457,8 @@ namespace Peripherals
             double leftPower = _defaultPower;
             double rightPower = _defaultPower;
 
-            leftPower = power * reverseMotorOrientationMultiplier * opposingActionMultiplier;
-            rightPower = power * -1 * reverseMotorOrientationMultiplier * opposingActionMultiplier;
+            leftPower = power * leftReverseMotorOrientationMultiplier * opposingActionMultiplier;
+            rightPower = power * -1 * rightReverseMotorOrientationMultiplier * opposingActionMultiplier;
 
             SanityCheckPower(ref leftPower, ref rightPower);
 

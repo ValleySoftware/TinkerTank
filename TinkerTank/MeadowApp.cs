@@ -360,8 +360,22 @@ namespace TinkerTank
 
         public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-                var t = new Task(() =>
-                {
+                //var t = new Task(() =>
+                //{
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    if (statusType == DisplayStatusMessageTypes.Error)
+                    {
+                        newText = String.Concat("***", " ", newText);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+
+                    if (statusType == DisplayStatusMessageTypes.Important)
+                    {
+                        newText = String.Concat("//", " ", newText);
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    }
+
                     Console.WriteLine(newText);
         
                     if (lcd != null)
@@ -375,8 +389,8 @@ namespace TinkerTank
                             //Display add process went through,but not talking.  Is it plugged in?
                         }
                     }
-                    });
-                t.Start();
+                    //});
+                //t.Start();
         }
     }
 }

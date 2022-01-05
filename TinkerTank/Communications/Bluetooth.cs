@@ -266,7 +266,10 @@ namespace Communications
                 //Loop through and set the 'read' property to the characteristics name.
                 try
                 {
-                    element.SetValue(element.Name);
+                    if (element is CharacteristicString)
+                    {
+                        element.SetValue(element.Name);
+                    }
                 }
                 catch (Exception ex)
                 {
