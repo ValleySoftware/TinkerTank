@@ -27,8 +27,10 @@ namespace TinkerTank
     {
         public string Text { get; set; }
         public DisplayStatusMessageTypes StatusType { get; set; }
-        public DateTimeOffset Stamp { get; set; }
+        public DateTimeOffset RecordedStamp { get; set; }
         public bool Displayed { get; set; }
+        public bool Transmitted { get; set; }
+        public DateTimeOffset? TransmittedStamp { get; set; }
     }
 
 
@@ -113,7 +115,7 @@ namespace TinkerTank
                 //Communications and control
 
                 DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
-                communications = new BlueTooth(Device as F7Micro, this);
+                communications = new BlueTooth();
                 TBObjects.Add(communications);
                 communications.Init();
 
@@ -123,7 +125,7 @@ namespace TinkerTank
                     try
                     {
                         DebugDisplayText("start lcd", DisplayStatusMessageTypes.Important);
-                        lcd = new LCDDisplay_ST7789(this);
+                        lcd = new LCDDisplay_ST7789();
                         TBObjects.Add(lcd);
                         lcd.Init();
                     }
@@ -147,7 +149,7 @@ namespace TinkerTank
                 {
                     DebugDisplayText("Start distance sensor controller");
 
-                    distController = new DistanceSensorController(Device, this, i2cExpander);
+                    distController = new DistanceSensorController(i2cExpander);
 
                     TBObjects.Add(distController);
                     distController.Init();
@@ -156,7 +158,7 @@ namespace TinkerTank
                 if (EnablePCA9685)
                 {
                     DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
-                    i2CPWMController = new PCA9685(this, primaryi2CBus);
+                    i2CPWMController = new PCA9685(primaryi2CBus);
                     TBObjects.Add(i2CPWMController);
                     i2CPWMController.Init();
                 }
@@ -169,7 +171,7 @@ namespace TinkerTank
                 powerController.Init(Device.Pins.D10);
 
                 DebugDisplayText("start motor controller");
-                movementController = new MovementAbstractions(this);
+                movementController = new MovementAbstractions();
                 TBObjects.Add((TinkerBase)movementController);
 
                 movementController.Init(
@@ -181,7 +183,7 @@ namespace TinkerTank
                     try
                     {
                         DebugDisplayText("Start Arm");
-                        Arm = new ArmControl(this, i2CPWMController);
+                        Arm = new ArmControl(i2CPWMController);
                         TBObjects.Add((TinkerBase)Arm);
                         Arm.Init();
 
@@ -200,7 +202,6 @@ namespace TinkerTank
                     {
                         panTiltSensorCombo = new
                             PanTiltSensorCombo(
-                                this,
                                 i2CPWMController,
                                 "Pan Tilt Sensor Array");
 
@@ -219,7 +220,7 @@ namespace TinkerTank
 
                 try
                 {
-                    LightsController = new Lights(Device, this);
+                    LightsController = new Lights();
                     LightsController.Init();
                 }
                 catch (Exception)
@@ -371,7 +372,7 @@ namespace TinkerTank
 
         public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-            var newEntry = new DebugLogEntry() { Stamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText };
+            var newEntry = new DebugLogEntry() { RecordedStamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText };
 
             debugMessageLog.Add(newEntry);
 
@@ -387,7 +388,10 @@ namespace TinkerTank
                     Console.Write(String.Concat("//", " ", newEntry.Text));
                 }
 
-                if (newEntry.StatusType == DisplayStatusMessageTypes.Debug)
+                if (
+                    newEntry.StatusType == DisplayStatusMessageTypes.Debug &&
+                    ShowDebugLogs
+                    )
                 {
                     Console.Write(newEntry.Text);
                 }
@@ -398,10 +402,7 @@ namespace TinkerTank
                     {
                         lcd.AddMessage(newEntry.Text, newEntry.StatusType);
                     }
-                    catch (Exception)
-                    {
-                        //Display add process went through,but not talking.  Is it plugged in?
-                    }
+                    catch (Exception) { };
                 }
             });
             t.Start();

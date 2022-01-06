@@ -13,8 +13,8 @@ namespace TinkerTank.Servos
     {
         public Dist53l0 Sensor { get; set; }
 
-        public PanTiltSensorCombo(MeadowApp appRoot, PCA9685 servoControllerDevice, string name) :
-            base(appRoot, servoControllerDevice, name)
+        public PanTiltSensorCombo(PCA9685 servoControllerDevice, string name) :
+            base(servoControllerDevice, name)
         {
         }
 

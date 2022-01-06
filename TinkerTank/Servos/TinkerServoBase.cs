@@ -51,9 +51,9 @@ namespace TinkerTank.Servos
             get => _servo;
         }
 
-        public TinkerServoBase(MeadowApp appRoot, PCA9685 servoControllerDevice, int portIndex, ServoType typeOfServo, Angle? minAngle, Angle? maxAngle, string name)
+        public TinkerServoBase(PCA9685 servoControllerDevice, int portIndex, ServoType typeOfServo, Angle? minAngle, Angle? maxAngle, string name)
         {
-            _appRoot = appRoot;
+            _appRoot = MeadowApp.Current;
 
             Status = ComponentStatus.UnInitialised;
             _name = name;

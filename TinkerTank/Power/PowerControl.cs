@@ -19,7 +19,7 @@ namespace Utilities.Power
 
         public PowerControl(MeadowApp appRoot)
         {
-            _appRoot = appRoot;
+            _appRoot = MeadowApp.Current;
         }
 
         public ComponentStatus Init(IPin motorPowerRelayPin)

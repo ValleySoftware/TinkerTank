@@ -15,7 +15,7 @@ namespace TinkerTank.Abstractions
         private bool defaultSmoothAccelleration = true;
         private TimeSpan defaultMovementDuration = TimeSpan.FromSeconds(1);
 
-        public MovementAbstractions(MeadowApp appRoot) : base(appRoot)
+        public MovementAbstractions() : base()
         {
             SetDefaultPower(75);
         }

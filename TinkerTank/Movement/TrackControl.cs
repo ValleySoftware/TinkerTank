@@ -27,9 +27,9 @@ namespace Peripherals
         protected int _defaultPower = 50;
         bool _stopRequested = false;
 
-        public TrackControl(MeadowApp appRoot)
+        public TrackControl()
         {
-            _appRoot = appRoot;
+            _appRoot = MeadowApp.Current;
 
             ErrorResponse = AutomaticErrorResponse.DisableMotorPower;
         }

@@ -10,15 +10,15 @@ namespace TinkerTank.Sensors
     public class BLESensorBase : TinkerBase
     {
         private string _name;
-        protected F7Micro device;
+        protected F7Micro _device;
         private Characteristic _characteristic;
         private object _sensorValue;
         private DateTimeOffset _lastBleUpdate;
 
-        public BLESensorBase(F7Micro device, MeadowApp appRoot, string name)
+        public BLESensorBase(string name)
         {
-            _appRoot = appRoot;
-            this.device = device;
+            _appRoot = MeadowApp.Current;
+            _device = MeadowApp.Device;
             _name = name;
         }
 

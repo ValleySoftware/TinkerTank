@@ -23,9 +23,9 @@ namespace Servos
 
         private Characteristic _characteristic;
 
-        public PanTiltBase(MeadowApp appRoot, PCA9685 servoControllerDevice, string name)
+        public PanTiltBase(PCA9685 servoControllerDevice, string name)
         {
-            _appRoot = appRoot;
+            _appRoot = MeadowApp.Current;
             _servoControllerDevice = servoControllerDevice;
             _name = name;
         }
@@ -38,9 +38,9 @@ namespace Servos
 
         public virtual void Init(int panPwmPort, int tiltPwmPort, ServoType servoType = ServoType.SG90)
         {
-            servoPan = new TinkerServoBase(_appRoot, _servoControllerDevice, panPwmPort, servoType, null, null, "Pan");
+            servoPan = new TinkerServoBase(_servoControllerDevice, panPwmPort, servoType, null, null, "Pan");
             servoPan.InitServo();
-            servoTilt = new TinkerServoBase(_appRoot, _servoControllerDevice, tiltPwmPort, servoType, null, null, "Tilt");
+            servoTilt = new TinkerServoBase(_servoControllerDevice, tiltPwmPort, servoType, null, null, "Tilt");
             servoTilt.InitServo();
 
             _appRoot.DebugDisplayText("PanTilt " + Name + " registered and ready on ports " + panPwmPort + " and " + tiltPwmPort);

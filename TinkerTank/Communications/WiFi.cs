@@ -26,10 +26,10 @@ namespace Communications
         MapleServer server;
         F7Micro _device;
 
-        public WiFiComms(F7Micro device, MeadowApp appRoot)
+        public WiFiComms()
         {
-            _appRoot = appRoot;
-            _device = device;
+            _appRoot = MeadowApp.Current;
+            _device = MeadowApp.Device;
         }
 
         public async Task InitWiFi(string networkName, string networkPassword)

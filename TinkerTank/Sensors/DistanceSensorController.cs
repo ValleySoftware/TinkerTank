@@ -21,15 +21,15 @@ namespace TinkerTank.Sensors
 
         public Tca9548a _i2cExpander;
 
-        public DistanceSensorController(F7Micro device, MeadowApp appRoot, Tca9548a i2cExpander)
+        public DistanceSensorController(Tca9548a i2cExpander)
         {
-            appRoot.DebugDisplayText("Distance sensor controller Constructor");
+            _appRoot = MeadowApp.Current;
+            _device = MeadowApp.Device;
+
+            _appRoot.DebugDisplayText("Distance sensor controller Constructor");
             Status = ComponentStatus.UnInitialised;
 
             _i2cExpander = i2cExpander;
-
-            _appRoot = appRoot;
-            _device = device;
         }
 
         public void Init()
@@ -45,7 +45,7 @@ namespace TinkerTank.Sensors
 
         public Dist53l0 InitNewSensor(IPin LaserPin, II2cBus bus, string name, Characteristic charac)
         {
-            var sensor = new Dist53l0(MeadowApp.Device, _appRoot, LaserPin, bus, name);
+            var sensor = new Dist53l0(LaserPin, bus, name);
             sensor.AssignBluetoothCharacteristicToUpdate(charac);
             sensor.Init();
 

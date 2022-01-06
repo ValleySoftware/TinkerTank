@@ -17,10 +17,10 @@ namespace TinkerTank.MiscPeriherals
         private List<Led> LightList;
         private Led _fixedForwardLed;
 
-        public Lights(F7Micro device, MeadowApp appRoot)
+        public Lights()
         {
-            _appRoot = appRoot;
-            _device = device;
+            _appRoot = MeadowApp.Current;
+            _device = MeadowApp.Device;
 
             LightList = new List<Led>();
 

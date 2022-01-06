@@ -47,10 +47,10 @@ namespace Communications
 
         private readonly bool UseExternalAntenna = false;
 
-        public BlueTooth(F7Micro device, MeadowApp appRoot)
+        public BlueTooth()
         {
-            _appRoot = appRoot;
-            _device = device;
+            _appRoot = MeadowApp.Current;
+            _device = MeadowApp.Device;
             Status = ComponentStatus.UnInitialised;
         }
 

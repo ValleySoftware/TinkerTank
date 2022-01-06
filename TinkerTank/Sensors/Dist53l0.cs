@@ -19,9 +19,8 @@ namespace TinkerTank.Sensors
         public int UpdateIntervalInMS = 500;
         private II2cBus _bus;
 
-
-        public Dist53l0(F7Micro device, MeadowApp appRoot, IPin laserPin, II2cBus bus, string name)
-            :base(device, appRoot, name)
+        public Dist53l0(IPin laserPin, II2cBus bus, string name)
+            :base(name)
         {
             LaserPin = laserPin;
             _bus = bus;
@@ -35,7 +34,7 @@ namespace TinkerTank.Sensors
             try
             {
                 _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
-                distanceSensor = new Vl53l0x(device, _bus);
+                distanceSensor = new Vl53l0x(_device, _bus);
 
                 LaserOn();
 
@@ -79,7 +78,7 @@ namespace TinkerTank.Sensors
             {
                 if (_laserDigitaPort == null)
                 {
-                    _laserDigitaPort = device.CreateDigitalOutputPort(LaserPin);
+                    _laserDigitaPort = _device.CreateDigitalOutputPort(LaserPin);
                 }
 
                 _laserDigitaPort.State = true;

@@ -33,9 +33,9 @@ namespace Display
 
         private bool ShowDebugLogs => _appRoot.ShowDebugLogs;
 
-        public LCDDisplay_ST7789(MeadowApp appRoot)
+        public LCDDisplay_ST7789()
         {
-            _appRoot = appRoot;
+            _appRoot = MeadowApp.Current;
             _log = new List<StatusMessage>();
         }
 
