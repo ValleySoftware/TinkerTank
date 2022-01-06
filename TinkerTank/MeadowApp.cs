@@ -23,6 +23,15 @@ using Utilities.Power;
 namespace TinkerTank
 {
 
+    public class DebugLogEntry
+    {
+        public string Text { get; set; }
+        public DisplayStatusMessageTypes StatusType { get; set; }
+        public DateTimeOffset Stamp { get; set; }
+        public bool Displayed { get; set; }
+    }
+
+
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
         public Lights LightsController;
@@ -66,6 +75,8 @@ namespace TinkerTank
         private bool EnableStatusPolling = true;
 
         public bool ShowDebugLogs = true;
+
+        List<DebugLogEntry> debugMessageLog = new List<DebugLogEntry>();
 
         public MeadowApp()
         {
@@ -360,37 +371,40 @@ namespace TinkerTank
 
         public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-                //var t = new Task(() =>
-                //{
-                    Console.ForegroundColor = ConsoleColor.White;
+            var newEntry = new DebugLogEntry() { Stamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText };
 
-                    if (statusType == DisplayStatusMessageTypes.Error)
-                    {
-                        newText = String.Concat("***", " ", newText);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    }
+            debugMessageLog.Add(newEntry);
 
-                    if (statusType == DisplayStatusMessageTypes.Important)
-                    {
-                        newText = String.Concat("//", " ", newText);
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                    }
+            var t = new Task(() =>
+            {
+                if (newEntry.StatusType == DisplayStatusMessageTypes.Error)
+                {
+                    Console.Write(String.Concat("***", " ", newEntry.Text));
+                }
 
-                    Console.WriteLine(newText);
+                if (newEntry.StatusType == DisplayStatusMessageTypes.Important)
+                {
+                    Console.Write(String.Concat("//", " ", newEntry.Text));
+                }
+
+                if (newEntry.StatusType == DisplayStatusMessageTypes.Debug)
+                {
+                    Console.Write(newEntry.Text);
+                }
         
-                    if (lcd != null)
+                if (lcd != null)
+                {
+                    try
                     {
-                        try
-                        {
-                            lcd.AddMessage(newText, statusType);
-                        }
-                        catch (Exception)
-                        {
-                            //Display add process went through,but not talking.  Is it plugged in?
-                        }
+                        lcd.AddMessage(newEntry.Text, newEntry.StatusType);
                     }
-                    //});
-                //t.Start();
+                    catch (Exception)
+                    {
+                        //Display add process went through,but not talking.  Is it plugged in?
+                    }
+                }
+            });
+            t.Start();
         }
     }
 }
