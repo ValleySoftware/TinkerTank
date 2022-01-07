@@ -114,32 +114,16 @@ namespace Servos
             }
         }
 
-        public void Move(PanTiltAxis axis, Angle? destinationAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public void Move(Angle? newPanAngle, Angle? newTiltAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
-            TinkerServoBase servoToUse = null;
-
-            if (axis == PanTiltAxis.pan)
-            {
-                servoToUse = servoPan;
-
-                if (destinationAngle == null)
-                {
-                    destinationAngle = DefaultPan;
-                }
-            }
-            else
-            {
-                servoToUse = servoTilt;
-
-                if (destinationAngle == null)
-                {
-                    destinationAngle = DefaultTilt;
-                }
-            }
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
+                if (newPanAngle != null)
+                {
+                    servoPan.a
+                }
 
                 StopRequested = false;
 

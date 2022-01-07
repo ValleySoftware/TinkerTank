@@ -25,6 +25,7 @@ namespace TinkerTank
 
     public class DebugLogEntry
     {
+        public int Index { get; set; }
         public string Text { get; set; }
         public DisplayStatusMessageTypes StatusType { get; set; }
         public DateTimeOffset RecordedStamp { get; set; }
@@ -372,7 +373,7 @@ namespace TinkerTank
 
         public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
         {
-            var newEntry = new DebugLogEntry() { RecordedStamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText };
+            var newEntry = new DebugLogEntry() { RecordedStamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText, Index = debugMessageLog.Count };
 
             debugMessageLog.Add(newEntry);
 
@@ -380,12 +381,12 @@ namespace TinkerTank
             {
                 if (newEntry.StatusType == DisplayStatusMessageTypes.Error)
                 {
-                    Console.Write(String.Concat("***", " ", newEntry.Text));
+                    Console.WriteLine(String.Concat("*** (", newEntry.Index, ") ", newEntry.Text));
                 }
 
                 if (newEntry.StatusType == DisplayStatusMessageTypes.Important)
                 {
-                    Console.Write(String.Concat("//", " ", newEntry.Text));
+                    Console.WriteLine(String.Concat("// (", newEntry.Index, ") ", newEntry.Text));
                 }
 
                 if (
@@ -393,7 +394,7 @@ namespace TinkerTank
                     ShowDebugLogs
                     )
                 {
-                    Console.Write(newEntry.Text);
+                    Console.WriteLine(String.Concat("(", newEntry.Index, ") ", newEntry.Text));
                 }
         
                 if (lcd != null)
