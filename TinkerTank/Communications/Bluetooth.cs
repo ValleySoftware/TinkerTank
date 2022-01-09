@@ -21,8 +21,8 @@ namespace Communications
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
 
-        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights};
-        private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance, UUIDLights };
+        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights, Logging};
+        //private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance, UUIDLights };
 
         private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
@@ -32,6 +32,7 @@ namespace Communications
         private const string UUIDForwardDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
         private const string UUIDPanTiltDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5107";
         private const string UUIDLights = @"017e99d6-8a61-11eb-8dcd-0242ac1a5108";
+        private const string UUIDLogging = @"017e99d6-8a61-11eb-8dcd-0242ac1a5109";
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
@@ -43,6 +44,7 @@ namespace Communications
         public CharacteristicString charForwardDistance;
         public CharacteristicString charPanTiltDistance;
         public CharacteristicString charLights;
+        public CharacteristicString charLogging;
         F7Micro _device;
 
         private readonly bool UseExternalAntenna = false;
@@ -124,7 +126,7 @@ namespace Communications
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload + " - Error details " + ex.Message, DisplayStatusMessageTypes.Error);
             }
         }
 
@@ -257,7 +259,8 @@ namespace Communications
                     charPanSweep,
                     charForwardDistance,
                     charPanTiltDistance,
-                    charLights
+                    charLights,
+                    charLogging
                     );
 
             foreach (var element in primaryControlService.Characteristics)
@@ -349,6 +352,14 @@ namespace Communications
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
                             descriptors: new Descriptor(UUIDLights, CharacteristicsNames.Lights.ToString())
+                            );
+            charLogging = new CharacteristicCollection(
+                            name: CharacteristicsNames.Logging.ToString(),
+                            uuid: UUIDLogging,
+                            permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
+                            properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
+                            maxLength: 12,
+                            descriptors: new Descriptor(UUIDLogging, CharacteristicsNames.Logging.ToString())
                             );
         }
 

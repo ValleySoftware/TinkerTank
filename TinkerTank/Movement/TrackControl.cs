@@ -250,11 +250,12 @@ namespace Peripherals
 
         private void BreakAndHold(bool smoothPowerTranstion = false)
         {
-            try { 
-            StopRequested = true;
+            try 
+            { 
+                StopRequested = true;
 
-            motorLeft.IsNeutral = false;
-            motorRight.IsNeutral = false;
+                motorLeft.IsNeutral = false;
+                motorRight.IsNeutral = false;
 
             //float powerSetting = 0;
 
@@ -271,7 +272,7 @@ namespace Peripherals
                 //Thread.Sleep(100);
             //}
 
-            Status = ComponentStatus.Ready;
+                Status = ComponentStatus.Ready;
 
             }
             catch (Exception)
@@ -309,7 +310,7 @@ namespace Peripherals
                         Convert.ToInt32(_appRoot.distController.FixedFrontDistance.SensorValue) < 50)
                     {
                         StopRequested = true;
-                        _appRoot.DebugDisplayText("SafeStop due to distance", DisplayStatusMessageTypes.Debug);
+                        _appRoot.DebugDisplayText("SafeStop due to distance", DisplayStatusMessageTypes.Important);
                     }
 
                     if (StopRequested)
@@ -317,6 +318,7 @@ namespace Peripherals
                         Stop();
                         break;
                     }
+
                     motorLeft.Power = powerSetting * leftReverseMotorOrientationMultiplier;
                     motorRight.Power = powerSetting * rightReverseMotorOrientationMultiplier;
                     powerSetting = powerSetting + (float)0.2;

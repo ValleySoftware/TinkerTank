@@ -24,7 +24,6 @@ namespace TinkerTank.Sensors
         {
             LaserPin = laserPin;
             _bus = bus;
-
         }
 
         public void Init()
@@ -66,7 +65,9 @@ namespace TinkerTank.Sensors
             {
                 return;
             }
+
             SensorValue = Convert.ToInt32(Math.Round(e.New.Millimeters));
+
             //_appRoot.DebugDisplayText($"{Name} - {SensorValue}mm", DisplayStatusMessageTypes.Debug);
 
             //LaserOff();
