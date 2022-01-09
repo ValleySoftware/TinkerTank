@@ -151,8 +151,7 @@ namespace Communications
 
                     _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
 
-                        _appRoot.panTiltSensorCombo.Move(PanTiltAxis.pan, new Angle(pan), speed);
-                        _appRoot.panTiltSensorCombo.Move(PanTiltAxis.tilt , new Angle(tilt), speed);
+                        _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
                 }
             }
             catch (Exception decipherPanTiltEx)

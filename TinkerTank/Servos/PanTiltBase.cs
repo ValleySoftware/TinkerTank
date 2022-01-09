@@ -114,74 +114,124 @@ namespace Servos
             }
         }
 
-        public void Move(Angle? newPanAngle, Angle? newTiltAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
+        public void Move(Angle? destinationPanAngle, Angle? destinationTiltAngle, ServoMovementSpeed movementSpeed = ServoMovementSpeed.Flank)
         {
 
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
-                if (newPanAngle != null)
-                {
-                    servoPan.a
-                }
 
                 StopRequested = false;
 
                     Status = ComponentStatus.Action;
-                    _appRoot.DebugDisplayText("Pan Running");
+                    _appRoot.DebugDisplayText("Pan/Tilt Running");
 
-                    if (movementSpeed == ServoMovementSpeed.Stop)
+                if (movementSpeed == ServoMovementSpeed.Stop)
+                {
+                    StopRequested = true;
+                }
+                else
+                {
+                    if (movementSpeed == ServoMovementSpeed.Flank)
                     {
-                        StopRequested = true;
+                        _appRoot.DebugDisplayText("Pan speed flank");
+
+                        if (destinationPanAngle != null)
+                        {
+                            servoPan.SafeIshRotate(destinationPanAngle);
+                        }
+
+                        if (destinationTiltAngle != null)
+                        {
+                            servoTilt.SafeIshRotate(destinationTiltAngle);
+                        }
+
+                        _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
                     }
                     else
                     {
-                        if (movementSpeed == ServoMovementSpeed.Flank)
-                        {
-                            _appRoot.DebugDisplayText("Pan speed flank");
-                            servoToUse.SafeIshRotate(destinationAngle);
-                            _appRoot.DebugDisplayText("Pan at flank finished");
-                        }
-                        else
-                        {                            
-                            int millisecondDelay = 0;
+                        int millisecondDelay = 0;
 
-                            switch (movementSpeed)
+                        switch (movementSpeed)
+                        {
+                            case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
+                            case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
+                            case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
+                            default: millisecondDelay = 250; break;
+                        }
+
+                        Angle? panStepPos = new Angle(CurrentPanPosition.Value.Degrees);
+                        Angle? tiltStepPos = new Angle(CurrentTiltPosition.Value.Degrees);
+
+                        _appRoot.DebugDisplayText(
+                                "servo move from " +
+                                panStepPos.Value.Degrees +
+                                "/" +
+                                tiltStepPos.Value.Degrees +
+                                " to " +
+                                destinationPanAngle.Value.Degrees +
+                                "/" +
+                                destinationTiltAngle.Value.Degrees +
+                                " with " +
+                                millisecondDelay);
+
+                        bool continuePanLooping = true;
+                        bool continueTiltLooping = true;
+                        var panIncriment = 1;
+                        var tiltIncriment = 1;
+
+                        if (panStepPos.Value.Degrees < destinationPanAngle.Value.Degrees)
+                        {
+                            panIncriment = -1;
+                        }
+
+                        if (tiltStepPos.Value.Degrees < destinationTiltAngle.Value.Degrees)
+                        {
+                            tiltIncriment = -1;
+                        }
+
+                        while (
+                            continuePanLooping ||
+                            continueTiltLooping)
+                        {
+                            double panMoveResult = -1;
+                            double tiltMoveResult = -1;
+
+                            if (Math.Round(panStepPos.Value.Degrees) != Math.Round(destinationPanAngle.Value.Degrees))
                             {
-                                case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
-                                case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
-                                case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
-                                default: millisecondDelay = 250; break;
+                                panStepPos = new Angle(panStepPos.Value.Degrees + panIncriment);
+                                panMoveResult = servoPan.SafeIshRotate(panStepPos);
+                            }
+                            else
+                            {
+                                continuePanLooping = false;
                             }
 
-                            Angle? stepPos = new Angle(CurrentPanPosition.Value.Degrees);
+                            if (Math.Round(tiltStepPos.Value.Degrees) != Math.Round(destinationTiltAngle.Value.Degrees))
+                            {
+                                tiltStepPos = new Angle(tiltStepPos.Value.Degrees + tiltIncriment);
+                                tiltMoveResult = servoPan.SafeIshRotate(tiltStepPos);
+                            }
+                            else
+                            {
+                                continueTiltLooping = false;
+                            }
 
-                            _appRoot.DebugDisplayText("servo move from " + stepPos.Value.Degrees + " to " + destinationAngle.Value.Degrees + " with " + millisecondDelay);
+                            Thread.Sleep(millisecondDelay);
 
-                        var incriment = 1;
-
-                        if (stepPos.Value.Degrees < destinationAngle.Value.Degrees)
-                        {
-                            incriment = -1;
+                            if (StopRequested ||
+                                panMoveResult == -1 ||
+                                tiltMoveResult == -1)
+                            {
+                                break;
+                            }
                         }
 
-                                while (Math.Round(stepPos.Value.Degrees) != Math.Round(destinationAngle.Value.Degrees))
-                                {
-                                    stepPos = new Angle(stepPos.Value.Degrees + incriment);
-                                    var servoMovedTo = servoToUse.SafeIshRotate(stepPos);
-                                    Thread.Sleep(millisecondDelay);
-
-                                    if (StopRequested ||
-                                        servoMovedTo == -1)
-                                    {
-                                        break;
-                                    }
-                                }
-                        }
                     }
                     Status = ComponentStatus.Ready;
 
-                UpdateBleValue();
+                    UpdateBleValue();
+                }
             }
         }
 
@@ -216,15 +266,16 @@ namespace Servos
 
                     _appRoot.DebugDisplayText("Pan to Min (" + servoPan.MinAngle.Value.Degrees + ")");
 
-                    Move( PanTiltAxis.pan, servoPan.MinAngle, speed);
+                    Move(servoPan.MinAngle, servoTilt.CurrentAngle, speed);
 
                     if (StopRequested)
                     {
                         break;
                     }
+
                     _appRoot.DebugDisplayText("Pan to Max (" + servoPan.MaxAngle.Value.Degrees + ")");
 
-                    Move(PanTiltAxis.pan ,servoPan.MaxAngle, speed);
+                    Move(servoPan.MaxAngle, servoTilt.CurrentAngle, speed);
 
                     if (StopRequested)
                     {
@@ -239,8 +290,7 @@ namespace Servos
         {
             //var t = Task.Run(() =>
             //{
-                Move(PanTiltAxis.pan, DefaultPan);
-                Move(PanTiltAxis.tilt, DefaultTilt);
+                Move(DefaultPan, DefaultTilt);
                 UpdateBleValue();
             //});
         }
