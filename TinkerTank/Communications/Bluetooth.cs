@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinkerTank;
+using TinkerTank.Data;
 
 namespace Communications
 {
@@ -361,6 +362,7 @@ namespace Communications
                             case "ForwardDistance": RequestFrontDistanceUpdate(); break;
                             case "PanTiltDistance": RequestPanTiltDistanceUpdate(); break;
                             case "Lights": RequestLights(payload); break;
+                            case "Logging": RequestLogUpdate(payload); break;
                             default: RequestStop(); break;
                         }
 
@@ -377,6 +379,19 @@ namespace Communications
             }
 
             _appRoot.DebugDisplayText("BT receivers registered", LogStatusMessageTypes.Information);
+        }
+
+        private void RequestLogUpdate(string payload)
+        {
+            try
+            {
+                UpdateCharacteristicValue(charLogging, _appRoot.Logger.CurrentLog.Text);
+            }
+            catch (Exception ex)
+            {
+                Status = ComponentStatus.Error;
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+            }
         }
 
         private void RequestLights(string payload)
@@ -426,11 +441,24 @@ namespace Communications
             {
                 if (charToUpdate is CharacteristicString)
                 {
-                    var s = Convert.ToString(newValue);
-
-                    if (s.Length <= charToUpdate.MaxLength)
+                    string s = null;
+                    if (newValue is string)
                     {
-                        UpdateCharacteristicValue(charToUpdate, newValue);
+                        s = Convert.ToString(newValue);
+                    }
+                    if (newValue is DebugLogEntryModel)
+                    {
+                        s = ((DebugLogEntryModel)newValue).Text.ToString();
+                    }
+
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        if (s.Length >= charToUpdate.MaxLength)
+                        {
+                            s = s.Substring(0, charToUpdate.MaxLength - 1);
+                        }
+
+                        UpdateCharacteristicValue(charToUpdate, s);
                     }
                 }
                 else

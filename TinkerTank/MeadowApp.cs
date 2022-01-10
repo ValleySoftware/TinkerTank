@@ -322,7 +322,7 @@ namespace TinkerTank
         {
             if (Logger != null)
             {
-                Logger.Log(newText, statusType);
+                Logger.AddLogEntry(newText, statusType);
             }
         }
     }

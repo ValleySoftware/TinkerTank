@@ -14,6 +14,7 @@ namespace TinkerTank.Data
     {
         private DataStore dbcon;
         private LCDDisplay_ST7789 lcd;
+        private DebugLogEntryModel _currentLog;
 
         public void Init(DataStore con)
         {
@@ -26,8 +27,8 @@ namespace TinkerTank.Data
             {
                 try
                 {
-                    Log("start lcd", LogStatusMessageTypes.Important);
-                    lcd = new LCDDisplay_ST7789();
+                    AddLogEntry("start lcd", LogStatusMessageTypes.Important);
+                    lcd = new LCDDisplay_ST7789(this);
                     lcd.Init();
                 }
                 catch (Exception)
@@ -37,7 +38,20 @@ namespace TinkerTank.Data
             }
         }
 
-        public void Log(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
+        public DebugLogEntryModel CurrentLog
+        {
+            get => _currentLog;
+            set
+            {
+                _currentLog = value;
+                if (lcd != null)
+                {
+                    lcd.ShowCurrentLog();
+                }
+            }
+        }
+
+        public void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
         {
             if (dbcon != null)
             {
@@ -74,20 +88,11 @@ namespace TinkerTank.Data
                         Console.WriteLine(String.Concat("(", newEntry.ID, ") ", newEntry.Text));
                     }
 
+                    _appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
+
                     if (lcd != null)
                     {
-                        try
-                        {
-                            if (lcd.AddMessage(newEntry.Text, newEntry.StatusType))
-                            {
-                                newEntry.Displayed = true;
-                                if (dbcon != null)
-                                {
-                                    dbcon.UpsertDebugLogEntry(newEntry);
-                                }
-                            }
-                        }
-                        catch (Exception) { };
+                        lcd.CurrentLog = newEntry;  
                     }
                 });
                 t.Start();
