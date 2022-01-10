@@ -33,18 +33,18 @@ namespace TinkerTank.MiscPeriherals
 
             try
             {
-                _appRoot.DebugDisplayText("LED init method started.", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("LED init method started.", LogStatusMessageTypes.Debug);
 
                 _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
                 LightList.Add(_fixedForwardLed);
                 LEDOn(_fixedForwardLed, false);
 
-                _appRoot.DebugDisplayText("LED init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("LED init method complete, setting ready.", LogStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("LED error: " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("LED error: " + ex.Message, LogStatusMessageTypes.Error);
                 Status = ComponentStatus.Error;
             }
 
@@ -56,7 +56,7 @@ namespace TinkerTank.MiscPeriherals
             //lightIdentifier-newOnValue
             //00-000-00000
 
-            _appRoot.DebugDisplayText("LED request: " + payload, DisplayStatusMessageTypes.Error);
+            _appRoot.DebugDisplayText("LED request: " + payload, LogStatusMessageTypes.Error);
 
             var sp = payload.Split("-");
 

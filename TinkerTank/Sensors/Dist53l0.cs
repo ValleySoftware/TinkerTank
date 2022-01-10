@@ -7,7 +7,6 @@ using Meadow.Gateways.Bluetooth;
 using Meadow.Hardware;
 using System;
 using System.Threading;
-using static Meadow.Foundation.Sensors.Distance.Vl53l0x;
 
 namespace TinkerTank.Sensors
 {
@@ -32,17 +31,17 @@ namespace TinkerTank.Sensors
             
             try
             {
-                _appRoot.DebugDisplayText("dist sensor init method started.", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("dist sensor init method started.", LogStatusMessageTypes.Debug);
                 distanceSensor = new Vl53l0x(_device, _bus);
 
                 LaserOn();
 
-                _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", LogStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("dist " + Name + " - " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("dist " + Name + " - " + ex.Message, LogStatusMessageTypes.Error);
                 Status = ComponentStatus.Error;
             }
 
@@ -68,7 +67,7 @@ namespace TinkerTank.Sensors
 
             SensorValue = Convert.ToInt32(Math.Round(e.New.Millimeters));
 
-            //_appRoot.DebugDisplayText($"{Name} - {SensorValue}mm", DisplayStatusMessageTypes.Debug);
+            //_appRoot.DebugDisplayText($"{Name} - {SensorValue}mm", LogStatusMessageTypes.Debug);
 
             //LaserOff();
         }

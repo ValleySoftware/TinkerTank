@@ -52,9 +52,9 @@ namespace Communications
             _appRoot.DebugDisplayText($"Connected. IP: {MeadowApp.Device.WiFiAdapter.IpAddress}");
 
 
-            _appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("Toggling on the external antenna.", LogStatusMessageTypes.Debug);
             _device.SetAntenna(AntennaType.External);
-            _appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("External antenna enabled.", LogStatusMessageTypes.Debug);
 
             // create our maple web server
             server = new MapleServer(
@@ -65,7 +65,7 @@ namespace Communications
             _appRoot.DebugDisplayText("wifi initialised.");
 
             server.Start();
-            _appRoot.DebugDisplayText("wifi online.", DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("wifi online.", LogStatusMessageTypes.Important);
         }
 
         [HttpGet]

@@ -10,10 +10,13 @@ using Meadow.Hardware;
 using Meadow.Units;
 using Peripherals;
 using Servos;
+using SQLite;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using TinkerTank.Abstractions;
+using TinkerTank.Data;
 using TinkerTank.MiscPeriherals;
 using TinkerTank.Movement;
 using TinkerTank.Sensors;
@@ -23,17 +26,6 @@ using Utilities.Power;
 namespace TinkerTank
 {
 
-    public class DebugLogEntry
-    {
-        public int Index { get; set; }
-        public string Text { get; set; }
-        public DisplayStatusMessageTypes StatusType { get; set; }
-        public DateTimeOffset RecordedStamp { get; set; }
-        public bool Displayed { get; set; }
-        public bool Transmitted { get; set; }
-        public DateTimeOffset? TransmittedStamp { get; set; }
-    }
-
 
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
@@ -41,8 +33,6 @@ namespace TinkerTank
 
         public MovementAbstractions movementController;
         public PowerControl powerController;
-
-        public LCDDisplay_ST7789 lcd;
 
         public BlueTooth communications;
 
@@ -72,14 +62,16 @@ namespace TinkerTank
 
         private bool EnableDistanceSensors = true;
         private bool EnablePanTiltSensors = true;
-        private bool EnableDisplay = false;
+        public bool EnableDisplay = false;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
         private bool EnableStatusPolling = true;
 
         public bool ShowDebugLogs = true;
 
-        List<DebugLogEntry> debugMessageLog = new List<DebugLogEntry>();
+        public Logging Logger;
+
+        public DataStore dbcon;
 
         public MeadowApp()
         {
@@ -91,7 +83,7 @@ namespace TinkerTank
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), DisplayStatusMessageTypes.Error);
+            DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), LogStatusMessageTypes.Error);
         }
 
         private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
@@ -101,40 +93,45 @@ namespace TinkerTank
 
         void Init()
         {
+
             try
             {
-                TBObjects = new List<TinkerBase>();
-
-                //InitialisePinRegister();
-
                 //BIOS
-                
+                DebugDisplayText("Init onboard Meadow lights", LogStatusMessageTypes.Important);
                 blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
                 greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
                 redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
+            }
+            catch (Exception)
+            {
+                //very bad
+            }
+
+            try
+            {
+                //Initialise the database, logger and LCD(if appropriate);
+                DebugDisplayText("Init DB Logger, and screen", LogStatusMessageTypes.Important);
+                dbcon = new DataStore();
+                dbcon.InitDB();
+
+                Logger = new Logging();
+                Logger.Init(dbcon);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            try
+            { 
+                TBObjects = new List<TinkerBase>();
 
                 //Communications and control
 
-                DebugDisplayText("start communications controller", DisplayStatusMessageTypes.Important);
+                DebugDisplayText("start communications controller", LogStatusMessageTypes.Important);
                 communications = new BlueTooth();
                 TBObjects.Add(communications);
                 communications.Init();
-
-                //Display
-                if (EnableDisplay)
-                {
-                    try
-                    {
-                        DebugDisplayText("start lcd", DisplayStatusMessageTypes.Important);
-                        lcd = new LCDDisplay_ST7789();
-                        TBObjects.Add(lcd);
-                        lcd.Init();
-                    }
-                    catch (Exception)
-                    {
-
-                    }
-                }
 
                 //I2C
 
@@ -158,7 +155,7 @@ namespace TinkerTank
 
                 if (EnablePCA9685)
                 {
-                    DebugDisplayText("start pca9685", DisplayStatusMessageTypes.Important);
+                    DebugDisplayText("start pca9685", LogStatusMessageTypes.Important);
                     i2CPWMController = new PCA9685(primaryi2CBus);
                     TBObjects.Add(i2CPWMController);
                     i2CPWMController.Init();
@@ -166,14 +163,14 @@ namespace TinkerTank
 
                 //Movement and power    
 
-                DebugDisplayText("start power controller", DisplayStatusMessageTypes.Important);
+                DebugDisplayText("start power controller", LogStatusMessageTypes.Important);
                 powerController = new PowerControl(this);
                 TBObjects.Add(powerController);
                 powerController.Init(Device.Pins.D10);
 
                 DebugDisplayText("start motor controller");
                 movementController = new MovementAbstractions();
-                TBObjects.Add((TinkerBase)movementController);
+                TBObjects.Add(movementController);
 
                 movementController.Init(
                     Device.Pins.D13, Device.Pins.D12, Device.Pins.D11,
@@ -185,7 +182,7 @@ namespace TinkerTank
                     {
                         DebugDisplayText("Start Arm");
                         Arm = new ArmControl(i2CPWMController);
-                        TBObjects.Add((TinkerBase)Arm);
+                        TBObjects.Add(Arm);
                         Arm.Init();
 
                     }
@@ -194,7 +191,7 @@ namespace TinkerTank
                 }   
 
 
-                DebugDisplayText("Begining Camera and Sensor init", DisplayStatusMessageTypes.Important);
+                DebugDisplayText("Begining Camera and Sensor init", LogStatusMessageTypes.Important);
                 //Camera and Sensor
 
                 if (EnablePanTiltSensors)
@@ -214,7 +211,7 @@ namespace TinkerTank
                     }
                     catch (Exception e)
                     {
-                        DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, DisplayStatusMessageTypes.Error);
+                        DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, LogStatusMessageTypes.Error);
                     }
                 }
 
@@ -234,18 +231,18 @@ namespace TinkerTank
 
                 if (EnableStatusPolling)
                 {
-                    DebugDisplayText("Begining regular polling", DisplayStatusMessageTypes.Important);
+                    DebugDisplayText("Begining regular polling", LogStatusMessageTypes.Important);
                     _statusPoller = new System.Timers.Timer(2000);
                     _statusPoller.Elapsed += _statusPoller_Elapsed;
                     _statusPoller.AutoReset = true;
                     _statusPoller.Enabled = true;
                 }
 
-                DebugDisplayText("Startup Complete", DisplayStatusMessageTypes.Important);
+                DebugDisplayText("Startup Complete", LogStatusMessageTypes.Important);
             }
             catch (Exception iex)
             {
-                DebugDisplayText("Main Init Exception: " + iex.Message, DisplayStatusMessageTypes.Error);
+                DebugDisplayText("Main Init Exception: " + iex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -282,7 +279,7 @@ namespace TinkerTank
                         case AutomaticErrorResponse.DisableMotorPower: try { powerController.Disconnect(); } catch (Exception) { }; break;
                     }
 
-                    DebugDisplayText(element.GetType().ToString() + " inopperable.  : ", DisplayStatusMessageTypes.Error);
+                    DebugDisplayText(element.GetType().ToString() + " inopperable.  : ", LogStatusMessageTypes.Error);
                     
                     break;
                 }
@@ -303,15 +300,15 @@ namespace TinkerTank
                 {
                     case ComponentStatus.Error:
                         redLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Error);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), LogStatusMessageTypes.Error);
                         break;
                     case ComponentStatus.Action:
                         blueLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), LogStatusMessageTypes.Important);
                         break;
                     case ComponentStatus.Ready:
                         greenLED.State = true;
-                        DebugDisplayText("Status set to: " + newStatus.ToString(), DisplayStatusMessageTypes.Important);
+                        DebugDisplayText("Status set to: " + newStatus.ToString(), LogStatusMessageTypes.Important);
                         break;
                     default:
                         break;
@@ -321,92 +318,12 @@ namespace TinkerTank
             }
         }
 
-        public void NextDebugMessage()
+        public void DebugDisplayText(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
         {
-            if (lcd != null && lcd.Log.Count > 0)
+            if (Logger != null)
             {
-                var oldIndex = lcd.Log.IndexOf(lcd.CurrentLog);
-
-                if (oldIndex >= 0)
-                {
-                    ShowDebugMessage(oldIndex - 1);
-                }
+                Logger.Log(newText, statusType);
             }
-        }
-
-        public void PreviousDebugMessage()
-        {
-            if (lcd != null && lcd.Log.Count > 0)
-            {
-                var oldIndex = lcd.Log.IndexOf(lcd.CurrentLog);
-
-                if  (oldIndex >= 0)
-                {
-                    ShowDebugMessage(oldIndex + 1);
-                }
-            }
-        }
-
-        public void FirstMessage()
-        {
-            if (lcd != null && lcd.Log.Count > 0)
-            {
-                lcd.CurrentLog = lcd.Log[lcd.Log.Count - 1];
-            }
-        }
-
-        public void LastMessage()
-        {
-            if (lcd != null && lcd.Log.Count > 0)
-            {
-                lcd.CurrentLog = lcd.Log[0];
-            }
-        }
-
-        public void ShowDebugMessage(int messageIndex)
-        {
-            if (lcd != null && lcd.Log.Count > messageIndex)
-            {
-
-            }
-        }
-
-        public void DebugDisplayText(string newText, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
-        {
-            var newEntry = new DebugLogEntry() { RecordedStamp = DateTimeOffset.Now, Displayed = false, StatusType = statusType, Text = newText, Index = debugMessageLog.Count };
-
-            debugMessageLog.Add(newEntry);
-
-            var t = new Task(() =>
-            {
-                if (newEntry.StatusType == DisplayStatusMessageTypes.Error)
-                {
-                    Console.WriteLine(String.Concat("*** (", newEntry.Index, ") ", newEntry.Text));
-                }
-
-                if (newEntry.StatusType == DisplayStatusMessageTypes.Important)
-                {
-                    Console.WriteLine(String.Concat("// (", newEntry.Index, ") ", newEntry.Text));
-                }
-
-                if (
-                    newEntry.StatusType == DisplayStatusMessageTypes.Debug &&
-                    ShowDebugLogs
-                    )
-                {
-                    Console.WriteLine(String.Concat("(", newEntry.Index, ") ", newEntry.Text));
-                }
-        
-                if (lcd != null)
-                {
-                    try
-                    {
-                        lcd.AddMessage(newEntry.Text, newEntry.StatusType);
-                    }
-                    catch (Exception) { };
-                }
-            });
-            t.Start();
         }
     }
 }

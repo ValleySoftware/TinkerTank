@@ -14,12 +14,14 @@ namespace TinkerTank.Sensors
         private Characteristic _characteristic;
         private object _sensorValue;
         private DateTimeOffset _lastBleUpdate;
+        private TimeSpan _minimumInterval;
 
         public BLESensorBase(string name)
         {
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
             _name = name;
+            _minimumInterval = TimeSpan.FromSeconds(1);
         }
 
         public string Name
@@ -38,11 +40,10 @@ namespace TinkerTank.Sensors
 
         public void UpdateBleValue(object newValue)
         {
-            if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > TimeSpan.FromSeconds(3))
+            if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > _minimumInterval)
             {
                 try
                 {
-
                     if (_characteristic != null)
                     {
                         if (newValue == null)
@@ -51,8 +52,8 @@ namespace TinkerTank.Sensors
                         }
 
                         _lastBleUpdate = DateTimeOffset.Now;
-                        _characteristic.SetValue(Convert.ToString(newValue));
-                        //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
+
+                        _appRoot.communications.UpdateCharacteristicValue(_characteristic, Convert.ToString(newValue));                        
                     }
                 }
                 catch (Exception)

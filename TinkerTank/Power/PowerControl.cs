@@ -36,7 +36,7 @@ namespace Utilities.Power
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Power Init Failed - " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Power Init Failed - " + ex.Message, LogStatusMessageTypes.Error);
                 ErrorEncountered();
             }
 
@@ -70,7 +70,7 @@ namespace Utilities.Power
             }
             catch (Exception e)
             {
-                _appRoot.DebugDisplayText("Power Test Failed - " + e.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Power Test Failed - " + e.Message, LogStatusMessageTypes.Error);
                 ErrorEncountered();
             }
         }
@@ -80,12 +80,12 @@ namespace Utilities.Power
             try
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("Power ErrorEncountered method triggered", DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Power ErrorEncountered method triggered", LogStatusMessageTypes.Error);
                 Disconnect();
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Power Safety Disconnect Failed - " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Power Safety Disconnect Failed - " + ex.Message, LogStatusMessageTypes.Error);
             }
         }
     }

@@ -31,6 +31,7 @@
 	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.37" />
 	  <PackageReference Include="Meadow.Foundation.ServoCore" Version="0.8.40" />
 	  <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.4.0" />
+	  <PackageReference Include="sqlite-net-static" Version="1.8.116" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Secrets.Designer.cs">

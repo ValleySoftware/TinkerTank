@@ -77,30 +77,30 @@ namespace TinkerTank.Servos
 
         public double SafeIshRotate(Angle? desiredAngle)
         {
-            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Action;
 
             double result = -1;
 
-            _appRoot.DebugDisplayText(Name + " - safeishrotate prep", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - safeishrotate prep", LogStatusMessageTypes.Debug);
 
             //bool Completed = false;
-            _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), LogStatusMessageTypes.Important);
 
             //var oldAngle = _servo.Angle;
-            //_appRoot.DebugDisplayText(Name + " - safeishrotate old angle = " + oldAngle.Value.Degrees, DisplayStatusMessageTypes.Debug);
+            //_appRoot.DebugDisplayText(Name + " - safeishrotate old angle = " + oldAngle.Value.Degrees, LogStatusMessageTypes.Debug);
 
             //Try changing this to Thread rather than Task???            
             //var rotateTask = Task.Run(() =>
             //{
-                _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
                 _servo.RotateTo(desiredAngle.Value);
             //});
 
             /*
             var monitorTask = Task.Run(async () =>
             {
-                _appRoot.DebugDisplayText(Name + " - safeishrotate monitor thread started", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText(Name + " - safeishrotate monitor thread started", LogStatusMessageTypes.Debug);
 
                 while (!Completed)
                 {
@@ -112,26 +112,26 @@ namespace TinkerTank.Servos
                         _servo.Stop();
                         result = _servo.Angle.Value.Degrees;
                         Status = ComponentStatus.Ready;
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate success", DisplayStatusMessageTypes.Important);
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate success", LogStatusMessageTypes.Important);
                     }
 
                     if (oldAngle == _servo.Angle)
                     {
                         Completed = true;
                         _servo.Stop();
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete", DisplayStatusMessageTypes.Important);
+                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete", LogStatusMessageTypes.Important);
                         //Status = Enumerations.ComponentStatus.Error;
                         result = -1;
 
                         if (desiredAngle.Value.Degrees < _servo.Angle.Value.Degrees)
                         {
                             SetNewMinimum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, DisplayStatusMessageTypes.Important);
+                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
                         }
                         else
                         {
                             SetNewMaximum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees, DisplayStatusMessageTypes.Important);
+                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
                         }
 
                     }
@@ -142,7 +142,7 @@ namespace TinkerTank.Servos
                      */
 
             result = _servo.Angle.Value.Degrees;
-            _appRoot.DebugDisplayText(Name + " - new angle is " + result, DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - new angle is " + result, LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Ready;
 
             return result;
@@ -178,7 +178,7 @@ namespace TinkerTank.Servos
             }
 
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
-            _appRoot.DebugDisplayText(Name + " (" + _servoType.ToString() + ") - instantiated on port " + _portIndex, Enumerations.DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText(Name + " (" + _servoType.ToString() + ") - instantiated on port " + _portIndex, Enumerations.LogStatusMessageTypes.Important);
 
             if (GoToDefaultOnStart)
             {

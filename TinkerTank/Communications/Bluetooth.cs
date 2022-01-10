@@ -17,23 +17,6 @@ namespace Communications
     public class BlueTooth : TinkerBase, ITinkerBase, ICommunication
     {
 
-        public const string definitionName = "BerthaDefinition";
-        public const string serviceName = "BerthaService";
-        public const ushort serviceUuid = 41;
-
-        public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights, Logging};
-        //private enum CharacteristicsUUID { UUIDStop, UUIDPanTilt, UUIDPower, UUIDAdvancedMove, UUIDPanSweep, UUIDDistance, UUIDLights };
-
-        private const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
-        private const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";
-        private const string UUIDPower = @"017e99d6-8a61-11eb-8dcd-0242ac1a5103";
-        private const string UUIDAdvancedMove = @"017e99d6-8a61-11eb-8dcd-0242ac1a5104";
-        private const string UUIDPanSweep = @"017e99d6-8a61-11eb-8dcd-0242ac1a5105";
-        private const string UUIDForwardDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5106";
-        private const string UUIDPanTiltDistance = @"017e99d6-8a61-11eb-8dcd-0242ac1a5107";
-        private const string UUIDLights = @"017e99d6-8a61-11eb-8dcd-0242ac1a5108";
-        private const string UUIDLogging = @"017e99d6-8a61-11eb-8dcd-0242ac1a5109";
-
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
         private CharacteristicInt32  charStop;
@@ -65,9 +48,9 @@ namespace Communications
                 //This kills the bluetooth process.... to be investigated
                 if (UseExternalAntenna)
                 {
-                    _appRoot.DebugDisplayText("Toggling on the external antenna.", DisplayStatusMessageTypes.Debug);
+                    _appRoot.DebugDisplayText("Toggling on the external antenna.", LogStatusMessageTypes.Debug);
                     _device.SetAntenna(AntennaType.External);
-                    _appRoot.DebugDisplayText("External antenna enabled.", DisplayStatusMessageTypes.Debug);
+                    _appRoot.DebugDisplayText("External antenna enabled.", LogStatusMessageTypes.Information);
                 }
                 PrepareCharacteristics();
 
@@ -75,10 +58,9 @@ namespace Communications
 
                 _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
-                _appRoot.DebugDisplayText("BT Service started", DisplayStatusMessageTypes.Important);
+                _appRoot.DebugDisplayText("BT Service started", LogStatusMessageTypes.Information);
 
                 PrepareCharacteristicEventHandlers();
-
 
                 Status = ComponentStatus.Ready;
             }
@@ -95,7 +77,7 @@ namespace Communications
         {
             try
             {
-                _appRoot.DebugDisplayText("Request Power received with: " + payload, DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("Request Power received with: " + payload, LogStatusMessageTypes.BLERecord);
 
                 var valueAsInt = Convert.ToInt32(payload);
 
@@ -126,7 +108,7 @@ namespace Communications
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload + " - Error details " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload + " - Error details " + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -151,15 +133,15 @@ namespace Communications
                         speed = (ServoMovementSpeed)s;
                     }
 
-                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), DisplayStatusMessageTypes.Important);
+                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), LogStatusMessageTypes.BLERecord);
 
-                        _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
+                    _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
                 }
             }
             catch (Exception decipherPanTiltEx)
             {
-                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, DisplayStatusMessageTypes.Error);
-                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
             }
         }
 
@@ -170,22 +152,21 @@ namespace Communications
 
             try
             {
+                int device = Convert.ToInt32(payload);
+                ServoMovementSpeed speed = ServoMovementSpeed.Flank;
 
-                    int device = Convert.ToInt32(payload);
-                    ServoMovementSpeed speed = ServoMovementSpeed.Flank;
+                int s = Convert.ToInt32(payload);
+                speed = (ServoMovementSpeed)s;
 
-                        int s = Convert.ToInt32(payload);
-                        speed = (ServoMovementSpeed)s;
+                _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), LogStatusMessageTypes.BLERecord);
 
-                    _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), DisplayStatusMessageTypes.Important);
-
-                        _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
+                _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
                 
             }
             catch (Exception decipherPanTiltEx)
             {
-                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, DisplayStatusMessageTypes.Error);
-                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
             }
         }
 
@@ -197,7 +178,7 @@ namespace Communications
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -220,38 +201,19 @@ namespace Communications
                 }
                 catch (Exception ex)
                 {
-                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, DisplayStatusMessageTypes.Error);
+                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, LogStatusMessageTypes.Error);
                 }
             }
         }
 
-        /*
-        public void RequestUpdatePanTiltDistance(int newDistance = -1)
-        {
-            try
-            {
-                if (newDistance == -1)
-                {
-                    newDistance = _appRoot.distController.PeriscopeDistance.DistanceInMillimeters;
-                }
-
-                charPanTiltDistance.SetValue(newDistance.ToString());
-                //_appRoot.DebugDisplayText("dist updated. " + newDistance, DisplayStatusMessageTypes.Important);
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-        */
         private void PrepareDefinition()
         {
-            _appRoot.DebugDisplayText("PrepBLEDefinitions", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("PrepBLEDefinitions", LogStatusMessageTypes.Debug);
 
             primaryControlService =
                 new Service(
-                    serviceName,
-                    serviceUuid,
+                    BLEConstants.serviceName,
+                    BLEConstants.serviceUuid,
                     charStop,
                     charPanTilt,
                     charPower,
@@ -270,17 +232,17 @@ namespace Communications
                 {
                     if (element is CharacteristicString)
                     {
-                        element.SetValue(element.Name);
+                        UpdateCharacteristicValue(element, element.Name);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _appRoot.DebugDisplayText("BLE Prepare Exception: " + ex.Message, DisplayStatusMessageTypes.Error);
+                    _appRoot.DebugDisplayText("BLE Prepare Exception: " + ex.Message, LogStatusMessageTypes.Error);
                 }
             }
 
             PrimaryControlDefinition = new Definition(
-                definitionName,
+                BLEConstants.definitionName,
                 primaryControlService
                 );
         }
@@ -288,91 +250,91 @@ namespace Communications
         private void PrepareCharacteristics()
         {
 
-            _appRoot.DebugDisplayText("PrepBLECharacturistics", DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("PrepBLECharacturistics", LogStatusMessageTypes.Information);
 
             charStop = new CharacteristicInt32(
                             name: CharacteristicsNames.Stop.ToString(),
-                            uuid: UUIDStop,
+                            uuid: BLEConstants.UUIDStop,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            descriptors: new Descriptor(UUIDStop, CharacteristicsNames.Stop.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDStop, CharacteristicsNames.Stop.ToString())
                             );
             charPanTilt = new CharacteristicString(
                             name: CharacteristicsNames.PanTilt.ToString(),
-                            uuid: UUIDPanTilt,
+                            uuid: BLEConstants.UUIDPanTilt,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDPanTilt, CharacteristicsNames.PanTilt.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDPanTilt, CharacteristicsNames.PanTilt.ToString())
                             );
             charPower = new CharacteristicString(
                             name: CharacteristicsNames.Power.ToString(),
-                            uuid: UUIDPower,
+                            uuid: BLEConstants.UUIDPower,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDPower, CharacteristicsNames.Power.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDPower, CharacteristicsNames.Power.ToString())
                             );
             charAdvancedMove = new CharacteristicString( //00-000-00000
                             name: CharacteristicsNames.AdvancedMove.ToString(),
-                            uuid: UUIDAdvancedMove,
+                            uuid: BLEConstants.UUIDAdvancedMove,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 20,
-                            descriptors: new Descriptor(UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
                             );
             charPanSweep = new CharacteristicString(
                             name: CharacteristicsNames.PanSweep.ToString(),
-                            uuid: UUIDPanSweep,
+                            uuid: BLEConstants.UUIDPanSweep,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
                             );
             charForwardDistance = new CharacteristicString(
                             name: CharacteristicsNames.ForwardDistance.ToString(),
-                            uuid: UUIDForwardDistance,
+                            uuid: BLEConstants.UUIDForwardDistance,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDForwardDistance, CharacteristicsNames.ForwardDistance.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDForwardDistance, CharacteristicsNames.ForwardDistance.ToString())
                             );
             charPanTiltDistance = new CharacteristicString(
                             name: CharacteristicsNames.PanTiltDistance.ToString(),
-                            uuid: UUIDPanTiltDistance,
+                            uuid: BLEConstants.UUIDPanTiltDistance,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDPanTiltDistance, CharacteristicsNames.PanTiltDistance.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDPanTiltDistance, CharacteristicsNames.PanTiltDistance.ToString())
                             );
             charLights = new CharacteristicString(
                             name: CharacteristicsNames.Lights.ToString(),
-                            uuid: UUIDLights,
+                            uuid: BLEConstants.UUIDLights,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(UUIDLights, CharacteristicsNames.Lights.ToString())
+                            descriptors: new Descriptor(BLEConstants.UUIDLights, CharacteristicsNames.Lights.ToString())
                             );
-            charLogging = new CharacteristicCollection(
+            charLogging = new CharacteristicString(
                             name: CharacteristicsNames.Logging.ToString(),
-                            uuid: UUIDLogging,
+                            uuid: BLEConstants.UUIDLogging,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            maxLength: 12,
-                            descriptors: new Descriptor(UUIDLogging, CharacteristicsNames.Logging.ToString())
+                            maxLength: 128,
+                            descriptors: new Descriptor(BLEConstants.UUIDLogging, CharacteristicsNames.Logging.ToString())
                             );
         }
 
         private void PrepareCharacteristicEventHandlers()
         {
-            _appRoot.DebugDisplayText("PrepBLEHandlers", DisplayStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("PrepBLEHandlers", LogStatusMessageTypes.Debug);
 
             foreach (var characteristic in primaryControlService.Characteristics)
             {
                 characteristic.ValueSet += (c, d) =>
                 {
                     
-                    _appRoot.DebugDisplayText("Received ble msg", DisplayStatusMessageTypes.Debug);
+                    _appRoot.DebugDisplayText("Received ble msg", LogStatusMessageTypes.BLERecord);
 
                     string payload = string.Empty;
 
@@ -382,10 +344,10 @@ namespace Communications
                     }
                     catch (Exception dataEx)
                     {
-                        _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, DisplayStatusMessageTypes.Debug);
+                        _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, LogStatusMessageTypes.Error);
                     }
 
-                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, DisplayStatusMessageTypes.Important);
+                    _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, LogStatusMessageTypes.BLERecord);
 
                     try
                     {      
@@ -407,14 +369,14 @@ namespace Communications
                     catch (Exception ex)
                     {
                         Status = ComponentStatus.Error;
-                        _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+                        _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
                     }
                 };
 
-                _appRoot.DebugDisplayText(characteristic.Uuid + " registered", DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText(characteristic.Uuid + " registered", LogStatusMessageTypes.Debug);
             }
 
-            _appRoot.DebugDisplayText("BT receivers registered", DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("BT receivers registered", LogStatusMessageTypes.Information);
         }
 
         private void RequestLights(string payload)
@@ -426,7 +388,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -439,7 +401,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -452,8 +414,36 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
             }
+        }
+
+        public bool UpdateCharacteristicValue(ICharacteristic charToUpdate, object newValue)
+        {
+            var success = false;
+
+            try
+            {
+                if (charToUpdate is CharacteristicString)
+                {
+                    var s = Convert.ToString(newValue);
+
+                    if (s.Length <= charToUpdate.MaxLength)
+                    {
+                        UpdateCharacteristicValue(charToUpdate, newValue);
+                    }
+                }
+                else
+                {
+                    UpdateCharacteristicValue(charToUpdate,newValue);
+                }
+            }
+            catch (FormatException fe)
+            {
+                _appRoot.DebugDisplayText(fe.Message, LogStatusMessageTypes.Error);
+            }
+
+            return success;
         }
 
         public void RefreshStatus()

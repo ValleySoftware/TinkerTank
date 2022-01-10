@@ -17,7 +17,7 @@ namespace Display
     public class StatusMessage
     {
         public string Text { get; set; }
-        public DisplayStatusMessageTypes StatusType { get; set; }
+        public LogStatusMessageTypes StatusType { get; set; }
         public DateTimeOffset TimeLogged { get; set; }
         public static List<Color> statusColours = new List<Color>() { Color.White, Color.Green, Color.Red };
     }
@@ -54,11 +54,12 @@ namespace Display
             }
         }
 
-        public void AddMessage(string textToDisplay, DisplayStatusMessageTypes statusType = DisplayStatusMessageTypes.Debug)
+        public bool AddMessage(string textToDisplay, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
         {
+            var result = false;
 
             if (ShowDebugLogs ||
-                statusType != DisplayStatusMessageTypes.Debug)
+                statusType != LogStatusMessageTypes.Debug)
             {
                 if (EnableLogging)
                 {
@@ -71,8 +72,11 @@ namespace Display
                 }
 
                 UpdateDisplay(CurrentLog);
+
+                result = true;
             }
 
+            return result;
         }
 
         private void UpdateDisplay(StatusMessage messageToShow = null)

@@ -44,7 +44,7 @@ namespace Peripherals
             {
                 _appRoot.DebugDisplayText("Init Motor Controller");
 
-                _driveMethod = DriveMethod.DualTracks;
+                _driveMethod = DriveMethod.DualDrive;
                 
                 motorLeft = new HBridgeMotor(MeadowApp.Device,
                     a1Pin: HBridge1PinA,
@@ -185,7 +185,7 @@ namespace Peripherals
                             try
                             { 
                                 await Task.Delay(TimeSpan.FromSeconds(3));
-                                _appRoot.DebugDisplayText("Backup Stop", DisplayStatusMessageTypes.Important);
+                                _appRoot.DebugDisplayText("Backup Stop", LogStatusMessageTypes.Important);
                                 StopRequested = true;
                                 Stop();
                             }
@@ -204,7 +204,7 @@ namespace Peripherals
                             await Task.Delay(movementDuration);
                             StopRequested = true;
                             Stop();
-                            _appRoot.DebugDisplayText("Timer Stop", DisplayStatusMessageTypes.Debug);
+                            _appRoot.DebugDisplayText("Timer Stop", LogStatusMessageTypes.Debug);
                             }
                             catch (Exception)
                             {
@@ -245,7 +245,7 @@ namespace Peripherals
            // }
 
             Status = ComponentStatus.Ready;
-            _appRoot.DebugDisplayText("Stop Completed", DisplayStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("Stop Completed", LogStatusMessageTypes.Important);
         }
 
         private void BreakAndHold(bool smoothPowerTranstion = false)
@@ -310,7 +310,7 @@ namespace Peripherals
                         Convert.ToInt32(_appRoot.distController.FixedFrontDistance.SensorValue) < 50)
                     {
                         StopRequested = true;
-                        _appRoot.DebugDisplayText("SafeStop due to distance", DisplayStatusMessageTypes.Important);
+                        _appRoot.DebugDisplayText("SafeStop due to distance", LogStatusMessageTypes.Important);
                     }
 
                     if (StopRequested)
@@ -341,11 +341,11 @@ namespace Peripherals
                 //testing
                 //smoothPowerTranstion = true;
 
-                _appRoot.DebugDisplayText("a - " + power, DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("a - " + power, LogStatusMessageTypes.Debug);
 
                 double useThisPower = _defaultPower * -1;
 
-                _appRoot.DebugDisplayText("b - " + useThisPower, DisplayStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("b - " + useThisPower, LogStatusMessageTypes.Debug);
 
                 useThisPower = power;
 

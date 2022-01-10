@@ -72,12 +72,12 @@ namespace TinkerTank.Movement
                 //var testservo  = new TinkerServoBase(_appRoot, _servoControllerDevice, 5, ServoType.MG996R, null, null, "Test Servo");//
                 //testservo.InitServo();                
 
-                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, LogStatusMessageTypes.Important);
                 //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MaximumAngle);
 
                 //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
 
-                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, DisplayStatusMessageTypes.Important);
+                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, LogStatusMessageTypes.Important);
                 //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MinimumAngle);
 
                 Status = Enumerations.ComponentStatus.Ready;
@@ -85,7 +85,7 @@ namespace TinkerTank.Movement
             }
             catch (Exception e)
             {
-                _appRoot.DebugDisplayText("e - " + e.Message, Enumerations.DisplayStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("e - " + e.Message, Enumerations.LogStatusMessageTypes.Error);
                 Status = Enumerations.ComponentStatus.Error;
             }
         }
