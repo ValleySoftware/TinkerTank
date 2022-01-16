@@ -457,8 +457,8 @@ namespace Communications
                         {
                             s = s.Substring(0, charToUpdate.MaxLength - 1);
                         }
-
-                        UpdateCharacteristicValue(charToUpdate, s);
+                        charToUpdate.SetValue(s);
+                        success = true;
                     }
                 }
                 else

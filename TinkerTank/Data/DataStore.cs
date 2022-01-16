@@ -49,12 +49,25 @@ namespace TinkerTank.Data
             return string.Concat(first10Chars.Substring(0, 5), second10Chars.Substring(0, 5));
         }
 
-        public void InitDB()
+        public void InitDB(bool wipeDBOnStartup)
         {
             var databasePath = Path.Combine(MeadowOS.FileSystem.DataDirectory, "BerthaDB.db");
             dbcon = new SQLiteConnection(databasePath);
-            dbcon.CreateTable<DebugLogEntryModel>();
             dbcon.CreateTable<BootRecordModel>();
+            dbcon.CreateTable<DebugLogEntryModel>();
+
+            if (wipeDBOnStartup)
+            {
+                try
+                { 
+                    dbcon.Table<BootRecordModel>().Delete(b => b.SQL_ID > 0);
+                    dbcon.Table<DebugLogEntryModel>().Delete(b => b.SQL_ID > 0);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
 
             thisBootRecord = new BootRecordModel() { ID = GenerateRandomString(), RecordedStamp = DateTimeOffset.Now };
             dbcon.Insert(thisBootRecord);

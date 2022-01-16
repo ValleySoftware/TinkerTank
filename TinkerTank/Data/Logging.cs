@@ -51,51 +51,61 @@ namespace TinkerTank.Data
             }
         }
 
-        public void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
+        public async void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
         {
             if (dbcon != null)
             {
-                var t = new Task(() =>
+                await Task.Run(() =>
                 {
-                    var newEntry = new DebugLogEntryModel()
+                    try
                     {
-                        RecordedStamp = DateTimeOffset.Now,
-                        Displayed = false,
-                        StatusType = statusType,
-                        Text = newText
-                    };
+                        var newEntry = new DebugLogEntryModel()
+                        {
+                            RecordedStamp = DateTimeOffset.Now,
+                            Displayed = false,
+                            StatusType = statusType,
+                            Text = newText
+                        };
 
-                    if (dbcon != null)
-                    {
-                        dbcon.UpsertDebugLogEntry(newEntry);
+                        if (dbcon != null)
+                        {
+                            dbcon.UpsertDebugLogEntry(newEntry);
+                        }
+
+                        if (newEntry.StatusType == LogStatusMessageTypes.Error)
+                        {
+                            Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
+                        }
+
+                        if (newEntry.StatusType == LogStatusMessageTypes.Important)
+                        {
+                            Console.WriteLine(String.Concat("// (", newEntry.ID, ") ", newEntry.Text));
+                        }
+
+                        if (
+                                newEntry.StatusType >= LogStatusMessageTypes.Information &&
+                                _appRoot.ShowDebugLogs
+                            )
+                        {
+                            Console.WriteLine(String.Concat("(", newEntry.ID, ") ", newEntry.Text));
+                        }
+
+                        if (_appRoot.communications != null &&
+                        _appRoot.communications.charLogging != null)
+                        {
+                            _appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
+                        }
+
+                        if (lcd != null)
+                        {
+                            lcd.ShowCurrentLog();
+                        }
                     }
-
-                    if (newEntry.StatusType == LogStatusMessageTypes.Error)
+                    catch (Exception logEx)
                     {
-                        Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
-                    }
-
-                    if (newEntry.StatusType == LogStatusMessageTypes.Important)
-                    {
-                        Console.WriteLine(String.Concat("// (", newEntry.ID, ") ", newEntry.Text));
-                    }
-
-                    if (
-                            newEntry.StatusType >= LogStatusMessageTypes.Information &&
-                            _appRoot.ShowDebugLogs
-                        )
-                    {
-                        Console.WriteLine(String.Concat("(", newEntry.ID, ") ", newEntry.Text));
-                    }
-
-                    _appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
-
-                    if (lcd != null)
-                    {
-                        lcd.CurrentLog = newEntry;  
+                        Console.WriteLine(logEx.Message);
                     }
                 });
-                t.Start();
             }
         }
 

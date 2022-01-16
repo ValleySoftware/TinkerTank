@@ -72,6 +72,7 @@ namespace TinkerTank
         public Logging Logger;
 
         public DataStore dbcon;
+        private bool WipeDBOnStartup = true;
 
         public MeadowApp()
         {
@@ -109,15 +110,24 @@ namespace TinkerTank
 
             try
             {
-                //Initialise the database, logger and LCD(if appropriate);
+                //Initialise the database
                 DebugDisplayText("Init DB Logger, and screen", LogStatusMessageTypes.Important);
                 dbcon = new DataStore();
-                dbcon.InitDB();
+                dbcon.InitDB(WipeDBOnStartup);
 
+            }
+            catch (Exception dbMasterEx)
+            {
+
+            }
+
+            try
+            {
+                //Initialise the logger and LCD(if appropriate);
                 Logger = new Logging();
                 Logger.Init(dbcon);
             }
-            catch (Exception)
+            catch (Exception logEx)
             {
 
             }
@@ -320,7 +330,11 @@ namespace TinkerTank
 
         public void DebugDisplayText(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
         {
-            if (Logger != null)
+            if (Logger == null)
+            {
+                Console.WriteLine(String.Concat("pre-logger-msg: ", statusType, " ", newText));
+            }
+            else
             {
                 Logger.AddLogEntry(newText, statusType);
             }
