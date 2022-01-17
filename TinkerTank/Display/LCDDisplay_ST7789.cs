@@ -13,113 +13,40 @@ using System.Threading.Tasks;
 using TinkerTank;
 using TinkerTank.Data;
 
-namespace Display
+namespace TinkerTank.Display
 {
 
-    public class LCDDisplay_ST7789 : TinkerBase, ITinkerBase
+    public class LCDDisplay_ST7789 : DisplayBase
     {
-        public static List<Color> statusColours = new List<Color>() { Color.White, Color.Green, Color.Red };
-        MicroGraphics graphics;
         St7789 display;
-        static int NoOfLinesOnDisplay = 11;
-        Logging _parentLogger;
 
-        public LCDDisplay_ST7789(Logging parentLogger)
+        public LCDDisplay_ST7789(Logging parentLogger) :base(parentLogger)
         {
-            _appRoot = MeadowApp.Current;
-            _parentLogger = parentLogger;
+
         }
 
-        public void ShowCurrentLog()
+        public override void DoDisplaySpecificInit()
         {
-            graphics.Clear();
-
-            if (_parentLogger.CurrentLog != null)
-            {
-
-                int i = 0;
-
-                var logSplitIntoLines = SplitInParts(_parentLogger.CurrentLog.Text, 19);
-
-                foreach (var lineOfLog in logSplitIntoLines)
-                {
-                    if (i > NoOfLinesOnDisplay)
-                    {
-                        break;
-                    }
-                    graphics.DrawText(0, 24 * i, lineOfLog.Trim(), ScaleFactor.X1);
-                    i++;
-
-                }
-
-                {
-                    _parentLogger.CurrentLog.Displayed = true;
-                }
-            }
-            else
-            {
-                Console.WriteLine("LCD - No current log entry to show");
-            }
-
-            graphics.Show();
-        }
-
-        private static List<string> SplitInParts(string s, int partLength)
-        {
-            var l = new List<string>();
-
-            var currentCharIndex = 0;
-            try
-            {
-                while (s.Length - 1 > currentCharIndex)
-                {
-                    int lineLength = 0;
-                    if (currentCharIndex + partLength > s.Length)
-                    {
-                        lineLength = s.Length - currentCharIndex;
-                    }
-                    else
-                    {
-                        lineLength = partLength;
-                    }
-                    l.Add(s.Substring(currentCharIndex, lineLength));
-
-                    currentCharIndex = currentCharIndex + lineLength;
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("exception hit splitting string.");
-            }
-                return l;
-        }
-
-        public void Init()
-        {
-            Status = ComponentStatus.UnInitialised;
+            NoOfLinesOnDisplay = 20;
 
             var config = new SpiClockConfiguration
-            (
-                speed: new Meadow.Units.Frequency(6000),
-                mode: SpiClockConfiguration.Mode.Mode3
-            ); ;
+                (
+                    speed: new Meadow.Units.Frequency(6000),
+                    mode: SpiClockConfiguration.Mode.Mode3
+                );
 
-            display = new St7789
-            (
-                device: MeadowApp.Device,
-                spiBus: MeadowApp.Device.CreateSpiBus(
-                    MeadowApp.Device.Pins.SCK, MeadowApp.Device.Pins.MOSI, MeadowApp.Device.Pins.MISO, config),
-                chipSelectPin: MeadowApp.Device.Pins.D15,
-                dcPin: MeadowApp.Device.Pins.D01,
-                resetPin: MeadowApp.Device.Pins.D00,
-                width: 240, height: 240
-            );
+                display = new St7789
+                (
+                    device: MeadowApp.Device,
+                    spiBus: MeadowApp.Device.CreateSpiBus(
+                        MeadowApp.Device.Pins.SCK, MeadowApp.Device.Pins.MOSI, MeadowApp.Device.Pins.MISO, config),
+                    chipSelectPin: MeadowApp.Device.Pins.D15,
+                    dcPin: MeadowApp.Device.Pins.D01,
+                    resetPin: MeadowApp.Device.Pins.D00,
+                    width: 240, height: 240
+                );
 
-            graphics = new MicroGraphics(display);
-            graphics.CurrentFont = new Font12x20();
-
-            graphics.Clear();
-            Status = ComponentStatus.Ready;
+                graphics = new MicroGraphics(display);
         }
 
         public void RefreshStatus()

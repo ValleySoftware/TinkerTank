@@ -1,6 +1,5 @@
 ﻿using Base;
 using Communications;
-using Display;
 using Enumerations;
 using Meadow;
 using Meadow.Devices;
@@ -22,6 +21,7 @@ using TinkerTank.Movement;
 using TinkerTank.Sensors;
 using TinkerTank.Servos;
 using Utilities.Power;
+using static TinkerTank.Display.DisplayBase;
 
 namespace TinkerTank
 {
@@ -66,6 +66,7 @@ namespace TinkerTank
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
         private bool EnableStatusPolling = true;
+        public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
 
         public bool ShowDebugLogs = true;
 
@@ -109,10 +110,22 @@ namespace TinkerTank
                 //very bad
             }
 
+            //I2C
+
+            try
+            {
+                DebugDisplayText("Init i2c");
+                primaryi2CBus = Device.CreateI2cBus(I2cBusSpeed.Standard);
+            }
+            catch (Exception)
+            {
+                //very bad
+            }
+
             try
             {
                 //Initialise the database
-                DebugDisplayText("Init DB Logger, and screen", LogStatusMessageTypes.Important);
+                DebugDisplayText("Init DB", LogStatusMessageTypes.Important);
                 dbcon = new DataStore();
                 dbcon.InitDB(WipeDBOnStartup);
 
@@ -124,7 +137,7 @@ namespace TinkerTank
 
             try
             {
-                //Initialise the logger and LCD(if appropriate);
+                //Initialise the logger
                 Logger = new Logging();
                 Logger.Init(dbcon);
             }
@@ -144,11 +157,7 @@ namespace TinkerTank
                 TBObjects.Add(communications);
                 communications.Init();
 
-                //I2C
-
-                DebugDisplayText("Init i2c");
-                primaryi2CBus = Device.CreateI2cBus(I2cBusSpeed.Standard);
-
+                //I2C Expander
                 DebugDisplayText("Init i2c Expander");
                 i2cExpander = new Tca9548a(primaryi2CBus, 0x70);
 
@@ -218,7 +227,7 @@ namespace TinkerTank
                         panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
                         panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
                         panTiltSensorCombo.AssignBluetoothCharacteristicToUpdate(communications.charPanTilt);
-                        panTiltSensorCombo.GoToDefault();
+                        //panTiltSensorCombo.GoToDefault();
                     }
                     catch (Exception e)
                     {

@@ -1,5 +1,5 @@
 ﻿using Base;
-using Display;
+using TinkerTank.Display;
 using Enumerations;
 using Meadow.Devices;
 using SQLite;
@@ -13,7 +13,7 @@ namespace TinkerTank.Data
     public class Logging : TinkerBase, ITinkerBase
     {
         private DataStore dbcon;
-        private LCDDisplay_ST7789 lcd;
+        private DisplayBase lcd;
         private DebugLogEntryModel _currentLog;
 
         public void Init(DataStore con)
@@ -28,8 +28,21 @@ namespace TinkerTank.Data
                 try
                 {
                     AddLogEntry("start lcd", LogStatusMessageTypes.Important);
-                    lcd = new LCDDisplay_ST7789(this);
-                    lcd.Init();
+                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.ST7789_SPI_240x240)
+                    {
+                        lcd = new LCDDisplay_ST7789(this);
+                        lcd.Init();
+                    }
+                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x64)
+                    {
+                        lcd = new LCDDisplay_1306_128x64(this);
+                        lcd.Init();
+                    }
+                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x32)
+                    {
+                        lcd = new LCDDisplay_1306_128x32(this);
+                        lcd.Init();
+                    }
                 }
                 catch (Exception)
                 {
@@ -68,9 +81,19 @@ namespace TinkerTank.Data
                             dbcon.UpsertDebugLogEntry(newEntry);
                         }
 
-                        if (newEntry.StatusType == LogStatusMessageTypes.Error)
+                        if (newEntry.StatusType == LogStatusMessageTypes.BLERecord)
+                        {
+                            Console.WriteLine(String.Concat("-BLE- (", newEntry.ID, ") ", newEntry.Text));
+                        }
+
+                        if (newEntry.StatusType == LogStatusMessageTypes.CriticalError)
                         {
                             Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
+                        }
+
+                        if (newEntry.StatusType == LogStatusMessageTypes.Error)
+                        {
+                            Console.WriteLine(String.Concat("* (", newEntry.ID, ") ", newEntry.Text));
                         }
 
                         if (newEntry.StatusType == LogStatusMessageTypes.Important)
@@ -79,7 +102,7 @@ namespace TinkerTank.Data
                         }
 
                         if (
-                                newEntry.StatusType >= LogStatusMessageTypes.Information &&
+                                newEntry.StatusType == LogStatusMessageTypes.Debug &&
                                 _appRoot.ShowDebugLogs
                             )
                         {
@@ -89,7 +112,7 @@ namespace TinkerTank.Data
                         if (_appRoot.communications != null &&
                         _appRoot.communications.charLogging != null)
                         {
-                            _appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
+                            //_appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
                         }
 
                         CurrentLog = newEntry;

@@ -148,7 +148,7 @@ namespace Servos
 
                             if (destinationTiltAngle != null)
                             {
-                                _ = servoTilt.SafeIshRotate(destinationTiltAngle);
+                                //_ = servoTilt.SafeIshRotate(destinationTiltAngle);
                             }
 
                             _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
@@ -242,7 +242,7 @@ namespace Servos
                     }
                     Status = ComponentStatus.Ready;
 
-                    UpdateBleValue();
+                    //UpdateBleValue();
                 }
             }
         }

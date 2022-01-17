@@ -92,13 +92,16 @@ namespace TinkerTank.Servos
 
             //_appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
             _appRoot.DebugDisplayText(Name + " - Rotating to " + desiredAngle.Value.ToString(), LogStatusMessageTypes.Debug);
-            _servo.RotateTo(desiredAngle.Value);
+
+            if (desiredAngle.Value >= MinAngle &&
+                desiredAngle.Value <= MaxAngle)
+            {
+                _servo.RotateTo(desiredAngle.Value);
+            }
             _appRoot.DebugDisplayText("D");
-
-
             result = _servo.Angle.Value.Degrees;
             _appRoot.DebugDisplayText(Name + " - new angle is " + result, LogStatusMessageTypes.Debug);
-            //Status = ComponentStatus.Ready;
+            Status = ComponentStatus.Ready;
 
             return result;
         }

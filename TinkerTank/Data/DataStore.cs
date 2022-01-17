@@ -93,11 +93,12 @@ namespace TinkerTank.Data
                 {
                     //new
                     dbcon.Insert(model);
+                    Task.Run(() => dbcon.Insert(model));
                 }
                 else
                 {
                     //update
-                    dbcon.Update(model);
+                   // dbcon.Update(model);
                 }
             }
             catch (Exception)
