@@ -62,7 +62,7 @@ namespace TinkerTank
 
         private bool EnableDistanceSensors = true;
         private bool EnablePanTiltSensors = true;
-        public bool EnableDisplay = false;
+        public bool EnableDisplay = true;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
         private bool EnableStatusPolling = true;
@@ -84,12 +84,13 @@ namespace TinkerTank
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), LogStatusMessageTypes.Error);
+            Console.WriteLine("Unhandled Exception Raised to Domain");
+            //DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), LogStatusMessageTypes.Error);
         }
 
         private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
-
+            Console.WriteLine("Unhandled First Chance Exception Raised to Domain");
         }
 
         void Init()
@@ -216,8 +217,8 @@ namespace TinkerTank
                         panTiltSensorCombo.Init(2, 3, distController.PeriscopeDistance);
                         panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
                         panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
-                        panTiltSensorCombo.GoToDefault();
                         panTiltSensorCombo.AssignBluetoothCharacteristicToUpdate(communications.charPanTilt);
+                        panTiltSensorCombo.GoToDefault();
                     }
                     catch (Exception e)
                     {

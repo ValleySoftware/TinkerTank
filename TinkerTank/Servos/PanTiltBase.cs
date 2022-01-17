@@ -65,9 +65,11 @@ namespace Servos
 
         public bool AssignBluetoothCharacteristicToUpdate(Characteristic characteristicString)
         {
+            MeadowApp.Current.DebugDisplayText("Assign BLE characteristic to PanTilt", LogStatusMessageTypes.Debug);
+
             _characteristic = characteristicString;
 
-            UpdateBleValue();
+            //UpdateBleValue();
 
             return _characteristic != null;
         }
@@ -75,9 +77,10 @@ namespace Servos
         public void UpdateBleValue()
         {
                 try
-                {
+            {
+                MeadowApp.Current.DebugDisplayText("Update PanTilt BLE Value", LogStatusMessageTypes.Debug);
 
-                    if (_characteristic != null)
+                if (_characteristic != null)
                     {
                          var newValue = CurrentPanPosition.Value.Degrees + "-" + CurrentTiltPosition.Value.Degrees;                        
 
@@ -134,22 +137,31 @@ namespace Servos
                 {
                     if (movementSpeed == ServoMovementSpeed.Flank)
                     {
-                        _appRoot.DebugDisplayText("Pan speed flank");
-
-                        if (destinationPanAngle != null)
+                        try
                         {
-                            servoPan.SafeIshRotate(destinationPanAngle);
-                        }
+                            _appRoot.DebugDisplayText("Pan speed flank");
 
-                        if (destinationTiltAngle != null)
+                            if (destinationPanAngle != null)
+                            {
+                                _ = servoPan.SafeIshRotate(destinationPanAngle);
+                            }
+
+                            if (destinationTiltAngle != null)
+                            {
+                                _ = servoTilt.SafeIshRotate(destinationTiltAngle);
+                            }
+
+                            _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
+                        }
+                        catch (Exception PanTiltFlankEx)
                         {
-                            servoTilt.SafeIshRotate(destinationTiltAngle);
+                            _appRoot.DebugDisplayText("Pan/Tilt flank " + PanTiltFlankEx.Message);
                         }
-
-                        _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
                     }
                     else
                     {
+                        _appRoot.DebugDisplayText("Slow Pan/Tilt requested.");
+
                         int millisecondDelay = 0;
 
                         switch (movementSpeed)
@@ -291,7 +303,7 @@ namespace Servos
             //var t = Task.Run(() =>
             //{
                 Move(DefaultPan, DefaultTilt);
-                UpdateBleValue();
+                //UpdateBleValue();
             //});
         }
     }

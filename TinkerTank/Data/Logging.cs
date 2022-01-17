@@ -44,10 +44,6 @@ namespace TinkerTank.Data
             set
             {
                 _currentLog = value;
-                if (lcd != null)
-                {
-                    lcd.ShowCurrentLog();
-                }
             }
         }
 
@@ -95,6 +91,8 @@ namespace TinkerTank.Data
                         {
                             _appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
                         }
+
+                        CurrentLog = newEntry;
 
                         if (lcd != null)
                         {

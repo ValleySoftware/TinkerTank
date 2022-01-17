@@ -79,71 +79,26 @@ namespace TinkerTank.Servos
         {
             _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Action;
+            _appRoot.DebugDisplayText("A");
 
             double result = -1;
+            _appRoot.DebugDisplayText("B");
 
             _appRoot.DebugDisplayText(Name + " - safeishrotate prep", LogStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("C");
 
             //bool Completed = false;
             _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), LogStatusMessageTypes.Important);
 
-            //var oldAngle = _servo.Angle;
-            //_appRoot.DebugDisplayText(Name + " - safeishrotate old angle = " + oldAngle.Value.Degrees, LogStatusMessageTypes.Debug);
+            //_appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - Rotating to " + desiredAngle.Value.ToString(), LogStatusMessageTypes.Debug);
+            _servo.RotateTo(desiredAngle.Value);
+            _appRoot.DebugDisplayText("D");
 
-            //Try changing this to Thread rather than Task???            
-            //var rotateTask = Task.Run(() =>
-            //{
-                _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
-                _servo.RotateTo(desiredAngle.Value);
-            //});
-
-            /*
-            var monitorTask = Task.Run(async () =>
-            {
-                _appRoot.DebugDisplayText(Name + " - safeishrotate monitor thread started", LogStatusMessageTypes.Debug);
-
-                while (!Completed)
-                {
-                    await Task.Delay(250);
-
-                    if (desiredAngle.Equals(_servo.Angle))
-                    {
-                        Completed = true;
-                        _servo.Stop();
-                        result = _servo.Angle.Value.Degrees;
-                        Status = ComponentStatus.Ready;
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate success", LogStatusMessageTypes.Important);
-                    }
-
-                    if (oldAngle == _servo.Angle)
-                    {
-                        Completed = true;
-                        _servo.Stop();
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete", LogStatusMessageTypes.Important);
-                        //Status = Enumerations.ComponentStatus.Error;
-                        result = -1;
-
-                        if (desiredAngle.Value.Degrees < _servo.Angle.Value.Degrees)
-                        {
-                            SetNewMinimum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
-                        }
-                        else
-                        {
-                            SetNewMaximum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
-                        }
-
-                    }
-
-                    oldAngle = _servo.Angle;
-                }
-            });
-                     */
 
             result = _servo.Angle.Value.Degrees;
             _appRoot.DebugDisplayText(Name + " - new angle is " + result, LogStatusMessageTypes.Debug);
-            Status = ComponentStatus.Ready;
+            //Status = ComponentStatus.Ready;
 
             return result;
         }

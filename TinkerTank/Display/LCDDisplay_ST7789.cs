@@ -36,28 +36,29 @@ namespace Display
 
             if (_parentLogger.CurrentLog != null)
             {
+
                 int i = 0;
 
                 var logSplitIntoLines = SplitInParts(_parentLogger.CurrentLog.Text, 19);
 
                 foreach (var lineOfLog in logSplitIntoLines)
                 {
-                    graphics.DrawText(0, 24 * i, lineOfLog, statusColours[(int)_parentLogger.CurrentLog.StatusType], ScaleFactor.X1);
-                    i++;
-
                     if (i > NoOfLinesOnDisplay)
                     {
                         break;
                     }
+                    graphics.DrawText(0, 24 * i, lineOfLog.Trim(), ScaleFactor.X1);
+                    i++;
+
                 }
 
                 {
                     _parentLogger.CurrentLog.Displayed = true;
-                    if (_appRoot.dbcon != null)
-                    {
-                        _appRoot.dbcon.UpsertDebugLogEntry(_parentLogger.CurrentLog);
-                    }
                 }
+            }
+            else
+            {
+                Console.WriteLine("LCD - No current log entry to show");
             }
 
             graphics.Show();
@@ -81,7 +82,7 @@ namespace Display
                     {
                         lineLength = partLength;
                     }
-                    l.Insert(0, s.Substring(currentCharIndex, lineLength));
+                    l.Add(s.Substring(currentCharIndex, lineLength));
 
                     currentCharIndex = currentCharIndex + lineLength;
                 }
