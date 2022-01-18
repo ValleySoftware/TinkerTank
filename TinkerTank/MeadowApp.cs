@@ -68,7 +68,7 @@ namespace TinkerTank
         private bool EnableStatusPolling = true;
         public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
 
-        public bool ShowDebugLogs = true;
+        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Debug;
 
         public Logging Logger;
 
@@ -283,6 +283,8 @@ namespace TinkerTank
 
         public void RefreshStatus()
         {
+            SetStatus(ComponentStatus.None);
+
             foreach (var element in TBObjects)
             {
                 SetStatus(element.Status);
@@ -308,7 +310,9 @@ namespace TinkerTank
 
         private void SetStatus(ComponentStatus newStatus)
         {
-            if (newStatus != _status)
+            //None is to be ignored
+            if (newStatus != _status && 
+                newStatus != ComponentStatus.None)
             {
                 _status = newStatus;
         

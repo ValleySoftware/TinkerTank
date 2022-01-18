@@ -60,7 +60,7 @@ namespace TinkerTank.Data
             }
         }
 
-        public async void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
+        public async void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug, string remoteID = null)
         {
             if (dbcon != null)
             {
@@ -68,58 +68,56 @@ namespace TinkerTank.Data
                 {
                     try
                     {
-                        var newEntry = new DebugLogEntryModel()
-                        {
-                            RecordedStamp = DateTimeOffset.Now,
-                            Displayed = false,
-                            StatusType = statusType,
-                            Text = newText
-                        };
 
-                        if (dbcon != null)
+                        if (statusType >= _appRoot.MinimumLogLevel)
                         {
-                            dbcon.UpsertDebugLogEntry(newEntry);
-                        }
+                            var newEntry = new DebugLogEntryModel()
+                            {
+                                RecordedStamp = DateTimeOffset.Now,
+                                Displayed = false,
+                                StatusType = statusType,
+                                Text = newText,
+                                Remote_Request_ID = remoteID
+                            };
 
-                        if (newEntry.StatusType == LogStatusMessageTypes.BLERecord)
-                        {
-                            Console.WriteLine(String.Concat("-BLE- (", newEntry.ID, ") ", newEntry.Text));
-                        }
+                            if (dbcon != null)
+                            {
+                                dbcon.UpsertDebugLogEntry(newEntry);
+                            }
 
-                        if (newEntry.StatusType == LogStatusMessageTypes.CriticalError)
-                        {
-                            Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
-                        }
+                            if (newEntry.StatusType == LogStatusMessageTypes.BLERecord)
+                            {
+                                Console.WriteLine(String.Concat("-BLE- (", newEntry.ID, ") ", newEntry.Text));
+                            }
 
-                        if (newEntry.StatusType == LogStatusMessageTypes.Error)
-                        {
-                            Console.WriteLine(String.Concat("* (", newEntry.ID, ") ", newEntry.Text));
-                        }
+                            if (newEntry.StatusType == LogStatusMessageTypes.CriticalError)
+                            {
+                                Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
+                            }
 
-                        if (newEntry.StatusType == LogStatusMessageTypes.Important)
-                        {
-                            Console.WriteLine(String.Concat("// (", newEntry.ID, ") ", newEntry.Text));
-                        }
+                            if (newEntry.StatusType == LogStatusMessageTypes.Error)
+                            {
+                                Console.WriteLine(String.Concat("* (", newEntry.ID, ") ", newEntry.Text));
+                            }
 
-                        if (
-                                newEntry.StatusType == LogStatusMessageTypes.Debug &&
-                                _appRoot.ShowDebugLogs
-                            )
-                        {
+                            if (newEntry.StatusType == LogStatusMessageTypes.Important)
+                            {
+                                Console.WriteLine(String.Concat("// (", newEntry.ID, ") ", newEntry.Text));
+                            }
                             Console.WriteLine(String.Concat("(", newEntry.ID, ") ", newEntry.Text));
-                        }
 
                         if (_appRoot.communications != null &&
-                        _appRoot.communications.charLogging != null)
-                        {
-                            //_appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
-                        }
+                            _appRoot.communications.charLogging != null)
+                            {
+                                //_appRoot.communications.UpdateCharacteristicValue(_appRoot.communications.charLogging, newEntry.Text);
+                            }
 
-                        CurrentLog = newEntry;
+                            CurrentLog = newEntry;
 
-                        if (lcd != null)
-                        {
-                            lcd.ShowCurrentLog();
+                            if (lcd != null)
+                            {
+                                lcd.ShowCurrentLog();
+                            }
                         }
                     }
                     catch (Exception logEx)

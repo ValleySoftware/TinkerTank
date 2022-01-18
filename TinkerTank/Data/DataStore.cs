@@ -22,6 +22,7 @@ namespace TinkerTank.Data
         public bool Displayed { get; set; }
         public bool Transmitted { get; set; }
         public DateTimeOffset? TransmittedStamp { get; set; }
+        public string Remote_Request_ID { get; set; }
     }
 
     [Table("BootRecordModel")]
@@ -92,13 +93,13 @@ namespace TinkerTank.Data
                 if (model.SQL_ID == 0)
                 {
                     //new
-                    dbcon.Insert(model);
-                    Task.Run(() => dbcon.Insert(model));
+                    //dbcon.Insert(model);
+                    //Task.Run(() => dbcon.Insert(model));
                 }
                 else
                 {
                     //update
-                   // dbcon.Update(model);
+                    //dbcon.Update(model);
                 }
             }
             catch (Exception)

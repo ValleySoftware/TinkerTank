@@ -74,139 +74,6 @@ namespace Communications
             return Status;
         }
 
-        private void RequestPower(string payload)
-        {
-            try
-            {
-                _appRoot.DebugDisplayText("Request Power received with: " + payload, LogStatusMessageTypes.BLERecord);
-
-                var valueAsInt = Convert.ToInt32(payload);
-
-                switch (valueAsInt)
-                {
-                    case 0: _appRoot.powerController.Disconnect(); break;
-                    case 1: _appRoot.powerController.Connect(); break;
-                    default:
-                        {
-                            if (valueAsInt >= 100)
-                            {
-                                _appRoot.movementController.SetDefaultPower(100);
-                            }
-                            else
-                            {
-                                if (valueAsInt <= 2)
-                                {
-                                    _appRoot.movementController.SetDefaultPower(0);
-                                }
-                                else
-                                {
-                                    _appRoot.movementController.SetDefaultPower(valueAsInt);
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payload + " - Error details " + ex.Message, LogStatusMessageTypes.Error);
-            }
-        }
-
-        private void RequestPanTilt(string payload)
-        {
-            //PanTo-TiltTo-Speed
-            //000-000-0
-
-            try
-            {
-                var sp = payload.Split("-");
-
-                if (sp.Count() >= 2)
-                {
-
-                    int pan = Convert.ToInt32(sp[1]);
-                    int tilt = Convert.ToInt32(sp[2]);
-                    ServoMovementSpeed speed = ServoMovementSpeed.Flank;
-                    if (sp.Count() == 4)
-                    {
-                        int s = Convert.ToInt32(sp[3]);
-                        speed = (ServoMovementSpeed)s;
-                    }
-
-                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), LogStatusMessageTypes.BLERecord);
-
-                    _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
-                }
-            }
-            catch (Exception decipherPanTiltEx)
-            {
-                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, LogStatusMessageTypes.Error);
-                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
-            }
-        }
-
-        private void RequestPanSweep(string payload)
-        {
-            //Device-Speed
-            //0
-
-            try
-            {
-                int device = Convert.ToInt32(payload);
-                ServoMovementSpeed speed = ServoMovementSpeed.Flank;
-
-                int s = Convert.ToInt32(payload);
-                speed = (ServoMovementSpeed)s;
-
-                _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), LogStatusMessageTypes.BLERecord);
-
-                _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
-                
-            }
-            catch (Exception decipherPanTiltEx)
-            {
-                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payload, LogStatusMessageTypes.Error);
-                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
-            }
-        }
-
-        private void RequestStop()
-        {
-            try
-            {
-                _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
-            }
-            catch (Exception ex)
-            {
-                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, LogStatusMessageTypes.Error);
-            }
-        }
-
-        private void RequestAdvancedMove(string payload)
-        {
-            //movementDirection-powerPercent-durationInMilliseconds
-            //00-000-00000
-
-            var sp = payload.Split("-");
-
-            if (sp.Count() == 3)
-            {
-                try
-                {
-                    int direction = Convert.ToInt32(sp[0]);
-                    int power = Convert.ToInt32(sp[1]);
-                    int duration = Convert.ToInt32(sp[2]);
-
-                    _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
-                }
-                catch (Exception ex)
-                {
-                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, LogStatusMessageTypes.Error);
-                }
-            }
-        }
-
         private void PrepareDefinition()
         {
             _appRoot.DebugDisplayText("PrepBLEDefinitions", LogStatusMessageTypes.Debug);
@@ -226,6 +93,8 @@ namespace Communications
                     charLogging
                     );
 
+            _appRoot.DebugDisplayText("BLE ControlService created", LogStatusMessageTypes.Debug);
+
             foreach (var element in primaryControlService.Characteristics)
             {
                 //Loop through and set the 'read' property to the characteristics name.
@@ -242,10 +111,14 @@ namespace Communications
                 }
             }
 
+            _appRoot.DebugDisplayText("Read properties set on BLE Chars", LogStatusMessageTypes.Debug);
+
             PrimaryControlDefinition = new Definition(
                 BLEConstants.definitionName,
                 primaryControlService
                 );
+
+            _appRoot.DebugDisplayText("BLEDefinition init complete", LogStatusMessageTypes.Debug);
         }
 
         private void PrepareCharacteristics()
@@ -335,7 +208,7 @@ namespace Communications
                 characteristic.ValueSet += (c, d) =>
                 {
                     
-                    _appRoot.DebugDisplayText("Received ble msg", LogStatusMessageTypes.BLERecord);
+                    _appRoot.DebugDisplayText("Received ble msg", LogStatusMessageTypes.Information);
 
                     string payload = string.Empty;
 
@@ -350,20 +223,22 @@ namespace Communications
 
                     _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, LogStatusMessageTypes.BLERecord);
 
+                    string[] payloadSplit = payload.Split("-");
+
                     try
                     {      
                         switch (c.Name)
                         {
-                            case "Stop": RequestStop(); break;
-                            case "PanTilt": RequestPanTilt(payload); break;
-                            case "Power": RequestPower(payload); break;
-                            case "AdvancedMove": RequestAdvancedMove(payload); break;
-                            case "PanSweep": RequestPanSweep(payload); break;
-                            case "ForwardDistance": RequestFrontDistanceUpdate(); break;
-                            case "PanTiltDistance": RequestPanTiltDistanceUpdate(); break;
-                            case "Lights": RequestLights(payload); break;
-                            case "Logging": RequestLogUpdate(payload); break;
-                            default: RequestStop(); break;
+                            case "Stop": RequestStop(payloadSplit); break;
+                            case "PanTilt": RequestPanTilt(payloadSplit); break;
+                            case "Power": RequestPower(payloadSplit); break;
+                            case "AdvancedMove": RequestAdvancedMove(payloadSplit); break;
+                            case "PanSweep": RequestPanSweep(payloadSplit); break;
+                            case "ForwardDistance": RequestFrontDistanceUpdate(payloadSplit); break;
+                            case "PanTiltDistance": RequestPanTiltDistanceUpdate(payloadSplit); break;
+                            case "Lights": RequestLights(payloadSplit); break;
+                            case "Logging": RequestLogUpdate(payloadSplit); break;
+                            default: RequestStop(payloadSplit); break;
                         }
 
                         Status = ComponentStatus.Ready;
@@ -381,7 +256,138 @@ namespace Communications
             _appRoot.DebugDisplayText("BT receivers registered", LogStatusMessageTypes.Information);
         }
 
-        private void RequestLogUpdate(string payload)
+        private void RequestPower(string[] payloadSplit)
+        {
+            try
+            {
+                _appRoot.DebugDisplayText("Request Power received with: " + payloadSplit[1], LogStatusMessageTypes.BLERecord);
+
+                var valueAsInt = Convert.ToInt32(payloadSplit[1]);
+
+                switch (valueAsInt)
+                {
+                    case 0: _appRoot.powerController.Disconnect(); break;
+                    case 1: _appRoot.powerController.Connect(); break;
+                    default:
+                        {
+                            if (valueAsInt >= 100)
+                            {
+                                _appRoot.movementController.SetDefaultPower(100);
+                            }
+                            else
+                            {
+                                if (valueAsInt <= 2)
+                                {
+                                    _appRoot.movementController.SetDefaultPower(0);
+                                }
+                                else
+                                {
+                                    _appRoot.movementController.SetDefaultPower(valueAsInt);
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payloadSplit[1] + " - Error details " + ex.Message, LogStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestPanTilt(string[] payloadSplit)
+        {
+            //PanTo-TiltTo-Speed
+            //000-000-0
+
+            try
+            {
+                
+
+                if (payloadSplit.Count() >= 3)
+                {
+
+                    int pan = Convert.ToInt32(payloadSplit[2]);
+                    int tilt = Convert.ToInt32(payloadSplit[3]);
+                    ServoMovementSpeed speed = ServoMovementSpeed.Flank;
+                    if (payloadSplit.Count() == 5)
+                    {
+                        int s = Convert.ToInt32(payloadSplit[4]);
+                        speed = (ServoMovementSpeed)s;
+                    }
+
+                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), LogStatusMessageTypes.BLERecord);
+
+                    _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
+                }
+            }
+            catch (Exception decipherPanTiltEx)
+            {
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payloadSplit[1], LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestPanSweep(string[] payloadSplit)
+        {
+            //Device-Speed
+            //0-0
+
+            try
+            {
+                int device = Convert.ToInt32(payloadSplit[1]);
+                ServoMovementSpeed speed = ServoMovementSpeed.Flank;
+
+                int s = Convert.ToInt32(payloadSplit[2]);
+                speed = (ServoMovementSpeed)s;
+
+                _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), LogStatusMessageTypes.BLERecord);
+
+                _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
+
+            }
+            catch (Exception decipherPanTiltEx)
+            {
+                _appRoot.DebugDisplayText("DecyipherError: Payload = " + payloadSplit[1], LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("DecyipherError: Exception= " + decipherPanTiltEx, LogStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestStop(string[] payloadSplit)
+        {
+            try
+            {
+                _appRoot.movementController.Move(Direction.Stop, 0, TimeSpan.Zero);
+            }
+            catch (Exception ex)
+            {
+                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, LogStatusMessageTypes.Error);
+            }
+        }
+
+        private void RequestAdvancedMove(string[] payloadSplit)
+        {
+            //movementDirection-powerPercent-durationInMilliseconds
+            //00-000-00000
+
+            if (payloadSplit.Count() == 4)
+            {
+                try
+                {
+                    int direction = Convert.ToInt32(payloadSplit[1]);
+                    int power = Convert.ToInt32(payloadSplit[2]);
+                    int duration = Convert.ToInt32(payloadSplit[3]);
+
+                    _appRoot.movementController.Move((Direction)direction, power, TimeSpan.FromMilliseconds(duration));
+                }
+                catch (Exception ex)
+                {
+                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, LogStatusMessageTypes.Error);
+                }
+            }
+        }
+
+        private void RequestLogUpdate(string[] payloadSplit)
         {
             try
             {
@@ -394,11 +400,11 @@ namespace Communications
             }
         }
 
-        private void RequestLights(string payload)
+        private void RequestLights(string[] payloadSplit)
         {
             try
             {
-                _appRoot.LightsController.RequestLightsDo(payload);
+                _appRoot.LightsController.RequestLightsDo(payloadSplit[1]);
             }
             catch (Exception ex)
             {
@@ -407,7 +413,7 @@ namespace Communications
             }
         }
 
-        private void RequestFrontDistanceUpdate()
+        private void RequestFrontDistanceUpdate(string[] payloadSplit)
         {
             try
             {
@@ -420,7 +426,7 @@ namespace Communications
             }
         }
 
-        private void RequestPanTiltDistanceUpdate()
+        private void RequestPanTiltDistanceUpdate(string[] payloadSplit)
         {
             try
             {
