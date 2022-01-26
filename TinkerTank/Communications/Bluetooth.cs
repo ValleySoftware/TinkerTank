@@ -223,7 +223,7 @@ namespace Communications
 
                     _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, LogStatusMessageTypes.BLERecord);
 
-                    string[] payloadSplit = payload.Split("-");
+                    string[] payloadSplit = payload.Split(BLEConstants.BLEMessageDivider);
 
                     try
                     {      
@@ -297,14 +297,12 @@ namespace Communications
 
         private void RequestPanTilt(string[] payloadSplit)
         {
-            //PanTo-TiltTo-Speed
-            //000-000-0
+            //RemoteMsgID-0-PanTo-TiltTo-Speed
+            //xxxxxxxx-0-000-000-0
 
             try
-            {
-                
-
-                if (payloadSplit.Count() >= 3)
+            {        
+                if (payloadSplit.Count() >= 4)
                 {
 
                     int pan = Convert.ToInt32(payloadSplit[2]);

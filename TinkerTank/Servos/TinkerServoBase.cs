@@ -24,6 +24,7 @@ namespace TinkerTank.Servos
         private Angle? _defaultAngle;
         private Angle? _stowedAngle;
         private Angle? _readyAngle;
+        private bool _reverseDirection;
 
         public static ServoConfig Create996rConfig(Angle? minAngle, Angle? maxAngle)
         {
@@ -77,6 +78,11 @@ namespace TinkerTank.Servos
 
         public double SafeIshRotate(Angle? desiredAngle)
         {
+            if (ReverseDirection)
+            {
+                desiredAngle = new Angle(180 - desiredAngle.Value.Degrees, Angle.UnitType.Degrees);
+            }
+
             _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Action;
             _appRoot.DebugDisplayText("A");
@@ -177,6 +183,12 @@ namespace TinkerTank.Servos
             set { _defaultAngle = value; }
         }
 
+        public bool ReverseDirection
+        {
+            get => _reverseDirection;
+            set { _reverseDirection = value; }
+        }
+        
         public Angle? StowedAngle
         {
             get => _stowedAngle;

@@ -17,6 +17,7 @@ namespace TinkerTank.Display
         public enum DisplayTypes { ST7789_SPI_240x240, SSD1306_2IC_128x64, SSD1306_2IC_128x32 }
         private DisplayTypes _typeOfDisplay;
         public MicroGraphics graphics;
+        private int lineLength = 30;
         private int _noOfLinesOnDisplay = 11;
         Logging _parentLogger;
 
@@ -42,7 +43,7 @@ namespace TinkerTank.Display
                 {
                     int i = 0;
 
-                    var logSplitIntoLines = SplitInParts(_parentLogger.CurrentLog.Text, 25);
+                    var logSplitIntoLines = SplitInParts(_parentLogger.CurrentLog.Text, lineLength);
 
                     foreach (var lineOfLog in logSplitIntoLines)
                     {

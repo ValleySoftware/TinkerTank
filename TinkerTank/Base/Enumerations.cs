@@ -14,6 +14,7 @@ namespace Enumerations
     public enum I2CExpanderChannel { sensorZero, fixedForwardDistance, periscopeDistance }
     public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights, Logging };
     public enum MovementAutoStopMode { None, Proximity, Timespan, Distance }
+    public enum PanTiltServos { servoPan, servoTilt}
 
     public class BLEConstants
     {
@@ -21,6 +22,8 @@ namespace Enumerations
         public const string definitionName = "BerthaDefinition";
         public const string serviceName = "BerthaService";
         public const ushort serviceUuid = 41;
+
+        public const string BLEMessageDivider = "#";
 
         public const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         public const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";

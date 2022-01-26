@@ -63,6 +63,42 @@ namespace Servos
             }
         }
 
+        public bool IsServoReversed (PanTiltServos servoToGet)
+        {
+            var result = false;
+
+            if (servoToGet == PanTiltServos.servoPan)
+            {
+                result = servoPan.ReverseDirection;
+            }
+
+            if (servoToGet == PanTiltServos.servoTilt)
+            {
+                result = servoTilt.ReverseDirection;
+            }
+
+            return result;
+        }
+
+        public bool SetServoIsReversed(PanTiltServos servoToSet, bool newIsReversed)
+        {
+            var result = false;
+
+            if (servoToSet == PanTiltServos.servoPan)
+            {
+                servoPan.ReverseDirection = newIsReversed;
+                result = servoPan.ReverseDirection;
+            }
+
+            if (servoToSet == PanTiltServos.servoTilt)
+            {
+                servoTilt.ReverseDirection = newIsReversed;
+                result = servoTilt.ReverseDirection;
+            }
+
+            return result;
+        }
+
         public bool AssignBluetoothCharacteristicToUpdate(Characteristic characteristicString)
         {
             MeadowApp.Current.DebugDisplayText("Assign BLE characteristic to PanTilt", LogStatusMessageTypes.Debug);
@@ -148,7 +184,7 @@ namespace Servos
 
                             if (destinationTiltAngle != null)
                             {
-                                //_ = servoTilt.SafeIshRotate(destinationTiltAngle);
+                                _ = servoTilt.SafeIshRotate(destinationTiltAngle);
                             }
 
                             _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
