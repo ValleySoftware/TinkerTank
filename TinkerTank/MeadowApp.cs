@@ -342,7 +342,7 @@ namespace TinkerTank
             }
         }
 
-        public void DebugDisplayText(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug)
+        public void DebugDisplayText(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug, string Remote_Request_ID = null)
         {
             if (Logger == null)
             {
@@ -350,7 +350,7 @@ namespace TinkerTank
             }
             else
             {
-                Logger.AddLogEntry(newText, statusType);
+                Logger.AddLogEntry(newText, statusType, Remote_Request_ID);
             }
         }
     }

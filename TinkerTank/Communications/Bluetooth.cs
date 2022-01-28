@@ -20,7 +20,7 @@ namespace Communications
 
         private Definition PrimaryControlDefinition;
         private Service primaryControlService;
-        private CharacteristicInt32  charStop;
+        private CharacteristicString charStop;
         public CharacteristicString charPanTilt;
         private CharacteristicString charPower;
         private CharacteristicString charAdvancedMove;
@@ -126,9 +126,10 @@ namespace Communications
 
             _appRoot.DebugDisplayText("PrepBLECharacturistics", LogStatusMessageTypes.Information);
 
-            charStop = new CharacteristicInt32(
+            charStop = new CharacteristicString(
                             name: CharacteristicsNames.Stop.ToString(),
                             uuid: BLEConstants.UUIDStop,
+                            maxLength: 12,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             descriptors: new Descriptor(BLEConstants.UUIDStop, CharacteristicsNames.Stop.ToString())
@@ -260,7 +261,7 @@ namespace Communications
         {
             try
             {
-                _appRoot.DebugDisplayText("Request Power received with: " + payloadSplit[1], LogStatusMessageTypes.BLERecord);
+                _appRoot.DebugDisplayText("Request Power received with: " + payloadSplit[1], LogStatusMessageTypes.BLERecord, payloadSplit[0]);
 
                 var valueAsInt = Convert.ToInt32(payloadSplit[1]);
 
@@ -291,7 +292,7 @@ namespace Communications
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payloadSplit[1] + " - Error details " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Request Power exception: Payload = " + payloadSplit[1] + " - Error details " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 
@@ -314,7 +315,7 @@ namespace Communications
                         speed = (ServoMovementSpeed)s;
                     }
 
-                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), LogStatusMessageTypes.BLERecord);
+                    _appRoot.DebugDisplayText(pan.ToString() + " " + tilt.ToString() + " " + speed.ToString(), LogStatusMessageTypes.BLERecord, payloadSplit[0]);
 
                     _appRoot.panTiltSensorCombo.Move(new Angle(pan), new Angle(tilt), speed);
                 }
@@ -339,7 +340,7 @@ namespace Communications
                 int s = Convert.ToInt32(payloadSplit[2]);
                 speed = (ServoMovementSpeed)s;
 
-                _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), LogStatusMessageTypes.BLERecord);
+                _appRoot.DebugDisplayText(device.ToString() + " Pan Sweep " + speed.ToString(), LogStatusMessageTypes.BLERecord, payloadSplit[0]);
 
                 _appRoot.panTiltSensorCombo.AutoPanSweep(speed);
 
@@ -359,7 +360,7 @@ namespace Communications
             }
             catch (Exception ex)
             {
-                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Request Stop exception: " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 
@@ -380,7 +381,7 @@ namespace Communications
                 }
                 catch (Exception ex)
                 {
-                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, LogStatusMessageTypes.Error);
+                    _appRoot.DebugDisplayText("Request Advanced Move exception: " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
                 }
             }
         }
@@ -394,7 +395,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 
@@ -407,7 +408,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 
@@ -420,7 +421,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 
@@ -433,7 +434,7 @@ namespace Communications
             catch (Exception ex)
             {
                 Status = ComponentStatus.Error;
-                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error, payloadSplit[0]);
             }
         }
 

@@ -87,7 +87,7 @@ namespace TinkerTank.Data
 
                             if (newEntry.StatusType == LogStatusMessageTypes.BLERecord)
                             {
-                                Console.WriteLine(String.Concat("-BLE- (", newEntry.ID, ") ", newEntry.Text));
+                                Console.WriteLine(String.Concat("-BLE- ", remoteID, " - (", newEntry.ID, ") ", newEntry.Text));
                             }
 
                             if (newEntry.StatusType == LogStatusMessageTypes.CriticalError)

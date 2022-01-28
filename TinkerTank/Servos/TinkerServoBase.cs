@@ -78,12 +78,19 @@ namespace TinkerTank.Servos
 
         public double SafeIshRotate(Angle? desiredAngle)
         {
-            if (ReverseDirection)
+            if (!desiredAngle.HasValue)
             {
-                desiredAngle = new Angle(180 - desiredAngle.Value.Degrees, Angle.UnitType.Degrees);
+                return -1;
             }
 
-            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, LogStatusMessageTypes.Debug);
+            var NormalisedAngle = new Angle(Math.Abs(desiredAngle.GetValueOrDefault().Degrees), Angle.UnitType.Degrees);
+
+            if (ReverseDirection)
+            {
+                NormalisedAngle = new Angle(180 - NormalisedAngle.Degrees, Angle.UnitType.Degrees);
+            }
+
+            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + NormalisedAngle.Degrees, LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Action;
             _appRoot.DebugDisplayText("A");
 
@@ -97,12 +104,12 @@ namespace TinkerTank.Servos
             _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), LogStatusMessageTypes.Important);
 
             //_appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
-            _appRoot.DebugDisplayText(Name + " - Rotating to " + desiredAngle.Value.ToString(), LogStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText(Name + " - Rotating to " + NormalisedAngle.ToString(), LogStatusMessageTypes.Debug);
 
-            if (desiredAngle.Value >= MinAngle &&
-                desiredAngle.Value <= MaxAngle)
+            if (NormalisedAngle >= MinAngle &&
+                NormalisedAngle <= MaxAngle)
             {
-                _servo.RotateTo(desiredAngle.Value);
+                _servo.RotateTo(NormalisedAngle);
             }
             _appRoot.DebugDisplayText("D");
             result = _servo.Angle.Value.Degrees;
