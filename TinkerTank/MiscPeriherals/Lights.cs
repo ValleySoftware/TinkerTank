@@ -27,7 +27,7 @@ namespace TinkerTank.MiscPeriherals
             ErrorResponse = AutomaticErrorResponse.DoNothing;
         }
 
-        public void Init()
+        public void Init(bool startWithLightsOn = false)
         {
             Status = ComponentStatus.UnInitialised;
 
@@ -37,7 +37,7 @@ namespace TinkerTank.MiscPeriherals
 
                 _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
                 LightList.Add(_fixedForwardLed);
-                LEDOn(_fixedForwardLed, false);
+                LEDOn(_fixedForwardLed, startWithLightsOn);
 
                 _appRoot.DebugDisplayText("LED init method complete, setting ready.", LogStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
@@ -50,22 +50,21 @@ namespace TinkerTank.MiscPeriherals
 
         }
 
-        public void RequestLightsDo(string payload)
+        public void RequestLightsDo(string[] payload)
         {
 
             //lightIdentifier-newOnValue
             //00-000-00000
 
-            _appRoot.DebugDisplayText("LED request: " + payload, LogStatusMessageTypes.Error);
+            _appRoot.DebugDisplayText("LED request: " + payload[2], LogStatusMessageTypes.Error);
 
-            var sp = payload.Split("-");
 
-            if (sp.Count() == 2)
+            if (payload.Count() > 2)
             {
                 try
                 {
-                    int lightIndex = Convert.ToInt32(sp[0]);
-                    int newStatus = Convert.ToInt32(sp[1]);
+                    int lightIndex = Convert.ToInt32(payload[1]);
+                    int newStatus = Convert.ToInt32(payload[2]);
                     bool newStatusBool = false;
 
                     var l = LightList[lightIndex];
@@ -95,10 +94,11 @@ namespace TinkerTank.MiscPeriherals
                 }
 
                 ledToChange.IsOn = newValue;
+                _appRoot.DebugDisplayText("LED on property changed to " + newValue, LogStatusMessageTypes.Information);
             }
             catch (Exception)
             {
-
+                _appRoot.DebugDisplayText("Error changing LED state.", LogStatusMessageTypes.Error);
             }
         }
 

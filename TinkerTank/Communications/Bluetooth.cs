@@ -57,6 +57,8 @@ namespace Communications
 
                 PrepareDefinition();
 
+                _appRoot.DebugDisplayText("Starting BLE server.", LogStatusMessageTypes.Information);
+
                 _device.BluetoothAdapter.StartBluetoothServer(PrimaryControlDefinition);
 
                 _appRoot.DebugDisplayText("BT Service started", LogStatusMessageTypes.Information);
@@ -76,6 +78,8 @@ namespace Communications
 
         private void PrepareDefinition()
         {
+            var success = true;
+
             _appRoot.DebugDisplayText("PrepBLEDefinitions", LogStatusMessageTypes.Debug);
 
             primaryControlService =
@@ -108,17 +112,21 @@ namespace Communications
                 catch (Exception ex)
                 {
                     _appRoot.DebugDisplayText("BLE Prepare Exception: " + ex.Message, LogStatusMessageTypes.Error);
+                    success = false;
                 }
             }
 
-            _appRoot.DebugDisplayText("Read properties set on BLE Chars", LogStatusMessageTypes.Debug);
+            if (success)
+            {
+                _appRoot.DebugDisplayText("Read properties set on BLE Chars", LogStatusMessageTypes.Debug);
+                PrimaryControlDefinition = new Definition(
+                    BLEConstants.definitionName,
+                    primaryControlService
+                    );
 
-            PrimaryControlDefinition = new Definition(
-                BLEConstants.definitionName,
-                primaryControlService
-                );
+                _appRoot.DebugDisplayText("BLEDefinition init complete", LogStatusMessageTypes.Debug);
 
-            _appRoot.DebugDisplayText("BLEDefinition init complete", LogStatusMessageTypes.Debug);
+            }
         }
 
         private void PrepareCharacteristics()
@@ -220,11 +228,18 @@ namespace Communications
                     catch (Exception dataEx)
                     {
                         _appRoot.DebugDisplayText("error at BT receive" + dataEx.Message, LogStatusMessageTypes.Error);
+                        return;
                     }
 
                     _appRoot.DebugDisplayText("Received " + c.Name + " with " + payload, LogStatusMessageTypes.BLERecord);
 
                     string[] payloadSplit = payload.Split(BLEConstants.BLEMessageDivider);
+
+                    if (payloadSplit == null)
+                    {
+                        _appRoot.DebugDisplayText("BLE payload split resulted in a null array" , LogStatusMessageTypes.Error);
+                        return;
+                    }
 
                     try
                     {      
@@ -248,6 +263,7 @@ namespace Communications
                     {
                         Status = ComponentStatus.Error;
                         _appRoot.DebugDisplayText("BT Error " + ex.Message, LogStatusMessageTypes.Error);
+                        return;
                     }
                 };
 
@@ -300,6 +316,13 @@ namespace Communications
         {
             //RemoteMsgID-0-PanTo-TiltTo-Speed
             //xxxxxxxx-0-000-000-0
+
+            if (payloadSplit == null)
+            {
+                _appRoot.DebugDisplayText("Null Error: Request Pan Tilt was called with a null string array payload.", LogStatusMessageTypes.Error);
+
+                return;
+            }
 
             try
             {        
@@ -403,7 +426,7 @@ namespace Communications
         {
             try
             {
-                _appRoot.LightsController.RequestLightsDo(payloadSplit[1]);
+                _appRoot.LightsController.RequestLightsDo(payloadSplit);
             }
             catch (Exception ex)
             {

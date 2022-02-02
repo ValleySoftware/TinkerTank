@@ -9,7 +9,6 @@ namespace TinkerTank.Sensors
 {
     public class BLESensorBase : TinkerBase
     {
-        private string _name;
         protected F7Micro _device;
         private Characteristic _characteristic;
         private object _sensorValue;
@@ -20,14 +19,8 @@ namespace TinkerTank.Sensors
         {
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
-            _name = name;
+            Name = name;
             _minimumInterval = TimeSpan.FromSeconds(1);
-        }
-
-        public string Name
-        {
-            get => _name;
-            set => _name = value;
         }
 
         public bool AssignBluetoothCharacteristicToUpdate(Characteristic characteristicString)

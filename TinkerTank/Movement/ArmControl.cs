@@ -25,14 +25,14 @@ namespace TinkerTank.Movement
         {
             _appRoot = MeadowApp.Current;
             _servoControllerDevice = servoControllerDevice;
-            Status = Enumerations.ComponentStatus.UnInitialised;
+            Status = ComponentStatus.UnInitialised;
         }
 
         public void Init()
         {
             try
             {
-                _appRoot.DebugDisplayText("Init Arm");
+                _appRoot.DebugDisplayText("Init Arm", LogStatusMessageTypes.Debug);
 
                 if (servos == null)
                 {
@@ -64,29 +64,14 @@ namespace TinkerTank.Movement
                 ClawServo = new TinkerServoBase(_servoControllerDevice, 6, ServoType.MG996R, null, null, "Claw");// higher = closed. Lower = open
                 servos.Add(ClawServo);
                 ClawServo.InitServo();
-                //ClawServo.servoDirectAccess.RotateTo(new Meadow.Units.Angle(200, Meadow.Units.Angle.UnitType.Degrees));
-                //ClawServo.SafeIshRotate();
-
-                //Test Servo
-
-                //var testservo  = new TinkerServoBase(_appRoot, _servoControllerDevice, 5, ServoType.MG996R, null, null, "Test Servo");//
-                //testservo.InitServo();                
-
-                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MaximumAngle.Degrees, LogStatusMessageTypes.Important);
-                //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MaximumAngle);
-
-                //Thread.Sleep((int)Math.Round(TimeSpan.FromSeconds(2).TotalMilliseconds));
-
-                //_appRoot.DebugDisplayText("test rotate to " + testservo.servoDirectAccess.Config.MinimumAngle.Degrees, LogStatusMessageTypes.Important);
-                //testservo.servoDirectAccess.RotateTo(testservo.servoDirectAccess.Config.MinimumAngle);
 
                 Status = Enumerations.ComponentStatus.Ready;
-                _appRoot.DebugDisplayText("arm - init complete");
+                _appRoot.DebugDisplayText("arm - init complete", LogStatusMessageTypes.Information);
             }
             catch (Exception e)
             {
                 _appRoot.DebugDisplayText("e - " + e.Message, Enumerations.LogStatusMessageTypes.Error);
-                Status = Enumerations.ComponentStatus.Error;
+                Status = ComponentStatus.Error;
             }
         }
 

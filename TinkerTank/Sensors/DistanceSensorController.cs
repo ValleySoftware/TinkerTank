@@ -26,7 +26,7 @@ namespace TinkerTank.Sensors
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
 
-            _appRoot.DebugDisplayText("Distance sensor controller Constructor");
+            _appRoot.DebugDisplayText("Distance sensor controller Constructor", LogStatusMessageTypes.Information);
             Status = ComponentStatus.UnInitialised;
 
             _i2cExpander = i2cExpander;

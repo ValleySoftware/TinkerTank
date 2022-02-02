@@ -19,9 +19,9 @@ namespace Enumerations
     public class BLEConstants
     {
 
-        public const string definitionName = "BerthaDefinition";
-        public const string serviceName = "BerthaService";
-        public const ushort serviceUuid = 41;
+        public const string definitionName = "BerthaControl";
+        public const string serviceName = "Bertha";
+        public const ushort serviceUuid = 42;
 
         public const string BLEMessageDivider = "#";
 

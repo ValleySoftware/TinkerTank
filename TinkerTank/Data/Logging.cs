@@ -16,6 +16,12 @@ namespace TinkerTank.Data
         private DisplayBase lcd;
         private DebugLogEntryModel _currentLog;
 
+
+        public Logging() : base()
+        {
+
+        }
+
         public void Init(DataStore con)
         {
             _appRoot = MeadowApp.Current;
@@ -28,8 +34,9 @@ namespace TinkerTank.Data
                 try
                 {
                     AddLogEntry("start lcd", LogStatusMessageTypes.Important);
+                    AddLogEntry(MeadowApp.Current.DisplayModel.ToString(), LogStatusMessageTypes.Important);
                     if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.ST7789_SPI_240x240)
-                    {
+                    { 
                         lcd = new LCDDisplay_ST7789(this);
                         lcd.Init();
                     }
@@ -44,9 +51,9 @@ namespace TinkerTank.Data
                         lcd.Init();
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    AddLogEntry("init lcd error " + ex.Message, LogStatusMessageTypes.Error);
                 }
             }
         }
@@ -64,8 +71,8 @@ namespace TinkerTank.Data
         {
             if (dbcon != null)
             {
-                await Task.Run(() =>
-                {
+                //await Task.Run(() =>
+                //{
                     try
                     {
 
@@ -124,7 +131,7 @@ namespace TinkerTank.Data
                     {
                         Console.WriteLine(logEx.Message);
                     }
-                });
+                //});
             }
         }
 

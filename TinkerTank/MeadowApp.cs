@@ -25,8 +25,6 @@ using static TinkerTank.Display.DisplayBase;
 
 namespace TinkerTank
 {
-
-
     public class MeadowApp : App<F7Micro, MeadowApp>
     {
         public Lights LightsController;
@@ -61,14 +59,16 @@ namespace TinkerTank
         private System.Timers.Timer _statusPoller;
 
         private bool EnableDistanceSensors = true;
-        private bool EnablePanTiltSensors = true;
+        private bool EnablePanTiltControl = true;
         public bool EnableDisplay = true;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
-        private bool EnableStatusPolling = true;
+        private bool EnableStatusPolling = false;
+        private bool AllowInitDB = true;
+        public bool EnableDBLogging = true;
         public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
 
-        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Debug;
+        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Important;
 
         public Logging Logger;
 
@@ -83,15 +83,17 @@ namespace TinkerTank
             Init();
         }
 
+        
+
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Console.WriteLine("Unhandled Exception Raised to Domain");
+            Console.WriteLine("******  Unhandled Exception Raised to Domain  ******");
             //DebugDisplayText("Unhandled Exception Raised to Domain. " + sender.ToString(), LogStatusMessageTypes.Error);
         }
 
         private void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
-            Console.WriteLine("Unhandled First Chance Exception Raised to Domain");
+            Console.WriteLine("******  Unhandled First Chance Exception Raised to Domain  ******");
         }
 
         void Init()
@@ -108,6 +110,7 @@ namespace TinkerTank
             catch (Exception)
             {
                 //very bad
+                DebugDisplayText("INIT Onboard meadow lighs error", LogStatusMessageTypes.Error);
             }
 
             //I2C
@@ -120,19 +123,23 @@ namespace TinkerTank
             catch (Exception)
             {
                 //very bad
+                DebugDisplayText("INIT I2C ERROR", LogStatusMessageTypes.CriticalError);
             }
 
             try
             {
-                //Initialise the database
-                DebugDisplayText("Init DB", LogStatusMessageTypes.Important);
-                dbcon = new DataStore();
-                dbcon.InitDB(WipeDBOnStartup);
+                if (AllowInitDB)
+                {
+                    //Initialise the database
+                    DebugDisplayText("Init DB", LogStatusMessageTypes.Important);
+                    dbcon = new DataStore();
+                    dbcon.InitDB(WipeDBOnStartup);
+                }
 
             }
             catch (Exception dbMasterEx)
             {
-
+                DebugDisplayText("INIT DB error", LogStatusMessageTypes.Error);
             }
 
             try
@@ -149,6 +156,17 @@ namespace TinkerTank
             try
             { 
                 TBObjects = new List<TinkerBase>();
+
+                try
+                {
+                    DebugDisplayText("start lights controller", LogStatusMessageTypes.Important);
+                    LightsController = new Lights();
+                    LightsController.Init(false);
+                }
+                catch (Exception)
+                {
+
+                }
 
                 //Communications and control
 
@@ -207,15 +225,17 @@ namespace TinkerTank
 
                     }
                     catch (Exception)
-                    { }
+                    {
+
+                    }
                 }   
 
 
-                DebugDisplayText("Begining Camera and Sensor init", LogStatusMessageTypes.Important);
                 //Camera and Sensor
 
-                if (EnablePanTiltSensors)
+                if (EnablePanTiltControl)
                 {
+                    DebugDisplayText("Begining Pan Tilt control init", LogStatusMessageTypes.Important);
                     try
                     {
                         panTiltSensorCombo = new
@@ -227,7 +247,6 @@ namespace TinkerTank
                         panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
                         panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
                         panTiltSensorCombo.AssignBluetoothCharacteristicToUpdate(communications.charPanTilt);
-                        //panTiltSensorCombo.GoToDefault();
                     }
                     catch (Exception e)
                     {
@@ -235,34 +254,27 @@ namespace TinkerTank
                     }
                 }
 
-
-                try
-                {
-                    LightsController = new Lights();
-                    LightsController.Init();
-                }
-                catch (Exception)
-                {
-
-                }
-
-
                 //Final
 
                 if (EnableStatusPolling)
                 {
                     DebugDisplayText("Begining regular polling", LogStatusMessageTypes.Important);
-                    _statusPoller = new System.Timers.Timer(2000);
+                    _statusPoller = new System.Timers.Timer(4000);
                     _statusPoller.Elapsed += _statusPoller_Elapsed;
                     _statusPoller.AutoReset = true;
                     _statusPoller.Enabled = true;
+
+                    // enable the watchdog for 10s
+                    Device.WatchdogEnable(TimeSpan.FromSeconds(10));
                 }
 
+                SetStatus(ComponentStatus.Ready);
                 DebugDisplayText("Startup Complete", LogStatusMessageTypes.Important);
             }
             catch (Exception iex)
             {
                 DebugDisplayText("Main Init Exception: " + iex.Message, LogStatusMessageTypes.Error);
+                SetStatus(ComponentStatus.Error);
             }
         }
 
@@ -278,33 +290,62 @@ namespace TinkerTank
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
+            Device.WatchdogReset();
             RefreshStatus();
         }
 
         public void RefreshStatus()
         {
-            SetStatus(ComponentStatus.None);
-
-            foreach (var element in TBObjects)
+            try
             {
-                SetStatus(element.Status);
+                SetStatus(ComponentStatus.None);
 
-                if (element.Status == ComponentStatus.Error ||
-                    element.Status == ComponentStatus.UnInitialised)
+                foreach (var element in TBObjects)
                 {
-                    switch (element.ErrorResponse)
-                    {
-                        case AutomaticErrorResponse.DoNothing: break;
-                        case AutomaticErrorResponse.TryReload: break;
-                        case AutomaticErrorResponse.Warn: break;
-                        case AutomaticErrorResponse.DisableComponent: break;
-                        case AutomaticErrorResponse.DisableMotorPower: try { powerController.Disconnect(); } catch (Exception) { }; break;
-                    }
+                    SetStatus(element.Status);
 
-                    DebugDisplayText(element.GetType().ToString() + " inopperable.  : ", LogStatusMessageTypes.Error);
-                    
-                    break;
+                    try
+                    {
+                        if (!element.Disabled)
+                        {
+                            if (element.Status == ComponentStatus.Error ||
+                                element.Status == ComponentStatus.UnInitialised)
+                            {
+                                switch (element.ErrorResponse)
+                                {
+                                    case AutomaticErrorResponse.DoNothing: break;
+                                    case AutomaticErrorResponse.TryReload: break;
+                                    case AutomaticErrorResponse.Warn: break;
+                                    case AutomaticErrorResponse.DisableComponent: break;
+                                    case AutomaticErrorResponse.DisableMotorPower: try { powerController.Disconnect(); } catch (Exception) { }; break;
+                                }
+
+                                DebugDisplayText(element.GetType().ToString() + " inopperable.  : ", LogStatusMessageTypes.Error);
+
+                                break;
+                            }
+                            else
+                            {
+                                element.ErrorCount = 0;
+                            }
+                        }
+                    }
+                    catch (Exception exInner)
+                    {
+                        element.ErrorCount++;
+                        DebugDisplayText("Global status check inner error" + exInner.Message, LogStatusMessageTypes.Error);
+
+                        if (element.ErrorCount > element.ErrorTriggerCount)
+                        {
+                            element.Disabled = true;
+                            element.Status = ComponentStatus.Error;
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                DebugDisplayText("Global status check broad error" + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 
@@ -337,8 +378,6 @@ namespace TinkerTank
                     default:
                         break;
                 }
-        
-        
             }
         }
 

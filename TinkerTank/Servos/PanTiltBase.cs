@@ -16,7 +16,6 @@ namespace Servos
     {
         private TinkerServoBase servoPan;
         private TinkerServoBase servoTilt;
-        private string _name;
         protected PCA9685 _servoControllerDevice;
 
         bool _stopRequested = false;
@@ -27,7 +26,7 @@ namespace Servos
         {
             _appRoot = MeadowApp.Current;
             _servoControllerDevice = servoControllerDevice;
-            _name = name;
+            Name = name;
         }
 
         public bool StopRequested
@@ -38,12 +37,12 @@ namespace Servos
 
         public virtual void Init(int panPwmPort, int tiltPwmPort, ServoType servoType = ServoType.SG90)
         {
-            servoPan = new TinkerServoBase(_servoControllerDevice, panPwmPort, servoType, null, null, "Pan");
-            servoPan.InitServo();
-            servoTilt = new TinkerServoBase(_servoControllerDevice, tiltPwmPort, servoType, null, null, "Tilt");
-            servoTilt.InitServo();
+            servoPan = new TinkerServoBase(_servoControllerDevice, panPwmPort, servoType, null, null, Name + "Pan");
+            servoPan.InitServo(true);
+            servoTilt = new TinkerServoBase(_servoControllerDevice, tiltPwmPort, servoType, null, null, Name + "Tilt");
+            servoTilt.InitServo(true);
 
-            _appRoot.DebugDisplayText("PanTilt " + Name + " registered and ready on ports " + panPwmPort + " and " + tiltPwmPort);
+            _appRoot.DebugDisplayText(Name + " registered and ready on ports " + panPwmPort + " and " + tiltPwmPort);
             Status = ComponentStatus.Ready;
         }
 
@@ -129,12 +128,6 @@ namespace Servos
                 }
         }
 
-        public string Name
-        {
-            get => _name;
-            set => _name = value;
-        }
-
         public Angle? DefaultPan
         {
             get => servoPan.DefaultAngle;
@@ -163,7 +156,7 @@ namespace Servos
                 StopRequested = false;
 
                     Status = ComponentStatus.Action;
-                    _appRoot.DebugDisplayText("Pan/Tilt Running");
+                    _appRoot.DebugDisplayText("Pan/Tilt Running", LogStatusMessageTypes.Debug);
 
                 if (movementSpeed == ServoMovementSpeed.Stop)
                 {
@@ -175,7 +168,7 @@ namespace Servos
                     {
                         try
                         {
-                            _appRoot.DebugDisplayText("Pan speed flank");
+                            _appRoot.DebugDisplayText("Pan speed flank", LogStatusMessageTypes.Debug);
 
                             if (destinationPanAngle != null)
                             {
@@ -187,16 +180,16 @@ namespace Servos
                                 _ = servoTilt.SafeIshRotate(destinationTiltAngle);
                             }
 
-                            _appRoot.DebugDisplayText("Pan/Tilt at flank finished");
+                            _appRoot.DebugDisplayText("Pan/Tilt at flank finished", LogStatusMessageTypes.Debug);
                         }
                         catch (Exception PanTiltFlankEx)
                         {
-                            _appRoot.DebugDisplayText("Pan/Tilt flank " + PanTiltFlankEx.Message);
+                            _appRoot.DebugDisplayText("Pan/Tilt flank " + PanTiltFlankEx.Message, LogStatusMessageTypes.Error);
                         }
                     }
                     else
                     {
-                        _appRoot.DebugDisplayText("Slow Pan/Tilt requested.");
+                        _appRoot.DebugDisplayText("Slow Pan/Tilt requested.", LogStatusMessageTypes.Debug);
 
                         int millisecondDelay = 0;
 
@@ -221,7 +214,7 @@ namespace Servos
                                 "/" +
                                 destinationTiltAngle.Value.Degrees +
                                 " with " +
-                                millisecondDelay);
+                                millisecondDelay, LogStatusMessageTypes.Debug);
 
                         bool continuePanLooping = true;
                         bool continueTiltLooping = true;
@@ -312,7 +305,7 @@ namespace Servos
                 while (!StopRequested)
                 {
 
-                    _appRoot.DebugDisplayText("Pan to Min (" + servoPan.MinAngle.Value.Degrees + ")");
+                    _appRoot.DebugDisplayText("Pan to Min (" + servoPan.MinAngle.Value.Degrees + ")", LogStatusMessageTypes.Debug);
 
                     Move(servoPan.MinAngle, servoTilt.CurrentAngle, speed);
 
@@ -321,7 +314,7 @@ namespace Servos
                         break;
                     }
 
-                    _appRoot.DebugDisplayText("Pan to Max (" + servoPan.MaxAngle.Value.Degrees + ")");
+                    _appRoot.DebugDisplayText("Pan to Max (" + servoPan.MaxAngle.Value.Degrees + ")", LogStatusMessageTypes.Debug);
 
                     Move(servoPan.MaxAngle, servoTilt.CurrentAngle, speed);
 

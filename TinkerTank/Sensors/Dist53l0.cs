@@ -51,6 +51,7 @@ namespace TinkerTank.Sensors
         {
             distanceSensor.Updated += DistanceSensor_Updated;
             distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
+            ErrorCount = 0;
         }        
 
         private void DistanceSensor_Updated(object sender, Meadow.IChangeResult<Meadow.Units.Length> e)
@@ -62,14 +63,21 @@ namespace TinkerTank.Sensors
                 e.New.Millimeters == -1
                 )
             {
+                ErrorCount++;
+                _appRoot.DebugDisplayText("Error (null) reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Error);
                 return;
             }
 
-            SensorValue = Convert.ToInt32(Math.Round(e.New.Millimeters));
-
-            //_appRoot.DebugDisplayText($"{Name} - {SensorValue}mm", LogStatusMessageTypes.Debug);
-
-            //LaserOff();
+            try
+            {
+                SensorValue = Convert.ToInt32(Math.Round(e.New.Millimeters));
+                ErrorCount = 0;
+            }
+            catch
+            {
+                ErrorCount++;
+                _appRoot.DebugDisplayText("Error reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Error);
+            }
         }
 
         public void LaserOn()

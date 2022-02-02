@@ -36,7 +36,8 @@ namespace TinkerTank.Data
 
     public class DataStore
     {
-        SQLite.SQLiteConnection dbcon;
+        MeadowApp _appRoot;
+        SQLiteConnection dbcon;
         private BootRecordModel thisBootRecord;
 
         public static string GenerateRandomString()
@@ -52,6 +53,8 @@ namespace TinkerTank.Data
 
         public void InitDB(bool wipeDBOnStartup)
         {
+            _appRoot = MeadowApp.Current;
+
             var databasePath = Path.Combine(MeadowOS.FileSystem.DataDirectory, "BerthaDB.db");
             dbcon = new SQLiteConnection(databasePath);
             dbcon.CreateTable<BootRecordModel>();
@@ -70,8 +73,16 @@ namespace TinkerTank.Data
                 }
             }
 
-            thisBootRecord = new BootRecordModel() { ID = GenerateRandomString(), RecordedStamp = DateTimeOffset.Now };
+            thisBootRecord = new BootRecordModel() 
+            { 
+                ID = GenerateRandomString(), 
+                RecordedStamp = DateTimeOffset.Now 
+            };
+
             dbcon.Insert(thisBootRecord);
+
+            Console.WriteLine("thisBootRecord inserted successfully " + thisBootRecord.SQL_ID);
+
         }
 
         public bool UpsertDebugLogEntry(DebugLogEntryModel model)
@@ -87,23 +98,30 @@ namespace TinkerTank.Data
 
                 if (string.IsNullOrEmpty(model.Boot_ID))
                 {
+                    if (thisBootRecord == null)
+                    {
+                        Console.WriteLine("**** ThisBootRecord not available in DataStore ****");
+                    }
                     model.Boot_ID = thisBootRecord.ID;
                 }
 
-                if (model.SQL_ID == 0)
+                if (_appRoot.EnableDBLogging)
                 {
-                    //new
-                    //dbcon.Insert(model);
-                    //Task.Run(() => dbcon.Insert(model));
-                }
-                else
-                {
-                    //update
-                    //dbcon.Update(model);
+                    if (model.SQL_ID == 0)
+                    {
+                        //new
+                        dbcon.Insert(model);
+                    }
+                    else
+                    {
+                        //update
+                        dbcon.Update(model);
+                    }
                 }
             }
             catch (Exception)
             {
+                Console.WriteLine("Exception in UpsertDBLog Method");
 
             }
 
