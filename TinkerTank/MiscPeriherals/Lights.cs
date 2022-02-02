@@ -35,7 +35,7 @@ namespace TinkerTank.MiscPeriherals
             {
                 _appRoot.DebugDisplayText("LED init method started.", LogStatusMessageTypes.Debug);
 
-                _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
+                _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D03));
                 LightList.Add(_fixedForwardLed);
                 LEDOn(_fixedForwardLed, startWithLightsOn);
 

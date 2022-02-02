@@ -63,7 +63,8 @@ namespace TinkerTank
         public bool EnableDisplay = true;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
-        private bool EnableStatusPolling = false;
+        private bool EnableStatusPolling = true;
+        public bool EnableWatchDog = false;
         private bool AllowInitDB = true;
         public bool EnableDBLogging = true;
         public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
@@ -265,7 +266,10 @@ namespace TinkerTank
                     _statusPoller.Enabled = true;
 
                     // enable the watchdog for 10s
-                    Device.WatchdogEnable(TimeSpan.FromSeconds(10));
+                    if (EnableWatchDog)
+                    {
+                        Device.WatchdogEnable(TimeSpan.FromSeconds(10));
+                    }
                 }
 
                 SetStatus(ComponentStatus.Ready);
@@ -290,7 +294,10 @@ namespace TinkerTank
 
         private void _statusPoller_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Device.WatchdogReset();
+            if (EnableWatchDog)
+            {
+                Device.WatchdogReset();
+            }
             RefreshStatus();
         }
 
