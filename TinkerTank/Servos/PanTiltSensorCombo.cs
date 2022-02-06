@@ -14,7 +14,7 @@ namespace TinkerTank.Servos
         public Dist53l0 Sensor { get; set; }
 
         private readonly bool _reversePan = true;
-        private readonly bool _reverseTilt = false;
+        private readonly bool _reverseTilt = true;
 
         public PanTiltSensorCombo(PCA9685 servoControllerDevice, string name) :
             base(servoControllerDevice, name)

@@ -244,9 +244,9 @@ namespace TinkerTank
                                 i2CPWMController,
                                 "Pan Tilt Sensor Array");
 
-                        panTiltSensorCombo.Init(2, 3, distController.PeriscopeDistance);
-                        panTiltSensorCombo.DefaultPan = new Angle(140); //Bigger number = counter clockwise
-                        panTiltSensorCombo.DefaultTilt = new Angle(160); //Bigger number = forward/down
+                        panTiltSensorCombo.Init(0, 1, distController.PeriscopeDistance);
+                        panTiltSensorCombo.DefaultPan = new Angle(20); 
+                        panTiltSensorCombo.DefaultTilt = new Angle(45); 
                         panTiltSensorCombo.AssignBluetoothCharacteristicToUpdate(communications.charPanTilt);
                     }
                     catch (Exception e)
