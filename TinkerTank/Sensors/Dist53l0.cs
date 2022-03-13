@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace TinkerTank.Sensors
 {
-    public class Dist53l0 : BLESensorBase, ITinkerBase, ISensor
+    public class Dist53l0 : BLESensorBase, ITinkerBase, IValleySensor
     {
         private Vl53l0x distanceSensor;
         public IPin LaserPin { get; set; }
@@ -36,7 +36,7 @@ namespace TinkerTank.Sensors
 
                 LaserOn();
 
-                _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", LogStatusMessageTypes.Debug);
+                _appRoot.DebugDisplayText("dist sensor init method complete, setting ready.", LogStatusMessageTypes.Important);
                 Status = ComponentStatus.Ready;
             }
             catch (Exception ex)
@@ -49,10 +49,21 @@ namespace TinkerTank.Sensors
 
         public void BeginPolling()
         {
-            distanceSensor.Updated += DistanceSensor_Updated;
-            distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
-            ErrorCount = 0;
-        }        
+            if (Status == ComponentStatus.Ready)
+            {
+                distanceSensor.Updated += DistanceSensor_Updated;
+                distanceSensor.StartUpdating(TimeSpan.FromMilliseconds(UpdateIntervalInMS));
+                ErrorCount = 0;
+            }
+        }   
+        
+        public void StopPolling()
+        {
+            if (distanceSensor != null)
+            {
+                distanceSensor.StopUpdating();
+            }
+        }
 
         private void DistanceSensor_Updated(object sender, Meadow.IChangeResult<Meadow.Units.Length> e)
         {
@@ -64,19 +75,34 @@ namespace TinkerTank.Sensors
                 )
             {
                 ErrorCount++;
-                _appRoot.DebugDisplayText("Error (null) reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Error);
+                if (ErrorCount == 1)
+                {
+                    _appRoot.DebugDisplayText("Error (null) reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Debug);
+                }
+                else
+                {
+                    _appRoot.DebugDisplayText("Error (null) reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Error);
+                }
+
+                if (ErrorCount >= 5)
+                {
+                    _appRoot.DebugDisplayText("dist sensor " + Name + " has hit error limit.  Disabling now. " , LogStatusMessageTypes.Error);
+                    Status = ComponentStatus.Error;
+                    StopPolling();
+                }
                 return;
             }
 
             try
             {
-                SensorValue = Convert.ToInt32(Math.Round(e.New.Millimeters));
+                var r = Math.Round(e.New.Millimeters);
+                SensorValue = Convert.ToInt32(r);
                 ErrorCount = 0;
             }
-            catch
+            catch (Exception ex)
             {
                 ErrorCount++;
-                _appRoot.DebugDisplayText("Error reading distance from " + Name + " error no. " + ErrorCount, LogStatusMessageTypes.Error);
+                _appRoot.DebugDisplayText("Error reading distance from " + Name + " error no. " + ErrorCount + ex.Message, LogStatusMessageTypes.Error);
             }
         }
 

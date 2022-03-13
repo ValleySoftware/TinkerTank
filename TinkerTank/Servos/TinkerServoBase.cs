@@ -63,6 +63,8 @@ namespace TinkerTank.Servos
             _minAngle = minAngle;
             _maxAngle = maxAngle;
             _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
+
+            _appRoot.DebugDisplayText(Name + " - instantiated. " + portIndex + "/" + typeOfServo + "/" + minAngle + "/" + maxAngle, LogStatusMessageTypes.Debug);
         }
 
         public double AdjustRotationBy(double amountToRotate = 5)
@@ -94,12 +96,28 @@ namespace TinkerTank.Servos
 
                 _appRoot.DebugDisplayText(Name + " - safeishrotate to " + NormalisedAngle.Degrees, LogStatusMessageTypes.Debug);
                 Status = ComponentStatus.Action;
-                _appRoot.DebugDisplayText("A");
 
                 double result = -1;
-                _appRoot.DebugDisplayText("B");
 
-                if (NormalisedAngle.Degrees >= MinAngle.GetValueOrDefault().Degrees &&
+                try
+                {
+                    _appRoot.DebugDisplayText(MinAngle.Value.ToString(), LogStatusMessageTypes.Important);
+                }
+                catch (Exception minAngleEx)
+                {
+                    _appRoot.DebugDisplayText("Min Angle error: " + minAngleEx, LogStatusMessageTypes.Error);
+                }
+
+                try
+                {
+                    _appRoot.DebugDisplayText(MaxAngle.Value.ToString(), LogStatusMessageTypes.Important);
+                }
+                catch (Exception maxAngleEx)
+                {
+                    _appRoot.DebugDisplayText("Min Angle error: " + maxAngleEx, LogStatusMessageTypes.Error);
+                }
+
+            if (NormalisedAngle.Degrees >= MinAngle.GetValueOrDefault().Degrees &&
                     NormalisedAngle.Degrees <= MaxAngle.GetValueOrDefault().Degrees)
                 {
                     _appRoot.DebugDisplayText(Name + " - Rotating to " + NormalisedAngle.ToString(), LogStatusMessageTypes.Debug);

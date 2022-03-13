@@ -11,7 +11,7 @@ using Enumerations;
 
 namespace Base
 {
-    public class TinkerBase
+    public abstract partial class TinkerBase
     {
 
         protected ComponentStatus _status = ComponentStatus.UnInitialised;
@@ -64,5 +64,6 @@ namespace Base
             get => _errorResponse;
             set => _errorResponse = value;
         }
+
     }
 }

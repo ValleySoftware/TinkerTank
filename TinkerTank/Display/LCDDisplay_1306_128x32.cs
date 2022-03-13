@@ -23,12 +23,18 @@ namespace TinkerTank.Display
 
             display = new Ssd1306
             (
-                i2cBus: MeadowApp.Device.CreateI2cBus(Meadow.Hardware.I2cBusSpeed.FastPlus),
+                i2cBus: _appRoot.primaryi2CBus,
                 address: 60,
                 displayType: Ssd1306.DisplayType.OLED128x32
             );
 
             graphics = new MicroGraphics(display);
+        }
+
+        public override void Init()
+        {
+            DoDisplaySpecificInit();
+            base.Init();
         }
 
         public void RefreshStatus()

@@ -110,13 +110,11 @@ namespace TinkerTank.Display
             set => _typeOfDisplay = value;
         }
 
-        public void Init()
+        public virtual void Init()
         {
             try
             {
                 Status = ComponentStatus.UnInitialised;
-
-                DoDisplaySpecificInit();
 
                 graphics.CurrentFont = new Font12x20();
 
@@ -130,20 +128,5 @@ namespace TinkerTank.Display
         }
 
         public abstract void DoDisplaySpecificInit();
-
-        public void RefreshStatus()
-        {
-
-        }
-
-        public void Test()
-        {
-
-        }
-
-        public void ErrorEncountered()
-        {
-
-        }
     }
 }

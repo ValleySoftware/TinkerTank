@@ -152,127 +152,130 @@ namespace Servos
             if (Status != ComponentStatus.Error &&
                 Status != ComponentStatus.UnInitialised)
             {
-
-                StopRequested = false;
+                Task t = new Task(() =>
+                {
+                    StopRequested = false;
 
                     Status = ComponentStatus.Action;
                     _appRoot.DebugDisplayText("Pan/Tilt Running", LogStatusMessageTypes.Debug);
 
-                if (movementSpeed == ServoMovementSpeed.Stop)
-                {
-                    StopRequested = true;
-                }
-                else
-                {
-                    if (movementSpeed == ServoMovementSpeed.Flank)
+                    if (movementSpeed == ServoMovementSpeed.Stop)
                     {
-                        try
-                        {
-                            _appRoot.DebugDisplayText("Pan speed flank", LogStatusMessageTypes.Debug);
-
-                            if (destinationPanAngle != null)
-                            {
-                                _ = servoPan.SafeIshRotate(destinationPanAngle);
-                            }
-
-                            if (destinationTiltAngle != null)
-                            {
-                                _ = servoTilt.SafeIshRotate(destinationTiltAngle);
-                            }
-
-                            _appRoot.DebugDisplayText("Pan/Tilt at flank finished", LogStatusMessageTypes.Debug);
-                        }
-                        catch (Exception PanTiltFlankEx)
-                        {
-                            _appRoot.DebugDisplayText("Pan/Tilt flank " + PanTiltFlankEx.Message, LogStatusMessageTypes.Error);
-                        }
+                        StopRequested = true;
                     }
                     else
                     {
-                        _appRoot.DebugDisplayText("Slow Pan/Tilt requested.", LogStatusMessageTypes.Debug);
-
-                        int millisecondDelay = 0;
-
-                        switch (movementSpeed)
+                        if (movementSpeed == ServoMovementSpeed.Flank)
                         {
-                            case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
-                            case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
-                            case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
-                            default: millisecondDelay = 250; break;
-                        }
-
-                        Angle? panStepPos = new Angle(CurrentPanPosition.Value.Degrees);
-                        Angle? tiltStepPos = new Angle(CurrentTiltPosition.Value.Degrees);
-
-                        _appRoot.DebugDisplayText(
-                                "servo move from " +
-                                panStepPos.Value.Degrees +
-                                "/" +
-                                tiltStepPos.Value.Degrees +
-                                " to " +
-                                destinationPanAngle.Value.Degrees +
-                                "/" +
-                                destinationTiltAngle.Value.Degrees +
-                                " with " +
-                                millisecondDelay, LogStatusMessageTypes.Debug);
-
-                        bool continuePanLooping = true;
-                        bool continueTiltLooping = true;
-                        var panIncriment = 1;
-                        var tiltIncriment = 1;
-
-                        if (panStepPos.Value.Degrees < destinationPanAngle.Value.Degrees)
-                        {
-                            panIncriment = -1;
-                        }
-
-                        if (tiltStepPos.Value.Degrees < destinationTiltAngle.Value.Degrees)
-                        {
-                            tiltIncriment = -1;
-                        }
-
-                        while (
-                            continuePanLooping ||
-                            continueTiltLooping)
-                        {
-                            double panMoveResult = -1;
-                            double tiltMoveResult = -1;
-
-                            if (Math.Round(panStepPos.Value.Degrees) != Math.Round(destinationPanAngle.Value.Degrees))
+                            try
                             {
-                                panStepPos = new Angle(panStepPos.Value.Degrees + panIncriment);
-                                panMoveResult = servoPan.SafeIshRotate(panStepPos);
+                                _appRoot.DebugDisplayText("Pan speed flank", LogStatusMessageTypes.Debug);
+
+                                if (destinationPanAngle != null)
+                                {
+                                    _ = servoPan.SafeIshRotate(destinationPanAngle);
+                                }
+
+                                if (destinationTiltAngle != null)
+                                {
+                                    _ = servoTilt.SafeIshRotate(destinationTiltAngle);
+                                }
+
+                                _appRoot.DebugDisplayText("Pan/Tilt at flank finished", LogStatusMessageTypes.Debug);
                             }
-                            else
+                            catch (Exception PanTiltFlankEx)
                             {
-                                continuePanLooping = false;
-                            }
-
-                            if (Math.Round(tiltStepPos.Value.Degrees) != Math.Round(destinationTiltAngle.Value.Degrees))
-                            {
-                                tiltStepPos = new Angle(tiltStepPos.Value.Degrees + tiltIncriment);
-                                tiltMoveResult = servoPan.SafeIshRotate(tiltStepPos);
-                            }
-                            else
-                            {
-                                continueTiltLooping = false;
-                            }
-
-                            Thread.Sleep(millisecondDelay);
-
-                            if (StopRequested ||
-                                panMoveResult == -1 ||
-                                tiltMoveResult == -1)
-                            {
-                                break;
+                                _appRoot.DebugDisplayText("Pan/Tilt flank " + PanTiltFlankEx.Message, LogStatusMessageTypes.Error);
                             }
                         }
+                        else
+                        {
+                            _appRoot.DebugDisplayText("Slow Pan/Tilt requested.", LogStatusMessageTypes.Debug);
 
+                            int millisecondDelay = 0;
+
+                            switch (movementSpeed)
+                            {
+                                case ServoMovementSpeed.Slow: millisecondDelay = 500; break;
+                                case ServoMovementSpeed.Medium: millisecondDelay = 250; break;
+                                case ServoMovementSpeed.Fast: millisecondDelay = 125; break;
+                                default: millisecondDelay = 250; break;
+                            }
+
+                            Angle? panStepPos = new Angle(CurrentPanPosition.Value.Degrees);
+                            Angle? tiltStepPos = new Angle(CurrentTiltPosition.Value.Degrees);
+
+                            _appRoot.DebugDisplayText(
+                                    "servo move from " +
+                                    panStepPos.Value.Degrees +
+                                    "/" +
+                                    tiltStepPos.Value.Degrees +
+                                    " to " +
+                                    destinationPanAngle.Value.Degrees +
+                                    "/" +
+                                    destinationTiltAngle.Value.Degrees +
+                                    " with " +
+                                    millisecondDelay, LogStatusMessageTypes.Debug);
+
+                            bool continuePanLooping = true;
+                            bool continueTiltLooping = true;
+                            var panIncriment = 1;
+                            var tiltIncriment = 1;
+
+                            if (panStepPos.Value.Degrees < destinationPanAngle.Value.Degrees)
+                            {
+                                panIncriment = -1;
+                            }
+
+                            if (tiltStepPos.Value.Degrees < destinationTiltAngle.Value.Degrees)
+                            {
+                                tiltIncriment = -1;
+                            }
+
+                            while (
+                                continuePanLooping ||
+                                continueTiltLooping)
+                            {
+                                double panMoveResult = -1;
+                                double tiltMoveResult = -1;
+
+                                if (Math.Round(panStepPos.Value.Degrees) != Math.Round(destinationPanAngle.Value.Degrees))
+                                {
+                                    panStepPos = new Angle(panStepPos.Value.Degrees + panIncriment);
+                                    panMoveResult = servoPan.SafeIshRotate(panStepPos);
+                                }
+                                else
+                                {
+                                    continuePanLooping = false;
+                                }
+
+                                if (Math.Round(tiltStepPos.Value.Degrees) != Math.Round(destinationTiltAngle.Value.Degrees))
+                                {
+                                    tiltStepPos = new Angle(tiltStepPos.Value.Degrees + tiltIncriment);
+                                    tiltMoveResult = servoPan.SafeIshRotate(tiltStepPos);
+                                }
+                                else
+                                {
+                                    continueTiltLooping = false;
+                                }
+
+                                Thread.Sleep(millisecondDelay);
+
+                                if (StopRequested ||
+                                    panMoveResult == -1 ||
+                                    tiltMoveResult == -1)
+                                {
+                                    break;
+                                }
+                            }
+
+                        }
+                        Status = ComponentStatus.Ready;
+
+                        //UpdateBleValue();
                     }
-                    Status = ComponentStatus.Ready;
-
-                    //UpdateBleValue();
-                }
+                });
+                t.Start();
             }
         }
 

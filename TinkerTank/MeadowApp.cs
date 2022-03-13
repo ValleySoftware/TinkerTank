@@ -48,7 +48,7 @@ namespace TinkerTank
 
         public PanTiltSensorCombo panTiltSensorCombo;
 
-        private II2cBus primaryi2CBus;
+        public II2cBus primaryi2CBus;
 
         IDigitalOutputPort blueLED;
         IDigitalOutputPort greenLED;
@@ -69,7 +69,7 @@ namespace TinkerTank
         public bool EnableDBLogging = true;
         public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
 
-        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Important;
+        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Error;
 
         public Logging Logger;
 
@@ -81,7 +81,12 @@ namespace TinkerTank
             AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            Init();
+            Task startup = new Task(() =>
+            {
+                Init();
+            });
+
+            startup.Start();
         }
 
         
@@ -140,7 +145,7 @@ namespace TinkerTank
             }
             catch (Exception dbMasterEx)
             {
-                DebugDisplayText("INIT DB error", LogStatusMessageTypes.Error);
+                DebugDisplayText("INIT DB error: " + dbMasterEx.Message, LogStatusMessageTypes.Error);
             }
 
             try
@@ -151,22 +156,23 @@ namespace TinkerTank
             }
             catch (Exception logEx)
             {
-
+                DebugDisplayText("Broad Logger Init Error: " + logEx.Message, LogStatusMessageTypes.Error);
             }
 
             try
             { 
                 TBObjects = new List<TinkerBase>();
 
-                try
-                {
-                    DebugDisplayText("start lights controller", LogStatusMessageTypes.Important);
-                    LightsController = new Lights();
-                    LightsController.Init(false);
-                }
-                catch (Exception)
-                {
+                //I2C Expander
+                DebugDisplayText("Init i2c Expander");
+                i2cExpander = new Tca9548a(primaryi2CBus, 0x70);
 
+                if (EnablePCA9685)
+                {
+                    DebugDisplayText("start PCA9685", LogStatusMessageTypes.Important);
+                    i2CPWMController = new PCA9685(primaryi2CBus);
+                    TBObjects.Add(i2CPWMController);
+                    i2CPWMController.Init();
                 }
 
                 //Communications and control
@@ -176,12 +182,7 @@ namespace TinkerTank
                 TBObjects.Add(communications);
                 communications.Init();
 
-                //I2C Expander
-                DebugDisplayText("Init i2c Expander");
-                i2cExpander = new Tca9548a(primaryi2CBus, 0x70);
-
                 //Sensors
-
                 if (EnableDistanceSensors)
                 {
                     DebugDisplayText("Start distance sensor controller");
@@ -190,14 +191,6 @@ namespace TinkerTank
 
                     TBObjects.Add(distController);
                     distController.Init();
-                }
-
-                if (EnablePCA9685)
-                {
-                    DebugDisplayText("start pca9685", LogStatusMessageTypes.Important);
-                    i2CPWMController = new PCA9685(primaryi2CBus);
-                    TBObjects.Add(i2CPWMController);
-                    i2CPWMController.Init();
                 }
 
                 //Movement and power    
@@ -253,6 +246,17 @@ namespace TinkerTank
                     {
                         DebugDisplayText("Distance Pan Tilt broad exception: " + e.Message, LogStatusMessageTypes.Error);
                     }
+                }
+
+                try
+                {
+                    DebugDisplayText("start lights controller", LogStatusMessageTypes.Important);
+                    LightsController = new Lights();
+                    LightsController.Init(false);
+                }
+                catch (Exception)
+                {
+
                 }
 
                 //Final

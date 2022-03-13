@@ -17,8 +17,7 @@ namespace TinkerTank.Display
         }
 
         public override void DoDisplaySpecificInit()
-        {
-        
+        {        
             NoOfLinesOnDisplay = 8;
 
             display = new Ssd1306
@@ -30,6 +29,13 @@ namespace TinkerTank.Display
 
             graphics = new MicroGraphics(display);
         }
+
+        public override void Init()
+        {
+            DoDisplaySpecificInit();
+            base.Init();
+        }
+
 
         public void RefreshStatus()
         {

@@ -34,18 +34,22 @@ namespace TinkerTank.Data
                 try
                 {
                     AddLogEntry("start lcd", LogStatusMessageTypes.Important);
-                    AddLogEntry(MeadowApp.Current.DisplayModel.ToString(), LogStatusMessageTypes.Important);
-                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.ST7789_SPI_240x240)
+
+                    AddLogEntry(_appRoot.DisplayModel.ToString(), LogStatusMessageTypes.Important);
+
+                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.ST7789_SPI_240x240)
                     { 
                         lcd = new LCDDisplay_ST7789(this);
                         lcd.Init();
                     }
-                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x64)
+
+                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x64)
                     {
                         lcd = new LCDDisplay_1306_128x64(this);
                         lcd.Init();
                     }
-                    if (MeadowApp.Current.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x32)
+
+                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x32)
                     {
                         lcd = new LCDDisplay_1306_128x32(this);
                         lcd.Init();
@@ -67,12 +71,15 @@ namespace TinkerTank.Data
             }
         }
 
-        public async void AddLogEntry(string newText, LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug, string remoteID = null)
+        public void AddLogEntry(
+            string newText, 
+            LogStatusMessageTypes statusType = LogStatusMessageTypes.Debug, 
+            string remoteID = null)
         {
             if (dbcon != null)
             {
-                //await Task.Run(() =>
-                //{
+                Task t = new Task(() =>
+                {
                     try
                     {
 
@@ -131,7 +138,9 @@ namespace TinkerTank.Data
                     {
                         Console.WriteLine(logEx.Message);
                     }
-                //});
+                });
+
+                t.Start();
             }
         }
 

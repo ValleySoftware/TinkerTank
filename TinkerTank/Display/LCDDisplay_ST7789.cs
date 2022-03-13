@@ -49,6 +49,12 @@ namespace TinkerTank.Display
                 graphics = new MicroGraphics(display);
         }
 
+        public override void Init()
+        {
+            DoDisplaySpecificInit();
+            base.Init();
+        }
+
         public void RefreshStatus()
         {
 

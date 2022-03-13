@@ -64,6 +64,7 @@ namespace Communications
                 _appRoot.DebugDisplayText("BT Service started", LogStatusMessageTypes.Information);
 
                 PrepareCharacteristicEventHandlers();
+                _appRoot.DebugDisplayText("BT Init Completed", LogStatusMessageTypes.Important);
 
                 Status = ComponentStatus.Ready;
             }
