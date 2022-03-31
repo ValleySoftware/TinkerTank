@@ -4,22 +4,26 @@ using System.Text;
 
 namespace Enumerations
 { 
-    public enum ComponentStatus { Error, UnInitialised, Ready, Action };
+    public enum ComponentStatus { Error, UnInitialised, Ready, Action, None };
     public enum AutomaticErrorResponse { DoNothing, TryReload, Warn, DisableComponent, DisableMotorPower }
     public enum DriveMethod { SingleDrive, DualDrive, QuadDrive, HexDrive, AdjustableHexDrive }
     public enum Direction { Forward, Backwards, TurnLeft, TurnRight, RotateLeft, RotateRight, Stop }
-    public enum LogStatusMessageTypes { CriticalError, Error, Important, Information, Debug, BLERecord };
+    public enum LogStatusMessageTypes {Debug, BLERecord, Information, Important, Error, CriticalError };
     public enum ServoMovementSpeed { Slow, Medium, Fast, Flank, Stop };
     public enum ServoType { SG90, SG90Continuous, MG996R };
     public enum I2CExpanderChannel { sensorZero, fixedForwardDistance, periscopeDistance }
     public enum CharacteristicsNames { Stop, PanTilt, Power, AdvancedMove, PanSweep, ForwardDistance, PanTiltDistance, Lights, Logging };
+    public enum MovementAutoStopMode { None, Proximity, Timespan, Distance }
+    public enum PanTiltServos { servoPan, servoTilt}
 
     public class BLEConstants
     {
 
-        public const string definitionName = "BerthaDefinition";
-        public const string serviceName = "BerthaService";
-        public const ushort serviceUuid = 41;
+        public const string definitionName = "BerthaControl";
+        public const string serviceName = "Bertha";
+        public const ushort serviceUuid = 42;
+
+        public const string BLEMessageDivider = "#";
 
         public const string UUIDStop = @"017e99d6-8a61-11eb-8dcd-0242ac1a5100";
         public const string UUIDPanTilt = @"017e99d6-8a61-11eb-8dcd-0242ac1a5102";

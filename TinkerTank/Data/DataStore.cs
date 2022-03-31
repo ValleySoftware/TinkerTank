@@ -22,6 +22,7 @@ namespace TinkerTank.Data
         public bool Displayed { get; set; }
         public bool Transmitted { get; set; }
         public DateTimeOffset? TransmittedStamp { get; set; }
+        public string Remote_Request_ID { get; set; }
     }
 
     [Table("BootRecordModel")]
@@ -35,7 +36,8 @@ namespace TinkerTank.Data
 
     public class DataStore
     {
-        SQLite.SQLiteConnection dbcon;
+        MeadowApp _appRoot;
+        SQLiteConnection dbcon;
         private BootRecordModel thisBootRecord;
 
         public static string GenerateRandomString()
@@ -49,15 +51,38 @@ namespace TinkerTank.Data
             return string.Concat(first10Chars.Substring(0, 5), second10Chars.Substring(0, 5));
         }
 
-        public void InitDB()
+        public void InitDB(bool wipeDBOnStartup)
         {
+            _appRoot = MeadowApp.Current;
+
             var databasePath = Path.Combine(MeadowOS.FileSystem.DataDirectory, "BerthaDB.db");
             dbcon = new SQLiteConnection(databasePath);
-            dbcon.CreateTable<DebugLogEntryModel>();
             dbcon.CreateTable<BootRecordModel>();
+            dbcon.CreateTable<DebugLogEntryModel>();
 
-            thisBootRecord = new BootRecordModel() { ID = GenerateRandomString(), RecordedStamp = DateTimeOffset.Now };
+            if (wipeDBOnStartup)
+            {
+                try
+                { 
+                    dbcon.Table<BootRecordModel>().Delete(b => b.SQL_ID > 0);
+                    dbcon.Table<DebugLogEntryModel>().Delete(b => b.SQL_ID > 0);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+
+            thisBootRecord = new BootRecordModel() 
+            { 
+                ID = GenerateRandomString(), 
+                RecordedStamp = DateTimeOffset.Now 
+            };
+
             dbcon.Insert(thisBootRecord);
+
+            Console.WriteLine("thisBootRecord inserted successfully " + thisBootRecord.SQL_ID);
+
         }
 
         public bool UpsertDebugLogEntry(DebugLogEntryModel model)
@@ -73,22 +98,30 @@ namespace TinkerTank.Data
 
                 if (string.IsNullOrEmpty(model.Boot_ID))
                 {
+                    if (thisBootRecord == null)
+                    {
+                        Console.WriteLine("**** ThisBootRecord not available in DataStore ****");
+                    }
                     model.Boot_ID = thisBootRecord.ID;
                 }
 
-                if (model.SQL_ID == 0)
+                if (_appRoot.EnableDBLogging)
                 {
-                    //new
-                    dbcon.Insert(model);
-                }
-                else
-                {
-                    //update
-                    dbcon.Update(model);
+                    if (model.SQL_ID == 0)
+                    {
+                        //new
+                        dbcon.Insert(model);
+                    }
+                    else
+                    {
+                        //update
+                        dbcon.Update(model);
+                    }
                 }
             }
             catch (Exception)
             {
+                Console.WriteLine("Exception in UpsertDBLog Method");
 
             }
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TinkerTank.Sensors
 {
-    public interface ISensor
+    public interface IValleySensor
     {
 
     }

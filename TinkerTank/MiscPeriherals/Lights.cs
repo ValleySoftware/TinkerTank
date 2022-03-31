@@ -14,20 +14,20 @@ namespace TinkerTank.MiscPeriherals
     {
         F7Micro _device;
 
-        private List<Led> LightList;
-        private Led _fixedForwardLed;
+        private List<Meadow.Hardware.IDigitalOutputPort> LightList;
+        private Meadow.Hardware.IDigitalOutputPort _fixedForwardLed;
 
         public Lights()
         {
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
 
-            LightList = new List<Led>();
+            LightList = new List<Meadow.Hardware.IDigitalOutputPort>();
 
             ErrorResponse = AutomaticErrorResponse.DoNothing;
         }
 
-        public void Init()
+        public void Init(bool startWithLightsOn = false)
         {
             Status = ComponentStatus.UnInitialised;
 
@@ -35,9 +35,9 @@ namespace TinkerTank.MiscPeriherals
             {
                 _appRoot.DebugDisplayText("LED init method started.", LogStatusMessageTypes.Debug);
 
-                _fixedForwardLed = new Led(_device.CreateDigitalOutputPort(_device.Pins.D04));
+                _fixedForwardLed = _device.CreateDigitalOutputPort(_device.Pins.D03);
                 LightList.Add(_fixedForwardLed);
-                LEDOn(_fixedForwardLed, false);
+                LEDOn(_fixedForwardLed, startWithLightsOn);
 
                 _appRoot.DebugDisplayText("LED init method complete, setting ready.", LogStatusMessageTypes.Debug);
                 Status = ComponentStatus.Ready;
@@ -50,22 +50,21 @@ namespace TinkerTank.MiscPeriherals
 
         }
 
-        public void RequestLightsDo(string payload)
+        public void RequestLightsDo(string[] payload)
         {
 
             //lightIdentifier-newOnValue
             //00-000-00000
 
-            _appRoot.DebugDisplayText("LED request: " + payload, LogStatusMessageTypes.Error);
+            _appRoot.DebugDisplayText("LED request: " + payload[2], LogStatusMessageTypes.Error);
 
-            var sp = payload.Split("-");
 
-            if (sp.Count() == 2)
+            if (payload.Count() > 2)
             {
                 try
                 {
-                    int lightIndex = Convert.ToInt32(sp[0]);
-                    int newStatus = Convert.ToInt32(sp[1]);
+                    int lightIndex = Convert.ToInt32(payload[1]);
+                    int newStatus = Convert.ToInt32(payload[2]);
                     bool newStatusBool = false;
 
                     var l = LightList[lightIndex];
@@ -77,15 +76,16 @@ namespace TinkerTank.MiscPeriherals
 
                     LEDOn(l, newStatusBool);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    _appRoot.DebugDisplayText("RequestLightsDo method exeption."  + e.Message, LogStatusMessageTypes.Error);
+                    Status = ComponentStatus.Error;
                 }
             }
         }
 
 
-        private void LEDOn(Led ledToChange, bool newValue)
+        private void LEDOn(Meadow.Hardware.IDigitalOutputPort ledToChange, bool newValue)
         {
             try
             {
@@ -94,27 +94,29 @@ namespace TinkerTank.MiscPeriherals
                     return;
                 }
 
-                ledToChange.IsOn = newValue;
+                ledToChange.State = newValue;
+                _appRoot.DebugDisplayText("LED on property changed to " + newValue, LogStatusMessageTypes.Information);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                _appRoot.DebugDisplayText("Error changing LED state." + e.Message, LogStatusMessageTypes.Error);
+                Status = ComponentStatus.Error;
             }
         }
 
         public void ErrorEncountered()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void RefreshStatus()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void Test()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

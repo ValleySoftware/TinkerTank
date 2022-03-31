@@ -20,10 +20,10 @@ namespace TinkerTank.Servos
         private int _portIndex;
         private Angle? _minAngle;
         private Angle? _maxAngle;
-        private string _name;
         private Angle? _defaultAngle;
         private Angle? _stowedAngle;
         private Angle? _readyAngle;
+        private bool _reverseDirection;
 
         public static ServoConfig Create996rConfig(Angle? minAngle, Angle? maxAngle)
         {
@@ -56,13 +56,15 @@ namespace TinkerTank.Servos
             _appRoot = MeadowApp.Current;
 
             Status = ComponentStatus.UnInitialised;
-            _name = name;
+            Name = name;
             _portIndex = portIndex;
             _servoType = typeOfServo;
             _servoControllerDevice = servoControllerDevice;
             _minAngle = minAngle;
             _maxAngle = maxAngle;
             _defaultAngle = new Angle(90, Angle.UnitType.Degrees);
+
+            _appRoot.DebugDisplayText(Name + " - instantiated. " + portIndex + "/" + typeOfServo + "/" + minAngle + "/" + maxAngle, LogStatusMessageTypes.Debug);
         }
 
         public double AdjustRotationBy(double amountToRotate = 5)
@@ -77,82 +79,96 @@ namespace TinkerTank.Servos
 
         public double SafeIshRotate(Angle? desiredAngle)
         {
-            _appRoot.DebugDisplayText(Name + " - safeishrotate to " + desiredAngle.Value.Degrees, LogStatusMessageTypes.Debug);
-            Status = ComponentStatus.Action;
-
-            double result = -1;
-
-            _appRoot.DebugDisplayText(Name + " - safeishrotate prep", LogStatusMessageTypes.Debug);
-
-            //bool Completed = false;
-            _appRoot.DebugDisplayText(Name + " - safeishrotate servo not null = " + (_servo != null), LogStatusMessageTypes.Important);
-
-            //var oldAngle = _servo.Angle;
-            //_appRoot.DebugDisplayText(Name + " - safeishrotate old angle = " + oldAngle.Value.Degrees, LogStatusMessageTypes.Debug);
-
-            //Try changing this to Thread rather than Task???            
-            //var rotateTask = Task.Run(() =>
-            //{
-                _appRoot.DebugDisplayText(Name + " - safeishrotate action thread started", LogStatusMessageTypes.Debug);
-                _servo.RotateTo(desiredAngle.Value);
-            //});
-
-            /*
-            var monitorTask = Task.Run(async () =>
+            try
             {
-                _appRoot.DebugDisplayText(Name + " - safeishrotate monitor thread started", LogStatusMessageTypes.Debug);
-
-                while (!Completed)
+                if (!desiredAngle.HasValue)
                 {
-                    await Task.Delay(250);
-
-                    if (desiredAngle.Equals(_servo.Angle))
-                    {
-                        Completed = true;
-                        _servo.Stop();
-                        result = _servo.Angle.Value.Degrees;
-                        Status = ComponentStatus.Ready;
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate success", LogStatusMessageTypes.Important);
-                    }
-
-                    if (oldAngle == _servo.Angle)
-                    {
-                        Completed = true;
-                        _servo.Stop();
-                        _appRoot.DebugDisplayText(Name + " - safeishrotate incomplete", LogStatusMessageTypes.Important);
-                        //Status = Enumerations.ComponentStatus.Error;
-                        result = -1;
-
-                        if (desiredAngle.Value.Degrees < _servo.Angle.Value.Degrees)
-                        {
-                            SetNewMinimum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new min = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
-                        }
-                        else
-                        {
-                            SetNewMaximum(_servo.Angle);
-                            _appRoot.DebugDisplayText(Name + " - new max = " + _servo.Angle.Value.Degrees, LogStatusMessageTypes.Important);
-                        }
-
-                    }
-
-                    oldAngle = _servo.Angle;
+                    _appRoot.DebugDisplayText(Name + " - safeishrotate requested without target angle.  Method exiting. ", LogStatusMessageTypes.Error);
+                    return -1;
                 }
-            });
-                     */
 
-            result = _servo.Angle.Value.Degrees;
-            _appRoot.DebugDisplayText(Name + " - new angle is " + result, LogStatusMessageTypes.Debug);
-            Status = ComponentStatus.Ready;
+                var NormalisedAngle = new Angle(Math.Abs(desiredAngle.GetValueOrDefault().Degrees), Angle.UnitType.Degrees);
 
-            return result;
+                if (ReverseDirection)
+                {
+                    NormalisedAngle = new Angle(180 - NormalisedAngle.Degrees, Angle.UnitType.Degrees);
+                }
+
+                _appRoot.DebugDisplayText(Name + " - safeishrotate to " + NormalisedAngle.Degrees, LogStatusMessageTypes.Debug);
+                Status = ComponentStatus.Action;
+
+                double result = -1;
+
+                try
+                {
+                    _appRoot.DebugDisplayText(MinAngle.Value.ToString(), LogStatusMessageTypes.Important);
+                }
+                catch (Exception minAngleEx)
+                {
+                    _appRoot.DebugDisplayText("Min Angle error: " + minAngleEx, LogStatusMessageTypes.Error);
+                }
+
+                try
+                {
+                    _appRoot.DebugDisplayText(MaxAngle.Value.ToString(), LogStatusMessageTypes.Important);
+                }
+                catch (Exception maxAngleEx)
+                {
+                    _appRoot.DebugDisplayText("Min Angle error: " + maxAngleEx, LogStatusMessageTypes.Error);
+                }
+
+            if (NormalisedAngle.Degrees >= MinAngle.GetValueOrDefault().Degrees &&
+                    NormalisedAngle.Degrees <= MaxAngle.GetValueOrDefault().Degrees)
+                {
+                    _appRoot.DebugDisplayText(Name + " - Rotating to " + NormalisedAngle.ToString(), LogStatusMessageTypes.Debug);
+                    _appRoot.DebugDisplayText("C");
+                    _servo.RotateTo(NormalisedAngle);
+                }
+                else
+                {
+                    _appRoot.DebugDisplayText("C");
+                    _appRoot.DebugDisplayText(Name + " - angle is out of bounds.  No action taken. (" + NormalisedAngle.Degrees + ")", LogStatusMessageTypes.Error);
+                }
+
+                _appRoot.DebugDisplayText("D");
+                result = _servo.Angle.GetValueOrDefault().Degrees;
+                _appRoot.DebugDisplayText(Name + " - new angle is " + result, LogStatusMessageTypes.Debug);
+                Status = ComponentStatus.Ready;
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                _appRoot.DebugDisplayText(Name + " - Error " + e.Message, LogStatusMessageTypes.Error);
+            }
+
+            return -1;
         }
 
-        public void InitServo(bool GoToDefaultOnStart = false)
+        public void InitServo()
         {
-            if (_servo != null)
+            InitServo(false, false);
+        }
+
+        public void InitServo(bool GoToDefaultOnStart)
+        {
+            InitServo(GoToDefaultOnStart, false);
+        }
+
+        private void InitServo(bool GoToDefaultOnStart, bool ReverseServo)
+        {
+            ReverseDirection = ReverseServo;
+
+            try
             {
-                _servo.Stop();
+                if (_servo != null)
+                {
+                    _servo.Stop();
+                }
+            }
+            catch (Exception)
+            {
+                //01/feb/2022, for some reason the _servo != null line causes an exception to be raised ?? Very odd.
             }
 
             if (_minAngle == null &&
@@ -178,25 +194,25 @@ namespace TinkerTank.Servos
             }
 
             _servo = new Servo(_servoControllerDevice.GetPwmPort(_portIndex), config);
-            _appRoot.DebugDisplayText(Name + " (" + _servoType.ToString() + ") - instantiated on port " + _portIndex, Enumerations.LogStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText(Name + " (" + _servoType.ToString() + ") - instantiated on port " + _portIndex, LogStatusMessageTypes.Information);
 
             if (GoToDefaultOnStart)
             {
                 GoToDefaultPosition();
             }
 
-            _appRoot.DebugDisplayText(Name + " - ready");
+            _appRoot.DebugDisplayText(Name + " - ready", LogStatusMessageTypes.Debug);
             Status = ComponentStatus.Ready;
         }
 
-        private void SetNewMinimum(Angle? newValue)
+        private void SetMinimum(Angle? newValue)
         {
             Status = ComponentStatus.UnInitialised;
             _minAngle = newValue;
             InitServo();
         }
 
-        private void SetNewMaximum(Angle? newValue)
+        private void SetMaximum(Angle? newValue)
         {
             Status = ComponentStatus.UnInitialised;
             _maxAngle = newValue;
@@ -219,6 +235,12 @@ namespace TinkerTank.Servos
             set { _defaultAngle = value; }
         }
 
+        public bool ReverseDirection
+        {
+            get => _reverseDirection;
+            set { _reverseDirection = value; }
+        }
+        
         public Angle? StowedAngle
         {
             get => _stowedAngle;
@@ -239,17 +261,13 @@ namespace TinkerTank.Servos
             }
         }
 
-        private string Name 
-        {
-            get => _name;
-            set => _name = value;
-        }
-
         public void GoToDefaultPosition()
         {
+            _appRoot.DebugDisplayText(Name + " attempting to return to default position.", LogStatusMessageTypes.Debug);
+
             if (SafeIshRotate(DefaultAngle) == -1)
             {
-                _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.");
+                _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.", LogStatusMessageTypes.Error);
                 DefaultAngle = _servo.Angle.Value;
             }
         }

@@ -26,7 +26,7 @@ namespace TinkerTank.Sensors
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
 
-            _appRoot.DebugDisplayText("Distance sensor controller Constructor");
+            _appRoot.DebugDisplayText("Distance sensor controller Constructor", LogStatusMessageTypes.Information);
             Status = ComponentStatus.UnInitialised;
 
             _i2cExpander = i2cExpander;
@@ -34,18 +34,27 @@ namespace TinkerTank.Sensors
 
         public void Init()
         {
-            _appRoot.DebugDisplayText("Distance sensor controller Init method");
+            _appRoot.DebugDisplayText("Distance sensor controller Init method", LogStatusMessageTypes.Information);
             Status = ComponentStatus.UnInitialised;
 
-            PeriscopeDistance = InitNewSensor(_device.Pins.D03, _appRoot.Geti2cBus(I2CExpanderChannel.periscopeDistance), "pan", _appRoot.communications.charPanTiltDistance);
-            FixedFrontDistance = InitNewSensor(null, _appRoot.Geti2cBus(I2CExpanderChannel.fixedForwardDistance), "fwd", _appRoot.communications.charForwardDistance);
+            PeriscopeDistance = InitNewSensor(
+                _device.Pins.D03, 
+                I2CExpanderChannel.periscopeDistance, 
+                "pan", 
+                _appRoot.communications.charPanTiltDistance);
+
+            FixedFrontDistance = InitNewSensor(
+                null,
+                I2CExpanderChannel.fixedForwardDistance, 
+                "fwd", 
+                _appRoot.communications.charForwardDistance);
 
             Status = ComponentStatus.Ready;
         }
 
-        public Dist53l0 InitNewSensor(IPin LaserPin, II2cBus bus, string name, Characteristic charac)
+        public Dist53l0 InitNewSensor(IPin LaserPin, I2CExpanderChannel chan , string name, Characteristic charac)
         {
-            var sensor = new Dist53l0(LaserPin, bus, name);
+            var sensor = new Dist53l0(LaserPin, _appRoot.Geti2cBus(chan), name);
             sensor.AssignBluetoothCharacteristicToUpdate(charac);
             sensor.Init();
 

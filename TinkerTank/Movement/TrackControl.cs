@@ -54,6 +54,7 @@ namespace Peripherals
                 motorLeft.IsNeutral = true;
 
                 ReverseLeftMotorOrientation = false;
+                _appRoot.DebugDisplayText("ReverseLeftMotorOrientation = " + ReverseLeftMotorOrientation, LogStatusMessageTypes.Information);
 
                 motorRight = new HBridgeMotor(MeadowApp.Device,
                     a1Pin: HBridge2PinA,
@@ -63,6 +64,7 @@ namespace Peripherals
                 motorRight.IsNeutral = true;
 
                 ReverseRightMotorOrientation = true;
+                _appRoot.DebugDisplayText("ReverseRightMotorOrientation = " + ReverseRightMotorOrientation, LogStatusMessageTypes.Information);
 
                 _appRoot.DebugDisplayText("Setting Motor Controller Ready");
                 Status = ComponentStatus.Ready;
@@ -150,8 +152,11 @@ namespace Peripherals
                     Status = ComponentStatus.Action;
                     StopRequested = false;
 
+                    _appRoot.DebugDisplayText("Move " + direction.ToString());
+
                     Task.Run(() =>
                     {
+
                         switch (direction)
                         {
                             case Direction.Forward:
@@ -178,24 +183,7 @@ namespace Peripherals
                         }
                     });
 
-                    if (movementDuration.Equals(TimeSpan.Zero))
-                    {
-                        Task.Run(async () =>
-                        {
-                            try
-                            { 
-                                await Task.Delay(TimeSpan.FromSeconds(3));
-                                _appRoot.DebugDisplayText("Backup Stop", LogStatusMessageTypes.Important);
-                                StopRequested = true;
-                                Stop();
-                            }
-                            catch (Exception)
-                            {
-
-                            }
-                        });
-                    }
-                    else
+                    if (movementDuration.CompareTo(TimeSpan.Zero) > 0)
                     {
                         Task.Run(async () =>
                         {
@@ -245,7 +233,7 @@ namespace Peripherals
            // }
 
             Status = ComponentStatus.Ready;
-            _appRoot.DebugDisplayText("Stop Completed", LogStatusMessageTypes.Important);
+            _appRoot.DebugDisplayText("Stop Completed", LogStatusMessageTypes.Debug);
         }
 
         private void BreakAndHold(bool smoothPowerTranstion = false)
@@ -257,20 +245,8 @@ namespace Peripherals
                 motorLeft.IsNeutral = false;
                 motorRight.IsNeutral = false;
 
-            //float powerSetting = 0;
-
-            //if (smoothPowerTranstion)
-            //{
-            //    powerSetting = motorLeft.Power;
-            //}
-
-           // while (powerSetting >= 0)
-            //{
                 motorLeft.Power = 0;
                 motorRight.Power = 0;
-                //powerSetting = powerSetting - (float)0.1;
-                //Thread.Sleep(100);
-            //}
 
                 Status = ComponentStatus.Ready;
 
@@ -285,8 +261,6 @@ namespace Peripherals
         {
             try
             {
-                //testing
-                //smoothPowerTranstion = true;
 
                 double useThisPower = _defaultPower;
 
@@ -338,9 +312,6 @@ namespace Peripherals
 
             try
             {
-                //testing
-                //smoothPowerTranstion = true;
-
                 _appRoot.DebugDisplayText("a - " + power, LogStatusMessageTypes.Debug);
 
                 double useThisPower = _defaultPower * -1;
@@ -369,8 +340,8 @@ namespace Peripherals
                         break;
                     }
 
-                    motorLeft.Power = powerSetting;
-                    motorRight.Power = powerSetting;
+                    motorLeft.Power = powerSetting * leftReverseMotorOrientationMultiplier; 
+                    motorRight.Power = powerSetting * rightReverseMotorOrientationMultiplier; 
                     powerSetting = powerSetting - (float)0.2;
                     Thread.Sleep(100);
                 }
