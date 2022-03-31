@@ -13,356 +13,171 @@ using System.Threading;
 namespace TinkerTank.Sensors
 {
 
-    public class VL6180X : ByteCommsSensorBase<Length>, IRangeFinder
+    public class HistoryBufferMap
     {
-        //==== public properties and such
-        public enum UnitType
+        private HistoryBufferMap()
         {
-            mm,
-            cm,
-            inches
+            //Hidden on purpose
         }
 
-        public const byte DefaultI2cAddress = 0x29;
-
-
-        //==== internals
-        protected const byte RangeStart = 0x00;
-        protected const byte SystemThreahHigh = 0x0C;
-        protected const byte SystemThreshLow = 0x0E;
-        protected const byte SystemSequenceConfig = 0x01;
-        protected const byte SystemRangeConfig = 0x09;
-        protected const byte SystemIntermeasurementPeriod = 0x04;
-        protected const byte SystemInterruptConfigGpio = 0x0A;
-        protected const byte GpioHvMuxActiveHigh = 0x84;
-        protected const byte SystemInterruptClear = 0x0B;
-        protected const byte ResultInterruptStatus = 0x13;
-        protected const byte ResultRangeStatus = 0x14;
-        protected const byte ResultCoreAmbientWindowEventsRtn = 0xBC;
-        protected const byte ResultCoreRangingTotalEventsRtn = 0xC0;
-        protected const byte ResultCoreAmbientWindowEventsRef = 0xD0;
-        protected const byte ResultCoreRangingTotalEventsRef = 0xD4;
-        protected const byte ResultPeakSignalRateRef = 0xB6;
-        protected const byte AlgoPartToPartRangeOffsetMm = 0x28;
-        protected const byte I2CSlaveDeviceAddress = 0x8A;
-        protected const byte MsrcConfigControl = 0x60;
-        protected const byte PreRangeConfigMinSnr = 0x27;
-        protected const byte PreRangeConfigValidPhaseLow = 0x56;
-        protected const byte PreRangeConfigValidPhaseHigh = 0x57;
-        protected const byte PreRangeMinCountRateRtnLimit = 0x64;
-        protected const byte FinalRangeConfigMinSnr = 0x67;
-        protected const byte FinalRangeConfigValidPhaseLow = 0x47;
-        protected const byte FinalRangeConfigValidPhaseHigh = 0x48;
-        protected const byte FinalRangeConfigMinCountRateRtnLimit = 0x44;
-        protected const byte PreRangeConfigSigmaThreshHi = 0x61;
-        protected const byte PreRangeConfigSigmaThreshLo = 0x62;
-        protected const byte PreRangeConfigVcselPeriod = 0x50;
-        protected const byte PreRangeConfigTimeoutMacropHi = 0x51;
-        protected const byte PreRangeConfigTimeoutMacropLo = 0x52;
-        protected const byte SystemHistogramBin = 0x81;
-        protected const byte HistogramConfigInitialPhaseSelect = 0x33;
-        protected const byte HistogramConfigReadoutCtrl = 0x55;
-        protected const byte FinalRangeConfigVcselPeriod = 0x70;
-        protected const byte FinalRangeConfigTimeoutMacropHi = 0x71;
-        protected const byte FinalRangeConfigTimeoutMacropLo = 0x72;
-        protected const byte CrosstalkCompensationPeakRateMcps = 0x20;
-        protected const byte MsrcConfigTimeoutMacrop = 0x46;
-        protected const byte SoftResetGo2SoftResetN = 0xBF;
-        protected const byte IdentificationModelId = 0xC0;
-        protected const byte IdentificationRevisionId = 0xC2;
-        protected const byte OscCalibrateVal = 0xF8;
-        protected const byte GlobalConfigVcselWidth = 0x32;
-        protected const byte GlobalConfigSpadEnablesRef0 = 0xB0;
-        protected const byte GlobalConfigSpadEnablesRef1 = 0xB1;
-        protected const byte GlobalConfigSpadEnablesRef2 = 0xB2;
-        protected const byte GlobalConfigSpadEnablesRef3 = 0xB3;
-        protected const byte GlobalConfigSpadEnablesRef4 = 0xB4;
-        protected const byte GlobalConfigSpadEnablesRef5 = 0xB5;
-        protected const byte GlobalConfigRefEnStartSelect = 0xB6;
-        protected const byte DynamicSpadNumRequestedRefSpad = 0x4E;
-        protected const byte DynamicSpadRefEnStartOffset = 0x4F;
-        protected const byte PowerManagementGo1PowerForce = 0x80;
-        protected const byte VhvConfigPadSclSdaExtsupHv = 0x89;
-        protected const byte AlgoPhasecalLim = 0x30;
-        protected const byte AlgoPhasecalConfigTimeout = 0x30;
-        protected const int VcselPeriodPreRange = 0;
-        protected const int VcselPeriodFinalRange = 1;
-
-
-        public bool IsShutdown
+        public HistoryBufferMap(
+            int bufferIndex, 
+            int bufferRangeHigh, 
+            int bufferRangeLow, 
+            int bufferALSValue)
         {
-            get
-            {
-                if (shutdownPort != null)
-                {
-                    return !shutdownPort.State;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            BufferIndex = bufferIndex;
+            BufferRangeHigh = bufferRangeHigh;                
+            BufferRangeLow = bufferRangeLow;
+            BufferALSValue = bufferALSValue;
         }
 
-        /// <summary>
-        /// Creates a distance sensor object with the specified i2c port.
-        /// </summary>
-        /// <param name="lengthUnit"></param>
-        /// <param name="i2cBus"></param>
-        /// <param name="address"></param>
-        public VL6180X(
-            IDigitalOutputController device,
-            Length lengthUnit, 
-            I2cBus i2cBus, 
-            byte address = DefaultI2cAddress)
-                : this(device, i2cBus, null, address)
-        {
+        public int BufferIndex { get; }
+        public int BufferRangeHigh { get; }
+        public int BufferRangeLow { get; set; }
+        public int BufferALSValue { get; set; }
+    }
 
+
+    public class VL6180X : I2cPeripheral
+    {
+
+        private static double DEFAULT_ALS_LUX_RESOLUTION = 0.32;
+
+        private List<HistoryBufferMap> HistoryBufferLocations = new List<HistoryBufferMap>() { };
+
+        private static double ALS_TO_LUX_CONVERSION(double ALS_LUX_RESOLUTION, double RESULT_ALS_VAL, double Analog_Gain, double ALS_INTEGRATION_TIME)
+        {
+            double result = -1;
+
+            result = ALS_LUX_RESOLUTION * (RESULT_ALS_VAL * Analog_Gain) * (100 * ALS_INTEGRATION_TIME);
+
+            return result;            
         }
 
-        /// <param name="i2cBus">I2C bus</param>
-        /// <param name="address">VL6180X address</param>
-        /// <param name="units">Unit of measure</param>
-        public VL6180X(
-            IDigitalOutputController device, 
-            II2cBus i2cBus, 
-            IPin shutdownPin,
-            byte address = DefaultI2cAddress)
-                : base(i2cBus, address)
+        public enum RegisterIdentification
         {
-            if (shutdownPin != null)
-            {
-                device.CreateDigitalOutputPort(shutdownPin, true);
-            }
-            Initialize().Wait();
+            MODEL_ID = 0x000,
+            MODEL_REV_MAJOR = 0x001,
+            MODEL_REV_MINOR = 0x002,
+            MODULE_REV_MAJOR = 0x003,
+            MODULE_REV_MINOR = 0x004,
+            DATE_HI = 0x006,
+            DATE_LO = 0x007,
+            TIME = 0x008, //0X008 -> 0X009
         }
 
-        /// <summary>
-        /// The distance to the measured object.
-        /// </summary>
-        public Length? Distance { get; protected set; } = new Length(0);
-
-        /// <summary>
-        /// Minimum valid distance in mm.
-        /// </summary>
-        public Length MinimumDistance => new Length(30, Length.UnitType.Millimeters);
-
-        /// <summary>
-        /// Maximum valid distance in mm (CurrentDistance returns -1 if above).
-        /// </summary>
-        public Length MaximumDistance => new Length(2000, Length.UnitType.Millimeters);
-
-        readonly IDigitalOutputPort shutdownPort;
-
-        byte stopVariable;
-
-        public event EventHandler<IChangeResult<Length>> DistanceUpdated;
-
-        protected override Task<Length> ReadSensor()
+        public enum RegisterSystemSetup
         {
-            throw new NotImplementedException();
+            MODE_GPIO0 = 0x010,
+            MODE_GPIO1 = 0x011,
+            HISTORY_CTRL = 0x012,
+            INTERUPT_CONFIG_GPIO = 0x014,
+            INTERUPT_CLEAR = 0x015,
+            FRESH_OUT_OF_COMPTON = 0x016, //FRESH_OUT_OF_RESET
+            GROUPED_PARAMETER_HOLD = 0x017
+        }
+
+        public enum RegisterRangeSetup
+        {
+            TART = 0x018,
+            THRESH_LOW = 0x019,
+            THRESH_HIGH = 0x01A,
+            INTERMEASUREMENT_PERIOD = 0x01B,
+            MAX_CONVERGENCE_TIME = 0x01C,
+            CROSSTALK_COMPENSATION_RATE = 0x01E,
+            CROSSTALK_VALID_HEIGHT = 0x021,
+            EARLY_CONVERGENCE_ESTIMATE = 0x022,
+            PART_TO_PART_RANGE_OFFSET = 0x024,
+            RANGE_IGNORE_VALID_HEIGHT = 0x025,
+            RANGE_IGNORE_THRESHOLD = 0x026,
+            MAX_AMBIENT_LEVEL_MULT = 0x02C,
+            RANGE_CHECL_ENABLES = 0x02D,
+            VHV_RECALIBRATE = 0x02E,
+            VHV_REPEAT_RATE = 0x031
+        }
+
+        public enum RegisterAlsSetup
+        {
+            START = 0x038,
+            THRESH_HIGH = 0x03A,
+            THRESH_LOW = 0x03C,
+            INTERMEASUREMENT_PERIOD = 0x03E,
+            ANALOGUE_GAIN = 0x03F,
+            INTERGRATION_PERIOD = 0x040
+        }
+
+        public enum RegisterResult
+        {
+            RANGE_STATUS = 0x04D,
+            ALS_STATUS = 0x04E,
+            INTERRUPT_STATUS_GPIO = 0x04F,
+            ALS_VAL = 0x050,
+            HISTORY_BUFFER_X = 0x052, //0X052->0X060
+            RANGE_VAL = 0x062,
+            RANGE_RAW = 0x064,
+            RANGE_RETURN_RATE = 0x066,
+            RANGE_REFERENCE_RATE = 0x068,
+            RANGE_RETURN_SIGNAL_COUNT = 0x06C,
+            RANGE_REFERENCE_SIGNAL_COUNT = 0x070,
+            RANGE_RETURN_AMB_COUNT = 0x074,
+            RANGE_REFERENCE_AMB_COUNT = 0x078,
+            RANGE_RETURN_CONV_TIME = 0x07C,
+            RANGE_REFERENCE_CONV_TIME = 0x080
+        }
+
+        public enum RegisterOther
+        {
+            READOUT_AVERAGING_SAMPLE_PERIOD = 0x10A,
+            FIRMWARE_BOOTUP = 0x119,
+            FIRMWARE_RESULT_SCALER = 0x120,
+            I2C_SUBORDINATE_DEVICE_ADDRESS = 0x212,
+            INTERLEAVED_MODE_ENABLE = 0x2A3
+        }
+
+        public VL6180X(II2cBus bus, byte peripheralAddress, int readBufferSize = 8, int writeBufferSize = 8) :
+            base(bus, peripheralAddress, readBufferSize, writeBufferSize)
+        {
+            //Everything passed in is done in the base contructor.
+            //Previously it would be done here.             
+
+            //https://cdn-learn.adafruit.com/assets/assets/000/037/608/original/VL6180X_datasheet.pdf
+            HistoryBufferLocations.Clear();
+            HistoryBufferLocations.Add(new HistoryBufferMap(0, 15, 14, 7));
+            HistoryBufferLocations.Add(new HistoryBufferMap(1, 13, 12, 6));
+            HistoryBufferLocations.Add(new HistoryBufferMap(2, 11, 10, 5));
+            HistoryBufferLocations.Add(new HistoryBufferMap(3, 9, 8, 4));
+            HistoryBufferLocations.Add(new HistoryBufferMap(4, 7, 6, 3));
+            HistoryBufferLocations.Add(new HistoryBufferMap(5, 5, 4, 2));
+            HistoryBufferLocations.Add(new HistoryBufferMap(6, 3, 2, 1));
+            HistoryBufferLocations.Add(new HistoryBufferMap(7, 1, 0, 0));
         }
 
         /// <summary>
-        /// Initializes the VL6180X
+        /// Retrieve the basic register locations for a given history record index.
         /// </summary>
-        protected async Task Initialize()
+        /// <description>
+        /// Up to 8 records are available (0 indexed) with 0 being the newest 
+        /// Note; this doesn't guarantee that there is a record there, nor does it get the record.  Just where it's data *SHOULD* be.
+        /// </description>
+        /// <param name="RecordIndexToGet">
+        /// Index of the desired history map. 
+        /// </param>
+        /// <returns>
+        /// A HistoryBufferMap containing its register locations.
+        /// </returns>
+        /// <exception cref="System.IndexOutOfRangeException">
+        /// Value must be between 0 and 7 inclusive
+        /// </exception>
+        public HistoryBufferMap GetHistoryBufferRecord(int RecordIndexToGet)
         {
-            if (IsShutdown)
+            if (HistoryBufferLocations.Count >= RecordIndexToGet ||
+                HistoryBufferLocations.Count < 0)
             {
-                await ShutDown(false);
+                throw new IndexOutOfRangeException();
             }
 
-            if (Read(0xC0) != 0xEE || Read(0xC1) != 0xAA || Read(0xC2) != 0x10)
-            {
-                throw new Exception("Failed to find expected ID register values");
-            }
-
-            Peripheral.WriteRegister(0x88, 0x00);
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
-
-            stopVariable = Read(0x91);
-
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-
-            var configControl = ((byte)(Read(MsrcConfigControl) | 0x12));
-            var signalRateLimit = 0.25f;
-            /*
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xFF);
-            var spadInfo = GetSpadInfo();
-            int spadCount = spadInfo.Item1;
-            bool spad_is_aperture = spadInfo.Item2;
-
-            byte[] ref_spad_map = new byte[7];
-            ref_spad_map[0] = GlobalConfigSpadEnablesRef0;
-
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(DynamicSpadRefEnStartOffset, 0x00);
-            Peripheral.WriteRegister(DynamicSpadNumRequestedRefSpad, 0x2C);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(GlobalConfigRefEnStartSelect, 0xB4);
-
-            var first_spad_to_enable = (spad_is_aperture) ? 12 : 0;
-            var spads_enabled = 0;
-
-            for (int i = 0; i < 48; i++)
-            {
-                if (i < first_spad_to_enable || spads_enabled == spadCount)
-                {
-                    ref_spad_map[1 + (i / 8)] &= (byte)~(1 << (i % 8));
-                }
-                else if ((ref_spad_map[1 + (i / 8)] >> (byte)((i % 8)) & 0x1) > 0)
-                {
-                    spads_enabled += 1;
-                }
-            }
-            */
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x00, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x09, 0x00);
-            Peripheral.WriteRegister(0x10, 0x00);
-            Peripheral.WriteRegister(0x11, 0x00);
-            Peripheral.WriteRegister(0x24, 0x01);
-            Peripheral.WriteRegister(0x25, 0xFF);
-            Peripheral.WriteRegister(0x75, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x4E, 0x2C);
-            Peripheral.WriteRegister(0x48, 0x00);
-            Peripheral.WriteRegister(0x30, 0x20);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x30, 0x09);
-            Peripheral.WriteRegister(0x54, 0x00);
-            Peripheral.WriteRegister(0x31, 0x04);
-            Peripheral.WriteRegister(0x32, 0x03);
-            Peripheral.WriteRegister(0x40, 0x83);
-            Peripheral.WriteRegister(0x46, 0x25);
-            Peripheral.WriteRegister(0x60, 0x00);
-            Peripheral.WriteRegister(0x27, 0x00);
-            Peripheral.WriteRegister(0x50, 0x06);
-            Peripheral.WriteRegister(0x51, 0x00);
-            Peripheral.WriteRegister(0x52, 0x96);
-            Peripheral.WriteRegister(0x56, 0x08);
-            Peripheral.WriteRegister(0x57, 0x30);
-            Peripheral.WriteRegister(0x61, 0x00);
-            Peripheral.WriteRegister(0x62, 0x00);
-            Peripheral.WriteRegister(0x64, 0x00);
-            Peripheral.WriteRegister(0x65, 0x00);
-            Peripheral.WriteRegister(0x66, 0xA0);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x22, 0x32);
-            Peripheral.WriteRegister(0x47, 0x14);
-            Peripheral.WriteRegister(0x49, 0xFF);
-            Peripheral.WriteRegister(0x4A, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x7A, 0x0A);
-            Peripheral.WriteRegister(0x7B, 0x00);
-            Peripheral.WriteRegister(0x78, 0x21);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x23, 0x34);
-            Peripheral.WriteRegister(0x42, 0x00);
-            Peripheral.WriteRegister(0x44, 0xFF);
-            Peripheral.WriteRegister(0x45, 0x26);
-            Peripheral.WriteRegister(0x46, 0x05);
-            Peripheral.WriteRegister(0x40, 0x40);
-            Peripheral.WriteRegister(0x0E, 0x06);
-            Peripheral.WriteRegister(0x20, 0x1A);
-            Peripheral.WriteRegister(0x43, 0x40);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x34, 0x03);
-            Peripheral.WriteRegister(0x35, 0x44);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x31, 0x04);
-            Peripheral.WriteRegister(0x4B, 0x09);
-            Peripheral.WriteRegister(0x4C, 0x05);
-            Peripheral.WriteRegister(0x4D, 0x04);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x44, 0x00);
-            Peripheral.WriteRegister(0x45, 0x20);
-            Peripheral.WriteRegister(0x47, 0x08);
-            Peripheral.WriteRegister(0x48, 0x28);
-            Peripheral.WriteRegister(0x67, 0x00);
-            Peripheral.WriteRegister(0x70, 0x04);
-            Peripheral.WriteRegister(0x71, 0x01);
-            Peripheral.WriteRegister(0x72, 0xFE);
-            Peripheral.WriteRegister(0x76, 0x00);
-            Peripheral.WriteRegister(0x77, 0x00);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x0D, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x01);
-            Peripheral.WriteRegister(0x01, 0xF8);
-            Peripheral.WriteRegister(0xFF, 0x01);
-            Peripheral.WriteRegister(0x8E, 0x01);
-            Peripheral.WriteRegister(0x00, 0x01);
-            Peripheral.WriteRegister(0xFF, 0x00);
-            Peripheral.WriteRegister(0x80, 0x00);
-
-            Peripheral.WriteRegister(SystemInterruptConfigGpio, 0x04);
-            var gpio_hv_mux_active_high = Read(GpioHvMuxActiveHigh);
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, (byte)(gpio_hv_mux_active_high & ~0x10));
-
-            Peripheral.WriteRegister(GpioHvMuxActiveHigh, 0x01);
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
-
-            Peripheral.WriteRegister(SystemSequenceConfig, 0x01);
-            //PerformSingleRefCalibration(0x40);
-            Peripheral.WriteRegister(SystemSequenceConfig, 0x02);
-            //PerformSingleRefCalibration(0x00);
-
-            Peripheral.WriteRegister(SystemSequenceConfig, 0xE8);
-        }
-
-        protected byte Read(byte address)
-        {
-            var result = Peripheral.ReadRegister(address);
-            return result;
-        }
-
-        protected int Read16(byte address)
-        {
-            //var result = Peripheral.ReadRegisters(address, 2);
-            Peripheral.ReadRegister(address, ReadBuffer.Span[0..2]);
-            return (ReadBuffer.Span[0] << 8) | ReadBuffer.Span[1];
-        }
-
-        /// <summary>
-        /// Set the Shutdown state of the device
-        /// </summary>
-        /// <param name="state">true = off/shutdown. false = on</param>
-        public async Task ShutDown(bool state)
-        {
-            if (shutdownPort == null)
-            {
-                return;
-            }
-
-            shutdownPort.State = !state;
-            await Task.Delay(2).ConfigureAwait(false);
-
-            if (state == false)
-            {
-                await Initialize();
-                // TODO: is this still needed? the previous line wasn't awaited before.
-                await Task.Delay(2).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// Set a new I2C address
-        /// </summary>
-        /// <param name="newAddress"></param>
-        public void SetAddress(byte newAddress)
-        {
-            if (IsShutdown)
-                return;
-
-            byte address = (byte)(newAddress & 0x7F);
-            Peripheral.WriteRegister(I2CSlaveDeviceAddress, address);
-        }
+            return HistoryBufferLocations[RecordIndexToGet];
+        }   
     }
 }
