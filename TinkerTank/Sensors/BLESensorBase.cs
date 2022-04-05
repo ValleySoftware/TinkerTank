@@ -1,4 +1,5 @@
 ﻿using Base;
+using Enumerations;
 using Meadow.Devices;
 using Meadow.Gateways.Bluetooth;
 using System;
@@ -33,9 +34,9 @@ namespace TinkerTank.Sensors
 
         public void UpdateBleValue(object newValue)
         {
-            if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > _minimumInterval)
+            try
             {
-                try
+                if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > _minimumInterval)
                 {
                     if (_characteristic != null)
                     {
@@ -46,13 +47,13 @@ namespace TinkerTank.Sensors
 
                         _lastBleUpdate = DateTimeOffset.Now;
 
-                        _appRoot.communications.UpdateCharacteristicValue(_characteristic, Convert.ToString(newValue));                        
+                        _appRoot.communications.UpdateCharacteristicValue(_characteristic, Convert.ToString(newValue));
                     }
                 }
-                catch (Exception)
-                {
-
-                }
+            }
+            catch (Exception e)
+            {
+                _appRoot.DebugDisplayText("Update BLE Value Exception: " + e.Message, LogStatusMessageTypes.Error);
             }
         }
 

@@ -69,7 +69,7 @@ namespace TinkerTank
         public bool EnableDBLogging = true;
         public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
 
-        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Error;
+        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Important;
 
         public Logging Logger;
 

@@ -42,9 +42,10 @@ namespace TinkerTank.Sensors
     public class VL6180X : I2cPeripheral
     {
 
-        private static double DEFAULT_ALS_LUX_RESOLUTION = 0.32;
 
         private List<HistoryBufferMap> HistoryBufferLocations = new List<HistoryBufferMap>() { };
+
+        private static double DEFAULT_ALS_LUX_RESOLUTION = 0.32;
 
         private static double ALS_TO_LUX_CONVERSION(double ALS_LUX_RESOLUTION, double RESULT_ALS_VAL, double Analog_Gain, double ALS_INTEGRATION_TIME)
         {
