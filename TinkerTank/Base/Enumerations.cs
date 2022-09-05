@@ -8,7 +8,7 @@ namespace Enumerations
     public enum AutomaticErrorResponse { DoNothing, TryReload, Warn, DisableComponent, DisableMotorPower }
     public enum DriveMethod { SingleDrive, DualDrive, QuadDrive, HexDrive, AdjustableHexDrive }
     public enum Direction { Forward, Backwards, TurnLeft, TurnRight, RotateLeft, RotateRight, Stop }
-    public enum LogStatusMessageTypes {Debug, BLERecord, Information, Important, Error, CriticalError };
+    public enum LogStatusMessageTypes {Debug, BLERecord, Information, Important, Error, Critical };
     public enum ServoMovementSpeed { Slow, Medium, Fast, Flank, Stop };
     public enum ServoType { SG90, SG90Continuous, MG996R };
     public enum I2CExpanderChannel { sensorZero, fixedForwardDistance, periscopeDistance }

@@ -24,7 +24,7 @@ namespace Communications
         protected MeadowApp _appRoot;
         private string _statusText = string.Empty;
         MapleServer server;
-        F7Micro _device;
+        F7FeatherV1 _device;
 
         public WiFiComms()
         {
@@ -37,7 +37,7 @@ namespace Communications
             _appRoot.DebugDisplayText("Initialize wifi...");
 
             // initialize the wifi adpater
-            if (!MeadowApp.Device.WiFiAdapter.StartWiFiInterface())
+            if (! await MeadowApp.Device.WiFiAdapter.StartWiFiInterface())
             {
                 throw new Exception("Could not initialize the WiFi adapter.");
             }

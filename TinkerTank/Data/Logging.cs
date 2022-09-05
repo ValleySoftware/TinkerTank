@@ -15,7 +15,7 @@ namespace TinkerTank.Data
         private DataStore dbcon;
         private DisplayBase lcd;
         private DebugLogEntryModel _currentLog;
-
+        private int _counter = 0;
 
         public Logging() : base()
         {
@@ -27,36 +27,47 @@ namespace TinkerTank.Data
             _appRoot = MeadowApp.Current;
 
             dbcon = con;
-
             //Display
             if (_appRoot.EnableDisplay)
             {
                 try
                 {
                     AddLogEntry("start lcd", LogStatusMessageTypes.Important);
+                    AddLogEntry("MinLogLevel= " + _appRoot.MinimumLogLevel, LogStatusMessageTypes.Critical); 
 
                     AddLogEntry(_appRoot.DisplayModel.ToString(), LogStatusMessageTypes.Important);
-
-                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.ST7789_SPI_240x240)
-                    { 
-                        lcd = new LCDDisplay_ST7789(this);
-                        lcd.Init();
-                    }
-
-                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x64)
+                    
+                    switch (_appRoot.DisplayModel)
                     {
-                        lcd = new LCDDisplay_1306_128x64(this);
-                        lcd.Init();
-                    }
+                        case DisplayBase.DisplayTypes.ST7789_SPI_240x240:
+                            {
+                                lcd = new LCDDisplay_ST7789(this);
+                                lcd.Init();
+                                lcd.ShowCurrentLog();
+                                break;
+                            }
 
-                    if (_appRoot.DisplayModel == DisplayBase.DisplayTypes.SSD1306_2IC_128x32)
-                    {
-                        lcd = new LCDDisplay_1306_128x32(this);
-                        lcd.Init();
+                        case DisplayBase.DisplayTypes.SSD1306_I2C_128x64:
+                            {
+                                lcd = new LCDDisplay_1306_128x64(this);
+                                lcd.Init();
+                                lcd.ShowCurrentLog();
+                                break;
+                            }
+
+                        case DisplayBase.DisplayTypes.SSD1306_I2C_128x32:
+                            {
+                                lcd = new LCDDisplay_1306_128x32(this);
+                                lcd.Init();
+                                lcd.ShowCurrentLog();
+                                break;
+                            }
+                        default: AddLogEntry("No matching LCD model found", LogStatusMessageTypes.Error); ; break;
                     }
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(String.Concat("ERR"));
                     AddLogEntry("init lcd error " + ex.Message, LogStatusMessageTypes.Error);
                 }
             }
@@ -91,9 +102,11 @@ namespace TinkerTank.Data
                                 Displayed = false,
                                 StatusType = statusType,
                                 Text = newText,
-                                Remote_Request_ID = remoteID
+                                Remote_Request_ID = remoteID,
+
                             };
 
+                            _counter++;
                             if (dbcon != null)
                             {
                                 dbcon.UpsertDebugLogEntry(newEntry);
@@ -104,21 +117,22 @@ namespace TinkerTank.Data
                                 Console.WriteLine(String.Concat("-BLE- ", remoteID, " - (", newEntry.ID, ") ", newEntry.Text));
                             }
 
-                            if (newEntry.StatusType == LogStatusMessageTypes.CriticalError)
+                            if (newEntry.StatusType == LogStatusMessageTypes.Critical)
                             {
-                                Console.WriteLine(String.Concat("*** (", newEntry.ID, ") ", newEntry.Text));
+                                Console.WriteLine(String.Concat("*** - ", _counter++.ToString(), " (", newEntry.ID, ") ", newEntry.Text));
                             }
 
                             if (newEntry.StatusType == LogStatusMessageTypes.Error)
                             {
-                                Console.WriteLine(String.Concat("* (", newEntry.ID, ") ", newEntry.Text));
+                                Console.WriteLine(String.Concat("* - ", _counter++.ToString(), " (", newEntry.ID, ") ", newEntry.Text));
                             }
 
                             if (newEntry.StatusType == LogStatusMessageTypes.Important)
                             {
-                                Console.WriteLine(String.Concat("// (", newEntry.ID, ") ", newEntry.Text));
+                                Console.WriteLine(String.Concat("// - ", _counter++.ToString(), " (", newEntry.ID, ") ", newEntry.Text));
                             }
-                            Console.WriteLine(String.Concat("(", newEntry.ID, ") ", newEntry.Text));
+
+                            //Console.WriteLine(String.Concat(_counter++.ToString(), " - (", newEntry.ID, ") ", newEntry.Text));
 
                         if (_appRoot.communications != null &&
                             _appRoot.communications.charLogging != null)

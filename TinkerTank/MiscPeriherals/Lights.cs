@@ -12,7 +12,7 @@ namespace TinkerTank.MiscPeriherals
 {
     public class Lights : TinkerBase
     {
-        F7Micro _device;
+        F7FeatherV1 _device;
 
         private List<Meadow.Hardware.IDigitalOutputPort> LightList;
         private Meadow.Hardware.IDigitalOutputPort _fixedForwardLed;

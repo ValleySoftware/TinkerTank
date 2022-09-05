@@ -25,7 +25,7 @@ using static TinkerTank.Display.DisplayBase;
 
 namespace TinkerTank
 {
-    public class MeadowApp : App<F7Micro, MeadowApp>
+    public class MeadowApp : App<F7FeatherV1, MeadowApp>
     {
         public Lights LightsController;
 
@@ -63,13 +63,15 @@ namespace TinkerTank
         public bool EnableDisplay = true;
         private bool EnableArm = false;
         private bool EnablePCA9685 = true;
-        private bool EnableStatusPolling = true;
+        private bool EnableStatusPolling = false;
         public bool EnableWatchDog = false;
+        public bool EnableLights = false;
         private bool AllowInitDB = true;
         public bool EnableDBLogging = true;
-        public DisplayTypes DisplayModel = DisplayTypes.SSD1306_2IC_128x32;
+        public bool SetBTProperties = false;
+        public DisplayTypes DisplayModel = DisplayTypes.SSD1306_I2C_128x64;
 
-        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Important;
+        public LogStatusMessageTypes MinimumLogLevel = LogStatusMessageTypes.Debug;
 
         public Logging Logger;
 
@@ -112,6 +114,8 @@ namespace TinkerTank
                 blueLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedBlue);
                 greenLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedGreen);
                 redLED = Device.CreateDigitalOutputPort(Device.Pins.OnboardLedRed);
+
+                //Console.WriteLine(String.Concat("pre-logger-msg: ", "LED startup success "));
             }
             catch (Exception)
             {
@@ -125,11 +129,12 @@ namespace TinkerTank
             {
                 DebugDisplayText("Init i2c");
                 primaryi2CBus = Device.CreateI2cBus(I2cBusSpeed.Standard);
+                //Console.WriteLine(String.Concat("pre-logger-msg: ", "I2C success "));
             }
             catch (Exception)
             {
                 //very bad
-                DebugDisplayText("INIT I2C ERROR", LogStatusMessageTypes.CriticalError);
+                DebugDisplayText("INIT I2C ERROR", LogStatusMessageTypes.Critical);
             }
 
             try
@@ -140,6 +145,11 @@ namespace TinkerTank
                     DebugDisplayText("Init DB", LogStatusMessageTypes.Important);
                     dbcon = new DataStore();
                     dbcon.InitDB(WipeDBOnStartup);
+                }
+                else
+                {
+                    DebugDisplayText("DB Init disabled", LogStatusMessageTypes.Information);
+
                 }
 
             }
@@ -160,7 +170,7 @@ namespace TinkerTank
             }
 
             try
-            { 
+            {
                 TBObjects = new List<TinkerBase>();
 
                 //I2C Expander
@@ -176,12 +186,15 @@ namespace TinkerTank
                 }
 
                 //Communications and control
+                Console.WriteLine(String.Concat("MAIN-A"));
 
                 DebugDisplayText("start communications controller", LogStatusMessageTypes.Important);
                 communications = new BlueTooth();
                 TBObjects.Add(communications);
                 communications.Init();
 
+
+                Console.WriteLine(String.Concat("MAIN-B"));
                 //Sensors
                 if (EnableDistanceSensors)
                 {
@@ -222,7 +235,8 @@ namespace TinkerTank
                     {
 
                     }
-                }   
+                }
+                Console.WriteLine("Completed startup as far as Movement. Camera next. ");
 
 
                 //Camera and Sensor
@@ -248,15 +262,18 @@ namespace TinkerTank
                     }
                 }
 
-                try
+                if (EnableLights)
                 {
-                    DebugDisplayText("start lights controller", LogStatusMessageTypes.Important);
-                    LightsController = new Lights();
-                    LightsController.Init(false);
-                }
-                catch (Exception)
-                {
+                    try
+                    {
+                        DebugDisplayText("start lights controller", LogStatusMessageTypes.Important);
+                        LightsController = new Lights();
+                        LightsController.Init(false);
+                    }
+                    catch (Exception)
+                    {
 
+                    }
                 }
 
                 //Final

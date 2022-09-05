@@ -152,10 +152,10 @@ namespace TinkerTank.Servos
 
         public void InitServo(bool GoToDefaultOnStart)
         {
-            InitServo(GoToDefaultOnStart, false);
+            InitServo(GoToDefaultOnStart);
         }
 
-        private void InitServo(bool GoToDefaultOnStart, bool ReverseServo)
+        private void InitServo(bool GoToDefaultOnStart, bool ReverseServo = false)
         {
             ReverseDirection = ReverseServo;
 
@@ -263,12 +263,19 @@ namespace TinkerTank.Servos
 
         public void GoToDefaultPosition()
         {
-            _appRoot.DebugDisplayText(Name + " attempting to return to default position.", LogStatusMessageTypes.Debug);
-
-            if (SafeIshRotate(DefaultAngle) == -1)
+            try
             {
-                _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.", LogStatusMessageTypes.Error);
-                DefaultAngle = _servo.Angle.Value;
+                _appRoot.DebugDisplayText(Name + " attempting to return to default position.", LogStatusMessageTypes.Debug);
+
+                if (SafeIshRotate(DefaultAngle) == -1)
+                {
+                    _appRoot.DebugDisplayText("Error going to default angle (" + Name + ") at " + Convert.ToString(_servo.Angle.Value) + " degrees.", LogStatusMessageTypes.Error);
+                    DefaultAngle = _servo.Angle.Value;
+                }
+            }
+            catch (Exception e)
+            {
+                _appRoot.DebugDisplayText(Name + " go to default error. " + e.Message, LogStatusMessageTypes.Error);
             }
         }
 

@@ -14,7 +14,7 @@ namespace TinkerTank.Display
     public abstract partial class DisplayBase : TinkerBase
     {
         public static List<Color> statusColours = new List<Color>() { Color.White, Color.Green, Color.Red };
-        public enum DisplayTypes { ST7789_SPI_240x240, SSD1306_2IC_128x64, SSD1306_2IC_128x32 }
+        public enum DisplayTypes { ST7789_SPI_240x240, SSD1306_I2C_128x64, SSD1306_I2C_128x32 }
         private DisplayTypes _typeOfDisplay;
         public MicroGraphics graphics;
         private int lineLength = 30;
@@ -52,7 +52,7 @@ namespace TinkerTank.Display
                             break;
                         }
                         graphics.CurrentFont = new Font4x8();
-                        graphics.DrawText(0, 12 * i, lineOfLog.Trim(), ScaleFactor.X1);
+                        graphics.DrawText(0, 24 * i, lineOfLog.Trim(), ScaleFactor.X1);
                         i++;
 
                     }
@@ -124,6 +124,8 @@ namespace TinkerTank.Display
             catch (Exception ScreenInitEx)
             {
                 Console.WriteLine("ScreenInitEx - " + ScreenInitEx.Message);
+                Console.WriteLine(String.Concat("ERR"));
+                Console.WriteLine(ScreenInitEx.Message);
             }
         }
 

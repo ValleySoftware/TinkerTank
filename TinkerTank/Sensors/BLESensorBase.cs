@@ -10,7 +10,7 @@ namespace TinkerTank.Sensors
 {
     public class BLESensorBase : TinkerBase
     {
-        protected F7Micro _device;
+        protected F7FeatherV1 _device;
         private Characteristic _characteristic;
         private object _sensorValue;
         private DateTimeOffset _lastBleUpdate;
@@ -34,26 +34,29 @@ namespace TinkerTank.Sensors
 
         public void UpdateBleValue(object newValue)
         {
-            try
+            if (_appRoot.SetBTProperties)
             {
-                if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > _minimumInterval)
+                try
                 {
-                    if (_characteristic != null)
+                    if (DateTimeOffset.Now.Subtract(_lastBleUpdate) > _minimumInterval)
                     {
-                        if (newValue == null)
+                        if (_characteristic != null)
                         {
-                            newValue = SensorValue;
+                            if (newValue == null)
+                            {
+                                newValue = SensorValue;
+                            }
+
+                            _lastBleUpdate = DateTimeOffset.Now;
+
+                            _appRoot.communications.UpdateCharacteristicValue(_characteristic, Convert.ToString(newValue));
                         }
-
-                        _lastBleUpdate = DateTimeOffset.Now;
-
-                        _appRoot.communications.UpdateCharacteristicValue(_characteristic, Convert.ToString(newValue));
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                _appRoot.DebugDisplayText("Update BLE Value Exception: " + e.Message, LogStatusMessageTypes.Error);
+                catch (Exception e)
+                {
+                    _appRoot.DebugDisplayText("Update BLE Value Exception: " + e.Message, LogStatusMessageTypes.Error);
+                }
             }
         }
 

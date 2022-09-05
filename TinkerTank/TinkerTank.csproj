@@ -20,16 +20,16 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-	  <PackageReference Include="Meadow" Version="0.30.1" />
-	  <PackageReference Include="Meadow.F7" Version="0.30.1" />
-	  <PackageReference Include="Meadow.Foundation" Version="0.32.2" />
-	  <PackageReference Include="Meadow.Foundation.Displays.MicroGraphics" Version="0.9.48" />
-	  <PackageReference Include="Meadow.Foundation.Displays.Ssd130x" Version="0.12.47" />
-	  <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.52" />
-	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Pca9685" Version="0.1.43" />
-	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Tca9548a" Version="0.1.11" />
-	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.39" />
-	  <PackageReference Include="Meadow.Foundation.ServoCore" Version="0.8.40" />
+	  <PackageReference Include="Meadow" Version="0.31.1" />
+	  <PackageReference Include="Meadow.F7" Version="0.31.1" />
+	  <PackageReference Include="Meadow.Foundation" Version="0.33.1" />
+	  <PackageReference Include="Meadow.Foundation.Displays.MicroGraphics" Version="0.9.54" />
+	  <PackageReference Include="Meadow.Foundation.Displays.Ssd130x" Version="0.12.53" />
+	  <PackageReference Include="Meadow.Foundation.Displays.TftSpi" Version="0.7.58" />
+	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Pca9685" Version="0.1.49" />
+	  <PackageReference Include="Meadow.Foundation.ICs.IOExpanders.Tca9548a" Version="0.1.17" />
+	  <PackageReference Include="Meadow.Foundation.Sensors.Distance.Vl53l0x" Version="0.1.45" />
+	  <PackageReference Include="Meadow.Foundation.Servos.ServoCore" Version="0.8.39" />
 	  <PackageReference Include="Meadow.Foundation.Web.Maple.Server" Version="0.5.0" />
 	  <PackageReference Include="sqlite-net-static" Version="1.8.116" />
   </ItemGroup>

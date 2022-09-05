@@ -63,7 +63,7 @@ namespace TinkerTank.Movement
 
                 ClawServo = new TinkerServoBase(_servoControllerDevice, 6, ServoType.MG996R, null, null, "Claw");// higher = closed. Lower = open
                 servos.Add(ClawServo);
-                ClawServo.InitServo();
+                ClawServo.InitServo(true);
 
                 Status = Enumerations.ComponentStatus.Ready;
                 _appRoot.DebugDisplayText("arm - init complete", LogStatusMessageTypes.Information);

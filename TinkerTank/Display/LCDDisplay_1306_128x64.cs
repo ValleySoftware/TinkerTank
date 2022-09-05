@@ -17,17 +17,25 @@ namespace TinkerTank.Display
         }
 
         public override void DoDisplaySpecificInit()
-        {        
-            NoOfLinesOnDisplay = 8;
+        {
+            try
+            {
+                NoOfLinesOnDisplay = 8;
 
-            display = new Ssd1306
-            (
-                i2cBus: MeadowApp.Device.CreateI2cBus(Meadow.Hardware.I2cBusSpeed.FastPlus),
-                address: 60,
-                displayType: Ssd1306.DisplayType.OLED128x64
-            ); 
+                display = new Ssd1306
+                (
+                    //i2cBus: MeadowApp.Device.CreateI2cBus(Meadow.Hardware.I2cBusSpeed.FastPlus),
+                    _appRoot.primaryi2CBus,
+                    address: 60,
+                    displayType: Ssd1306.DisplayType.OLED128x64
+                );
 
-            graphics = new MicroGraphics(display);
+                graphics = new MicroGraphics(display);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public override void Init()

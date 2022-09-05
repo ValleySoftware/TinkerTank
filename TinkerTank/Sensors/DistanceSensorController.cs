@@ -14,7 +14,7 @@ namespace TinkerTank.Sensors
 {
     public class DistanceSensorController : TinkerBase, ITinkerBase
     {
-        F7Micro _device;
+        F7FeatherV1 _device;
 
         public Dist53l0 PeriscopeDistance;
         public Dist53l0 FixedFrontDistance;
@@ -34,22 +34,29 @@ namespace TinkerTank.Sensors
 
         public void Init()
         {
-            _appRoot.DebugDisplayText("Distance sensor controller Init method", LogStatusMessageTypes.Information);
-            Status = ComponentStatus.UnInitialised;
+            try
+            {
+                _appRoot.DebugDisplayText("Distance sensor controller Init method", LogStatusMessageTypes.Information);
+                Status = ComponentStatus.UnInitialised;
 
-            PeriscopeDistance = InitNewSensor(
-                _device.Pins.D03, 
-                I2CExpanderChannel.periscopeDistance, 
-                "pan", 
-                _appRoot.communications.charPanTiltDistance);
+                PeriscopeDistance = InitNewSensor(
+                    _device.Pins.D03,
+                    I2CExpanderChannel.periscopeDistance,
+                    "pan",
+                    _appRoot.communications.charPanTiltDistance);
 
-            FixedFrontDistance = InitNewSensor(
-                null,
-                I2CExpanderChannel.fixedForwardDistance, 
-                "fwd", 
-                _appRoot.communications.charForwardDistance);
+                FixedFrontDistance = InitNewSensor(
+                    null,
+                    I2CExpanderChannel.fixedForwardDistance,
+                    "fwd",
+                    _appRoot.communications.charForwardDistance);
 
-            Status = ComponentStatus.Ready;
+                Status = ComponentStatus.Ready;
+            }
+            catch (Exception e)
+            {
+                Status = ComponentStatus.Error;
+            }
         }
 
         public Dist53l0 InitNewSensor(IPin LaserPin, I2CExpanderChannel chan , string name, Characteristic charac)

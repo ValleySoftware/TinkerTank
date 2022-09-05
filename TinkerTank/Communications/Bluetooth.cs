@@ -29,19 +29,25 @@ namespace Communications
         public CharacteristicString charPanTiltDistance;
         public CharacteristicString charLights;
         public CharacteristicString charLogging;
-        F7Micro _device;
+        F7FeatherV1 _device;
 
         private readonly bool UseExternalAntenna = false;
 
         public BlueTooth()
         {
+            _appRoot.DebugDisplayText("BT Instantiate", LogStatusMessageTypes.Information);
+
             _appRoot = MeadowApp.Current;
             _device = MeadowApp.Device;
             Status = ComponentStatus.UnInitialised;
+
+            _appRoot.DebugDisplayText("BT Instantiate complete", LogStatusMessageTypes.Information);
         }
 
         public ComponentStatus Init()
         {
+            _appRoot.DebugDisplayText("BT Init", LogStatusMessageTypes.Information);
+
             Status = ComponentStatus.UnInitialised;
 
             try
@@ -53,6 +59,8 @@ namespace Communications
                     _device.SetAntenna(AntennaType.External);
                     _appRoot.DebugDisplayText("External antenna enabled.", LogStatusMessageTypes.Information);
                 }
+                Console.WriteLine(String.Concat("BT-B"));
+
                 PrepareCharacteristics();
 
                 PrepareDefinition();
@@ -81,7 +89,7 @@ namespace Communications
         {
             var success = true;
 
-            _appRoot.DebugDisplayText("PrepBLEDefinitions", LogStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("PrepBLEDefinitions", LogStatusMessageTypes.Information);
 
             primaryControlService =
                 new Service(
@@ -98,7 +106,7 @@ namespace Communications
                     charLogging
                     );
 
-            _appRoot.DebugDisplayText("BLE ControlService created", LogStatusMessageTypes.Debug);
+            _appRoot.DebugDisplayText("BLE ControlService created", LogStatusMessageTypes.Information);
 
             foreach (var element in primaryControlService.Characteristics)
             {
@@ -141,7 +149,9 @@ namespace Communications
                             maxLength: 12,
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
-                            descriptors: new Descriptor(BLEConstants.UUIDStop, CharacteristicsNames.Stop.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDStop, 
+                                CharacteristicsNames.Stop.ToString())
                             );
             charPanTilt = new CharacteristicString(
                             name: CharacteristicsNames.PanTilt.ToString(),
@@ -149,7 +159,9 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(BLEConstants.UUIDPanTilt, CharacteristicsNames.PanTilt.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDPanTilt, 
+                                CharacteristicsNames.PanTilt.ToString())
                             );
             charPower = new CharacteristicString(
                             name: CharacteristicsNames.Power.ToString(),
@@ -157,7 +169,9 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(BLEConstants.UUIDPower, CharacteristicsNames.Power.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDPower, 
+                                CharacteristicsNames.Power.ToString())
                             );
             charAdvancedMove = new CharacteristicString( //00-000-00000
                             name: CharacteristicsNames.AdvancedMove.ToString(),
@@ -165,7 +179,9 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 20,
-                            descriptors: new Descriptor(BLEConstants.UUIDAdvancedMove, CharacteristicsNames.AdvancedMove.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDAdvancedMove, 
+                                CharacteristicsNames.AdvancedMove.ToString())
                             );
             charPanSweep = new CharacteristicString(
                             name: CharacteristicsNames.PanSweep.ToString(),
@@ -173,7 +189,9 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(BLEConstants.UUIDPanSweep, CharacteristicsNames.PanSweep.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDPanSweep, 
+                                CharacteristicsNames.PanSweep.ToString())
                             );
             charForwardDistance = new CharacteristicString(
                             name: CharacteristicsNames.ForwardDistance.ToString(),
@@ -181,7 +199,9 @@ namespace Communications
                             permissions: CharacteristicPermission.Write | CharacteristicPermission.Read,
                             properties: CharacteristicProperty.Write | CharacteristicProperty.Read,
                             maxLength: 12,
-                            descriptors: new Descriptor(BLEConstants.UUIDForwardDistance, CharacteristicsNames.ForwardDistance.ToString())
+                            descriptors: new Descriptor(
+                                BLEConstants.UUIDForwardDistance, 
+                                CharacteristicsNames.ForwardDistance.ToString())
                             );
             charPanTiltDistance = new CharacteristicString(
                             name: CharacteristicsNames.PanTiltDistance.ToString(),
@@ -207,6 +227,7 @@ namespace Communications
                             maxLength: 128,
                             descriptors: new Descriptor(BLEConstants.UUIDLogging, CharacteristicsNames.Logging.ToString())
                             );
+            _appRoot.DebugDisplayText("BLECharacteristics Ready", LogStatusMessageTypes.Debug);
         }
 
         private void PrepareCharacteristicEventHandlers()
